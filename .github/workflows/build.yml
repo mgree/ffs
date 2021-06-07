@@ -7,6 +7,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os:
           - macos-latest
@@ -20,7 +21,7 @@ jobs:
           if [ "$RUNNER_OS" = "Linux" ]; then
             sudo apt-get install fuse libfuse-dev pkg-config
           elif [ "$RUNNER_OS" = "macOS" ]; then
-            sudo brew install macfuse pkg-config
+            brew install macfuse pkg-config
           else
             echo Unsupported RUNNER_OS=$RUNNER_OS
             exit 1
