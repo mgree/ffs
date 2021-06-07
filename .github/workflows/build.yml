@@ -6,11 +6,22 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Install FUSE
-        run: sudo apt-get install fuse libfuse-dev
+      - name: Install FUSE (Ubuntu)
+        run: sudo apt-get install fuse libfuse-dev pkg-config
+        if: ${{ matrix.os = "ubuntu-latest" }}
+
+      - name: Install FUSE (macOS)
+        run: sudo brew install macfuse pkg-config
+        if: ${{ matrix.os = "macos-latest" }}
 
       - name: Checkout code
         uses: actions/checkout@v2
