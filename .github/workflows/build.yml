@@ -39,5 +39,5 @@ jobs:
         run: |
           for f in json/*.json
           do
-            target/debug/ffs $x
+            target/debug/ffs $f
           done
