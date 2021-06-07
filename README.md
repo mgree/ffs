@@ -9,17 +9,10 @@ data as a fileystem---a tree structure you already know how to work with!
 
 # External dependencies
 
-You need a form of [FUSE](https://github.com/libfuse/libfuse) and
+You need an appropriate [FUSE](https://github.com/libfuse/libfuse) or
+[macFUSE](https://osxfuse.github.io/) along with
 [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/).
 
-## Installation on macOS
-
-You need to have [macFUSE](https://osxfuse.github.io/) installed to
-run on macOS.
-
-```shell-session
-$ brew install macfuse
-$ reboot
-$ cd /usr/local/lib/pkgconfig
-$ sudo ln -sf fuse.pc osxfuse.pc
-```
+See [the GitHub build
+workflow](https://github.com/mgree/ffs/blob/main/.github/workflows/build.yml)
+for examples.
