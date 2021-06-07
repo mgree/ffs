@@ -1,0 +1,22 @@
+name: Main workflow
+
+on:
+  - pull_request
+  - push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install FUSE
+        run: sudo apt-get install fuse
+
+      - name: Build and test ffs
+        run: |
+          cargo build --verbose --all
+          cargo test
+        

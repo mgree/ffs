@@ -9,7 +9,7 @@ data as a fileystem---a tree structure you already know how to work with!
 
 # External dependencies
 
-You need a form of FUSE and
+You need a form of [FUSE](https://github.com/libfuse/libfuse) and
 [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/).
 
 ## Installation on macOS
