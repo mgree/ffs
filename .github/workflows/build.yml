@@ -35,3 +35,9 @@ jobs:
           cargo build --verbose --all
           cargo test
         
+      - name: Test JSON parsing
+        run: |
+          for f in json/*.json
+          do
+            target/debug/ffs $x
+          done
