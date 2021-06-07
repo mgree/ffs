@@ -1,4 +1,5 @@
 # ffs: the file filesystem
+[![Main workflow](https://github.com/mgree/ffs/actions/workflows/build.yml/badge.svg)](https://github.com/mgree/ffs/actions/workflows/build.yml)
 
 Working with semi-structured data using command-line tools is hard!
 Tools like [jq](https://github.com/stedolan/jq) help a lot, but
