@@ -15,4 +15,4 @@ You need an appropriate [FUSE](https://github.com/libfuse/libfuse) or
 
 See [the GitHub build
 workflow](https://github.com/mgree/ffs/blob/main/.github/workflows/build.yml)
-for examples.
+for examples of external dependency installation.
