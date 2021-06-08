@@ -25,7 +25,8 @@ esac
 [ "$(cat human)" = "true" ] || fail human
 cd - >/dev/null 2>&1
 umount "$MNT" || fail unmount
+sleep 1
 
-kill -0 $PID >/dev/null 2>&1 || fail process
+kill -0 $PID >/dev/null 2>&1 && fail process
 
 rmdir "$MNT" || fail mount
