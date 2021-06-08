@@ -29,9 +29,15 @@ fn main() {
 
     println!("{:?}", json);
 
-    let fs = build_json_fs(json);
+    let fs = FS::from(json);
 
     println!("{:?}", fs);
+}
+
+#[derive(Debug)]
+struct FS {
+    inodes: Vec<Inode>,
+    timestamp: std::time::SystemTime,
 }
 
 #[derive(Debug)]
@@ -57,69 +63,74 @@ enum Entry {
     Error(String),
 }
 
-fn build_json_fs(v: Value) -> Vec<Inode> {
-    let mut inodes: Vec<Inode> = Vec::new();
-    // get zero-indexing for free, with a nice non-zero check to boot
-    inodes.push(Inode {
-        parent: 0,
-        entry: Entry::Error("inode 0 is invalid".into()),
-    });
-    // TODO 2021-06-07 reserve based on guess of size
+impl From<Value> for FS {
+    fn from(v: Value) -> Self {
+        let mut inodes: Vec<Inode> = Vec::new();
+        // get zero-indexing for free, with a nice non-zero check to boot
+        inodes.push(Inode {
+            parent: 0,
+            entry: Entry::Error("inode 0 is invalid".into()),
+        });
+        // TODO 2021-06-07 reserve based on guess or calculated size
 
-    let mut next_id = fuser::FUSE_ROOT_ID;
-    // parent inum, inum, value
-    let mut worklist: Vec<(u64, u64, Value)> = Vec::new();
+        let mut next_id = fuser::FUSE_ROOT_ID;
+        // parent inum, inum, value
+        let mut worklist: Vec<(u64, u64, Value)> = Vec::new();
 
-    if !(v.is_array() || v.is_object()) {
-        panic!(
-            "Unable to build a filesystem out of the primitive value '{}'",
-            v
-        );
-    }
-    worklist.push((next_id, next_id, v));
-    next_id += 1;
-
-    while !worklist.is_empty() {
-        let (parent, inum, v) = worklist.pop().unwrap();
-
-        let entry = match v {
-            Value::Null => Entry::File("".into()),
-            Value::Bool(b) => Entry::File(format!("{}", b)),
-            Value::Number(n) => Entry::File(format!("{}", n)),
-            Value::String(s) => Entry::File(s),
-            Value::Array(vs) => {
-                let mut children = Vec::new();
-                children.reserve(vs.len());
-
-                for child in vs.into_iter() {
-                    worklist.push((inum, next_id, child));
-                    children.push(next_id);
-                    next_id += 1;
-                }
-
-                Entry::ListDirectory(children)
-            }
-            Value::Object(fvs) => {
-                let mut children = HashMap::new();
-                children.reserve(fvs.len());
-
-                for (field, child) in fvs.into_iter() {
-                    worklist.push((inum, next_id, child));
-                    children.insert(field, next_id);
-                    next_id += 1;
-                }
-
-                Entry::NamedDirectory(children)
-            }
-        };
-
-        let idx = inum as usize;
-        if idx >= inodes.len() {
-            inodes.resize_with(idx + 1, || Inode::error());
+        if !(v.is_array() || v.is_object()) {
+            panic!(
+                "Unable to build a filesystem out of the primitive value '{}'",
+                v
+            );
         }
-        inodes[idx] = Inode { parent, entry };
-    }
-    assert_eq!(inodes.len() as u64, next_id);
+        worklist.push((next_id, next_id, v));
+        next_id += 1;
 
-    inodes
+        while !worklist.is_empty() {
+            let (parent, inum, v) = worklist.pop().unwrap();
+
+            let entry = match v {
+                Value::Null => Entry::File("".into()),
+                Value::Bool(b) => Entry::File(format!("{}", b)),
+                Value::Number(n) => Entry::File(format!("{}", n)),
+                Value::String(s) => Entry::File(s),
+                Value::Array(vs) => {
+                    let mut children = Vec::new();
+                    children.reserve(vs.len());
+
+                    for child in vs.into_iter() {
+                        worklist.push((inum, next_id, child));
+                        children.push(next_id);
+                        next_id += 1;
+                    }
+
+                    Entry::ListDirectory(children)
+                }
+                Value::Object(fvs) => {
+                    let mut children = HashMap::new();
+                    children.reserve(fvs.len());
+
+                    for (field, child) in fvs.into_iter() {
+                        worklist.push((inum, next_id, child));
+                        children.insert(field, next_id);
+                        next_id += 1;
+                    }
+
+                    Entry::NamedDirectory(children)
+                }
+            };
+
+            let idx = inum as usize;
+            if idx >= inodes.len() {
+                inodes.resize_with(idx + 1, || Inode::error());
+            }
+            inodes[idx] = Inode { parent, entry };
+        }
+        assert_eq!(inodes.len() as u64, next_id);
+
+        FS {
+            inodes,
+            timestamp: std::time::SystemTime::now(),
+        }
+    }
 }
