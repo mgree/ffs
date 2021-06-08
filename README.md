@@ -10,6 +10,68 @@ learning a new language for simple manipulations is a big ask. By mapping
 hard-to-parse trees into a filesystem, you can keep using the tools you
 know.
 
+# Example
+
+Run `ffs [mountpoint] [file]` to mount a file at a given mountpoint.
+
+```shell-session
+$ ffs mnt json_eg1.json  &
+[1] 80762
+$ tree mnt
+mnt
+└── glossary
+    ├── GlossDiv
+    │   ├── GlossList
+    │   │   └── GlossEntry
+    │   │       ├── Abbrev
+    │   │       ├── Acronym
+    │   │       ├── GlossDef
+    │   │       │   ├── GlossSeeAlso
+    │   │       │   │   ├── 0
+    │   │       │   │   └── 1
+    │   │       │   └── para
+    │   │       ├── GlossSee
+    │   │       ├── GlossTerm
+    │   │       ├── ID
+    │   │       └── SortAs
+    │   └── title
+    └── title
+
+6 directories, 11 files
+$ cat mnt/glossary/GlossDiv/GlossList/GlossEntry/Abbrev
+ISO 8879:1986$ cat mnt/glossary/GlossDiv/GlossList/GlossEntry/Acronym 
+SGML$ cat mnt/glossary/title 
+example glossary$ cat json_eg1.json 
+{
+    "glossary": {
+        "title": "example glossary",
+		"GlossDiv": {
+            "title": "S",
+			"GlossList": {
+                "GlossEntry": {
+                    "ID": "SGML",
+					"SortAs": "SGML",
+					"GlossTerm": "Standard Generalized Markup Language",
+					"Acronym": "SGML",
+					"Abbrev": "ISO 8879:1986",
+					"GlossDef": {
+                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
+						"GlossSeeAlso": ["GML", "XML"]
+                    },
+					"GlossSee": "markup"
+                }
+            }
+        }
+    }
+}
+$ ps | grep ffs
+80762 ttys001    0:00.03 ffs mnt json_eg1.json
+80843 ttys001    0:00.00 grep ffs
+$ umount mnt
+[1]+  Done                    ffs mnt json_eg1.json
+$
+```
+
 # External dependencies
 
 You need an appropriate [FUSE](https://github.com/libfuse/libfuse) or
