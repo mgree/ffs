@@ -57,6 +57,7 @@ fn main() {
 
     let json: Value = serde_json::from_reader(reader).expect("JSON");
     let fs = FS::from(json);
+    // TODO 2021-06-07 debugging
 
     let mut options = vec![MountOption::RO, MountOption::FSName(input_source.into())];
     if autounmount {
@@ -83,8 +84,7 @@ struct Inode {
 #[derive(Debug)]
 enum Entry {
     File(String),
-    NamedDirectory(HashMap<String, DirEntry>),
-    ListDirectory(Vec<DirEntry>),
+    Directory(HashMap<String, DirEntry>),
 }
 
 #[derive(Debug)]
@@ -149,17 +149,16 @@ impl Entry {
     pub fn size(&self) -> u64 {
         match self {
             Entry::File(s) => s.len() as u64,
-            Entry::NamedDirectory(files) => {
+            Entry::Directory(files) => {
                 files.iter().map(|(name, _inum)| name.len() as u64).sum()
             }
-            Entry::ListDirectory(elts) => elts.len() as u64,
         }
     }
 
     pub fn kind(&self) -> FileType {
         match self {
             Entry::File(_) => FileType::RegularFile,
-            Entry::NamedDirectory(_) | Entry::ListDirectory(_) => FileType::Directory,
+            Entry::Directory(_) => FileType::Directory,
         }
     }
 }
@@ -183,7 +182,7 @@ impl Filesystem for FS {
         };
 
         match &dir.entry {
-            Entry::NamedDirectory(files) => match files.get(filename) {
+            Entry::Directory(files) => match files.get(filename) {
                 None => {
                     reply.error(libc::ENOENT);
                     return;
@@ -201,7 +200,6 @@ impl Filesystem for FS {
                     return;
                 }
             },
-            Entry::ListDirectory(_elts) => unimplemented!("TODO 2021-07-07 list directories"),
             _ => {
                 reply.error(libc::ENOTDIR);
                 return;
@@ -264,8 +262,7 @@ impl Filesystem for FS {
 
         match &inode.entry {
             Entry::File(_) => reply.error(libc::ENOTDIR),
-            Entry::ListDirectory(_elts) => unimplemented!("TODO 2021-06-07 list directory readdir"),
-            Entry::NamedDirectory(files) => {
+            Entry::Directory(files) => {
                 let dot_entries = vec![
                     (ino, FileType::Directory, "."),
                     (inode.parent, FileType::Directory, ".."),
@@ -328,19 +325,24 @@ impl From<Value> for FS {
                 Value::Number(n) => Entry::File(format!("{}", n)),
                 Value::String(s) => Entry::File(s),
                 Value::Array(vs) => {
-                    let mut children = Vec::new();
+                    let mut children = HashMap::new();
                     children.reserve(vs.len());
 
-                    for child in vs.into_iter() {
-                        children.push(DirEntry {
-                            inum: next_id,
-                            kind: kind(&child),
-                        });
+                    for (i, child) in vs.into_iter().enumerate() {
+                        let name = format!("{}", i);
+
+                        children.insert(
+                            name,
+                            DirEntry {
+                                inum: next_id,
+                                kind: kind(&child),
+                            },
+                        );
                         worklist.push((inum, next_id, child));
                         next_id += 1;
                     }
 
-                    Entry::ListDirectory(children)
+                    Entry::Directory(children)
                 }
                 Value::Object(fvs) => {
                     let mut children = HashMap::new();
@@ -359,7 +361,7 @@ impl From<Value> for FS {
                         next_id += 1;
                     }
 
-                    Entry::NamedDirectory(children)
+                    Entry::Directory(children)
                 }
             };
 
