@@ -328,8 +328,11 @@ impl From<Value> for FS {
                     let mut children = HashMap::new();
                     children.reserve(vs.len());
 
+                    let num_elts = vs.len() as f64;
+                    let width = num_elts.log10().ceil() as usize;
+
                     for (i, child) in vs.into_iter().enumerate() {
-                        let name = format!("{}", i);
+                        let name = format!("{:0width$}", i, width = width);
 
                         children.insert(
                             name,

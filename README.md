@@ -22,9 +22,12 @@ for examples of external dependency installation.
 
 # TODO
 
-- [ ] `ListDirectory` (need element names, otherwise basically the same)
-- [ ] Check on validity of filenames/fieldnames
-- [ ] Metadata (as extensions or as dotfiles)
+- [x] `ListDirectory` (need element names, otherwise basically the same)
+- [ ] Filenames
+  + [ ] Check on validity of filenames/fieldnames
+  + [ ] Options for naming of ListDirectory elements
+  + [ ] Metadata (as extensions or as dotfiles)
 - [ ] Debugging/logging
-- [ ] Timing
-- [ ] Writing, JSON output
+  + [ ] Timing
+- [ ] Writable FS
+  + [ ]JSON output
