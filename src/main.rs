@@ -1,4 +1,3 @@
-use std::path::Path;
 use clap::{App, Arg};
 use fuser::FileAttr;
 use fuser::FileType;
@@ -12,6 +11,7 @@ use fuser::Request;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::ffi::OsStr;
+use std::path::Path;
 use std::time::Duration;
 
 fn main() {
@@ -56,12 +56,7 @@ fn main() {
     };
 
     let json: Value = serde_json::from_reader(reader).expect("JSON");
-
-    println!("{:?}", json);
-
     let fs = FS::from(json);
-
-    println!("{:?}", fs);
 
     let mut options = vec![MountOption::RO, MountOption::FSName(input_source.into())];
     if autounmount {

@@ -30,14 +30,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Build and test ffs
+      - name: Build ffs and run unit tests
         run: |
           cargo build --verbose --all
           cargo test
         
-      - name: Test JSON parsing
+      - name: Integration tests
         run: |
-          for f in json/*.json
+          PATH="$(pwd)/target/debug:$PATH"
+          for test in tests/*.sh
           do
-            target/debug/ffs $f
+            echo $(basename ${test%*.sh})
+            ./${test} || exit 1
           done
+      
