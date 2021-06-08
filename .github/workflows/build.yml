@@ -38,7 +38,8 @@ jobs:
       - name: Integration tests
         run: |
           PATH="$(pwd)/target/debug:$PATH"
-          for test in tests/*.sh
+          cd tests
+          for test in *.sh
           do
             echo $(basename ${test%*.sh})
             ./${test} || exit 1
