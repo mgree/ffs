@@ -84,13 +84,19 @@ struct Inode {
 #[derive(Debug)]
 enum Entry {
     File(String),
-    Directory(HashMap<String, DirEntry>),
+    Directory(DirType, HashMap<String, DirEntry>),
 }
 
 #[derive(Debug)]
 struct DirEntry {
     kind: FileType,
     inum: u64,
+}
+
+#[derive(Debug)]
+enum DirType {
+    Named,
+    List,
 }
 
 #[derive(Debug)]
@@ -149,16 +155,20 @@ impl Entry {
     pub fn size(&self) -> u64 {
         match self {
             Entry::File(s) => s.len() as u64,
-            Entry::Directory(files) => {
+            Entry::Directory(DirType::Named, files) => {
                 files.iter().map(|(name, _inum)| name.len() as u64).sum()
             }
+            Entry::Directory(DirType::List, files) => {
+                files.len() as u64
+            }
+
         }
     }
 
     pub fn kind(&self) -> FileType {
         match self {
             Entry::File(_) => FileType::RegularFile,
-            Entry::Directory(_) => FileType::Directory,
+            Entry::Directory(..) => FileType::Directory,
         }
     }
 }
@@ -182,7 +192,7 @@ impl Filesystem for FS {
         };
 
         match &dir.entry {
-            Entry::Directory(files) => match files.get(filename) {
+            Entry::Directory(_kind, files) => match files.get(filename) {
                 None => {
                     reply.error(libc::ENOENT);
                     return;
@@ -262,7 +272,7 @@ impl Filesystem for FS {
 
         match &inode.entry {
             Entry::File(_) => reply.error(libc::ENOTDIR),
-            Entry::Directory(files) => {
+            Entry::Directory(_kind, files) => {
                 let dot_entries = vec![
                     (ino, FileType::Directory, "."),
                     (inode.parent, FileType::Directory, ".."),
@@ -345,7 +355,7 @@ impl From<Value> for FS {
                         next_id += 1;
                     }
 
-                    Entry::Directory(children)
+                    Entry::Directory(DirType::List, children)
                 }
                 Value::Object(fvs) => {
                     let mut children = HashMap::new();
@@ -364,7 +374,7 @@ impl From<Value> for FS {
                         next_id += 1;
                     }
 
-                    Entry::Directory(children)
+                    Entry::Directory(DirType::Named, children)
                 }
             };
 
