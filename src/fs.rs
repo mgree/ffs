@@ -6,27 +6,21 @@ use fuser::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyData, ReplyDirectory, ReplyEntry, Request,
 };
 
-use tracing::instrument;
-
-use serde_json::Value;
-
 use super::config::Config;
 
 #[derive(Debug)]
 pub struct FS {
-    inodes: Vec<Option<Inode>>,
-    timestamp: std::time::SystemTime,
-    uid: u32,
-    gid: u32,
+    pub inodes: Vec<Option<Inode>>,
+    pub config: Config,
 }
 
 const TTL: Duration = Duration::from_secs(300);
 
 #[derive(Debug)]
 pub struct Inode {
-    parent: u64,
-    inum: u64,
-    entry: Entry,
+    pub parent: u64,
+    pub inum: u64,
+    pub entry: Entry,
 }
 
 #[derive(Debug)]
@@ -37,8 +31,8 @@ pub enum Entry {
 
 #[derive(Debug)]
 pub struct DirEntry {
-    kind: FileType,
-    inum: u64,
+    pub kind: FileType,
+    pub inum: u64,
 }
 
 #[derive(Debug)]
@@ -79,17 +73,17 @@ impl FS {
 
         FileAttr {
             ino: inode.inum,
-            atime: self.timestamp,
-            crtime: self.timestamp,
-            ctime: self.timestamp,
-            mtime: self.timestamp,
+            atime: self.config.timestamp,
+            crtime: self.config.timestamp,
+            ctime: self.config.timestamp,
+            mtime: self.config.timestamp,
             nlink: 1,
             size,
             blksize: 1,
             blocks: size,
             kind,
-            uid: self.uid,
-            gid: self.gid,
+            uid: self.config.uid,
+            gid: self.config.gid,
             perm,
             rdev: 0,
             padding: 0,
@@ -243,129 +237,3 @@ impl Filesystem for FS {
     }
 }
 
-fn normalize_name(s: String) -> String {
-    // inspired by https://en.wikipedia.org/wiki/Filename
-    s.replace(".", "dot")
-        .replace("/", "slash")
-        .replace("\\", "backslash")
-        .replace("?", "question")
-        .replace("*", "star")
-        .replace(":", "colon")
-        .replace("\"", "dquote")
-        .replace("<", "lt")
-        .replace(">", "gt")
-        .replace(",", "comma")
-        .replace(";", "semi")
-        .replace("=", "equal")
-        .replace(" ", "space")
-}
-
-fn kind(v: &Value) -> FileType {
-    match v {
-        Value::Object(_) | Value::Array(_) => FileType::Directory,
-        _ => FileType::RegularFile,
-    }
-}
-impl From<Value> for FS {
-    #[instrument(level = "info", skip(v))]
-    fn from(v: Value) -> Self {
-        let mut inodes: Vec<Option<Inode>> = Vec::new();
-        // get zero-indexing for free, with a nice non-zero check to boot
-        inodes.push(None);
-        // TODO 2021-06-07 reserve based on guess or calculated size
-
-        let mut next_id = fuser::FUSE_ROOT_ID;
-        // parent inum, inum, value
-        let mut worklist: Vec<(u64, u64, Value)> = Vec::new();
-
-        if !(v.is_array() || v.is_object()) {
-            panic!(
-                "Unable to build a filesystem out of the primitive value '{}'",
-                v
-            );
-        }
-        worklist.push((next_id, next_id, v));
-        next_id += 1;
-
-        while !worklist.is_empty() {
-            let (parent, inum, v) = worklist.pop().unwrap();
-
-            let entry = match v {
-                // TODO 2021-06-09 option to add newlines
-                Value::Null => Entry::File("".into()),
-                Value::Bool(b) => Entry::File(format!("{}", b)),
-                Value::Number(n) => Entry::File(format!("{}", n)),
-                Value::String(s) => Entry::File(s),
-                Value::Array(vs) => {
-                    let mut children = HashMap::new();
-                    children.reserve(vs.len());
-
-                    let num_elts = vs.len() as f64;
-                    let width = num_elts.log10().ceil() as usize;
-
-                    for (i, child) in vs.into_iter().enumerate() {
-                        // TODO 2021-06-08 ability to turn off padding, add prefixes
-                        let name = format!("{:0width$}", i, width = width);
-
-                        children.insert(
-                            name,
-                            DirEntry {
-                                inum: next_id,
-                                kind: kind(&child),
-                            },
-                        );
-                        worklist.push((inum, next_id, child));
-                        next_id += 1;
-                    }
-
-                    Entry::Directory(DirType::List, children)
-                }
-                Value::Object(fvs) => {
-                    let mut children = HashMap::new();
-                    children.reserve(fvs.len());
-
-                    for (field, child) in fvs.into_iter() {
-                        let mut nfield = normalize_name(field);
-
-                        while children.contains_key(&nfield) {
-                            nfield.push('_');
-                        }
-
-                        // TODO 2021-06-08 log field vs. nfield
-                        children.insert(
-                            nfield,
-                            DirEntry {
-                                inum: next_id,
-                                kind: kind(&child),
-                            },
-                        );
-
-                        worklist.push((inum, next_id, child));
-                        next_id += 1;
-                    }
-
-                    Entry::Directory(DirType::Named, children)
-                }
-            };
-
-            let idx = inum as usize;
-            if idx >= inodes.len() {
-                inodes.resize_with(idx + 1, || None);
-            }
-            inodes[idx] = Some(Inode {
-                parent,
-                inum,
-                entry,
-            });
-        }
-        assert_eq!(inodes.len() as u64, next_id);
-
-        let config = Config::default();
-        FS {
-            inodes,
-            timestamp: config.timestamp,
-            uid: config.uid,
-            gid: config.gid,
-        }
-    }
-}

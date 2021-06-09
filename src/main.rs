@@ -8,10 +8,11 @@ use tracing_subscriber::{filter::LevelFilter, fmt};
 
 mod config;
 mod fs;
-mod parse;
+mod json;
+
+use config::Config;
 
 use fuser::MountOption;
-use serde_json::Value;
 
 fn main() {
     let args = App::new("ffs")
@@ -53,6 +54,8 @@ fn main() {
         std::process::exit(1);
     }
 
+    let config = Config::default();
+
     let input_source = args.value_of("INPUT").expect("input source");
 
     let reader: Box<dyn std::io::BufRead> = if input_source == "-" {
@@ -65,8 +68,8 @@ fn main() {
         Box::new(std::io::BufReader::new(file))
     };
 
-    let json: Value = parse::json(reader);
-    let fs = fs::FS::from(json);
+    let v = json::parse(reader);
+    let fs = json::fs(config, v);
 
     let mut options = vec![MountOption::RO, MountOption::FSName(input_source.into())];
     if autounmount {
