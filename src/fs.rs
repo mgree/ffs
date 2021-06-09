@@ -14,6 +14,8 @@ use serde_json::Value;
 pub struct FS {
     inodes: Vec<Option<Inode>>,
     timestamp: std::time::SystemTime,
+    uid: u32,
+    gid: u32,
 }
 
 const TTL: Duration = Duration::from_secs(300);
@@ -84,9 +86,8 @@ impl FS {
             blksize: 1,
             blocks: size,
             kind,
-            // TODO 2021-07-07 getpwnam upfront, store in fs
-            uid: 501, // first user on macOS
-            gid: 20,  // staff on macOS
+            uid: self.uid,
+            gid: self.gid,
             perm,
             rdev: 0,
             padding: 0,
@@ -240,15 +241,8 @@ impl Filesystem for FS {
     }
 }
 
-fn kind(v: &Value) -> FileType {
-    match v {
-        Value::Object(_) | Value::Array(_) => FileType::Directory,
-        _ => FileType::RegularFile,
-    }
-}
-
 fn normalize_name(s: String) -> String {
-    // inspired by https://en.wikipedia.org/wiki/Filename#Number_of_names_per_file
+    // inspired by https://en.wikipedia.org/wiki/Filename
     s.replace(".", "dot")
         .replace("/", "slash")
         .replace("\\", "backslash")
@@ -264,6 +258,12 @@ fn normalize_name(s: String) -> String {
         .replace(" ", "space")
 }
 
+fn kind(v: &Value) -> FileType {
+    match v {
+        Value::Object(_) | Value::Array(_) => FileType::Directory,
+        _ => FileType::RegularFile,
+    }
+}
 impl From<Value> for FS {
     #[instrument(level = "info", skip(v))]
     fn from(v: Value) -> Self {
@@ -361,6 +361,9 @@ impl From<Value> for FS {
         FS {
             inodes,
             timestamp: std::time::SystemTime::now(),
+            // TODO 2021-07-07 getpwnam upfront, store in fs
+            uid: 501, // first created user on macOS
+            gid: 20, // staff on macOS
         }
     }
 }

@@ -7,7 +7,6 @@ use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::LevelFilter, fmt};
 
 mod fs;
-
 mod parse;
 
 use serde_json::Value;
