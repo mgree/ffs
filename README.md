@@ -92,4 +92,4 @@ for examples of external dependency installation.
 - [ ] Debugging/logging
   + [ ] Timing
 - [ ] Writable FS
-  + [ ]JSON output
+  + [ ] JSON output
