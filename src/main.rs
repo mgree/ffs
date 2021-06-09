@@ -40,6 +40,7 @@ fn main() {
 
     let autounmount = config.is_present("AUTOUNMOUNT");
 
+    // TODO 2021-06-08 infer and create mountpoint from filename as possible
     let mount_point = Path::new(config.value_of("MOUNT").expect("mount point"));
     if !mount_point.exists() {
         panic!("Mount point {} does not exist.", mount_point.display());
@@ -158,10 +159,7 @@ impl Entry {
             Entry::Directory(DirType::Named, files) => {
                 files.iter().map(|(name, _inum)| name.len() as u64).sum()
             }
-            Entry::Directory(DirType::List, files) => {
-                files.len() as u64
-            }
-
+            Entry::Directory(DirType::List, files) => files.len() as u64,
         }
     }
 
@@ -306,6 +304,22 @@ fn kind(v: &Value) -> FileType {
     }
 }
 
+fn normalize_name(s: String) -> String {
+    s.replace(".", "dot")
+        .replace("/", "slash")
+        .replace("\\", "backslash")
+        .replace("?", "question")
+        .replace("*", "star")
+        .replace(":", "colon")
+        .replace("\"", "dquote")
+        .replace("<", "lt")
+        .replace(">", "gt")
+        .replace(",", "comma")
+        .replace(";", "semi")
+        .replace("=", "equal")
+        .replace(" ", "space")
+}
+
 impl From<Value> for FS {
     fn from(v: Value) -> Self {
         let mut inodes: Vec<Option<Inode>> = Vec::new();
@@ -342,6 +356,7 @@ impl From<Value> for FS {
                     let width = num_elts.log10().ceil() as usize;
 
                     for (i, child) in vs.into_iter().enumerate() {
+                        // TODO 2021-06-08 ability to turn off padding, add prefixes
                         let name = format!("{:0width$}", i, width = width);
 
                         children.insert(
@@ -362,15 +377,22 @@ impl From<Value> for FS {
                     children.reserve(fvs.len());
 
                     for (field, child) in fvs.into_iter() {
+                        let mut nfield = normalize_name(field);
+
+                        while children.contains_key(&nfield) {
+                            nfield.push('_');
+                        }
+
+                        // TODO 2021-06-08 log field vs. nfield
                         children.insert(
-                            field,
+                            nfield,
                             DirEntry {
                                 inum: next_id,
                                 kind: kind(&child),
                             },
                         );
+
                         worklist.push((inum, next_id, child));
-                        // TODO 2021-06-07 check field name validity!
                         next_id += 1;
                     }
 

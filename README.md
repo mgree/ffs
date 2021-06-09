@@ -86,7 +86,7 @@ for examples of external dependency installation.
 
 - [x] `ListDirectory` (need element names, otherwise basically the same)
 - [ ] Filenames
-  + [ ] Check on validity of filenames/fieldnames
+  + [x] Check on validity of filenames/fieldnames
   + [ ] Options for naming of ListDirectory elements
   + [ ] Metadata (as extensions or as dotfiles)
 - [ ] Debugging/logging
