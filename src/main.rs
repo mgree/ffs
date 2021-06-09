@@ -2,7 +2,7 @@ use std::path::Path;
 
 use clap::{App, Arg};
 
-use tracing::{error, info};
+use tracing::{error, info, warn};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::LevelFilter, fmt};
 
@@ -22,7 +22,21 @@ fn main() {
         .arg(
             Arg::with_name("AUTOUNMOUNT")
                 .help("Automatically unmount the filesystem when the mounting process exits")
-                .long("--autounmount"),
+                .long("autounmount"),
+        )
+        .arg(
+            Arg::with_name("UID")
+                .help("Sets the user id of the generated filesystem (defaults to current effective user id)")
+                .short("u")
+                .long("uid")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("GID")
+                .help("Sets the group id of the generated filesystem (defaults to current effective group id)")
+                .short("g")
+                .long("gid")
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("MOUNT")
@@ -37,6 +51,8 @@ fn main() {
                 .index(2),
         )
         .get_matches();
+
+    let mut config = Config::default();
 
     let filter_layer = LevelFilter::DEBUG;
     let fmt_layer = fmt::layer();
@@ -54,7 +70,35 @@ fn main() {
         std::process::exit(1);
     }
 
-    let config = Config::default();
+    match args.value_of("UID") {
+        Some(uid_string) => match uid_string.parse() {
+            Ok(uid) => config.uid = uid,
+            Err(e) => {
+                let euid = unsafe { libc::geteuid() };
+                warn!(
+                    "Couldn't parse '{}' as a uid ({}), defaulting to effective uid ({})",
+                    uid_string, e, euid
+                );
+                config.uid = euid;
+            }
+        },
+        None => config.uid = unsafe { libc::geteuid() },
+    }
+    
+    match args.value_of("GID") {
+        Some(gid_string) => match gid_string.parse() {
+            Ok(gid) => config.gid = gid,
+            Err(e) => {
+                let egid = unsafe { libc::getegid() };
+                warn!(
+                    "Couldn't parse '{}' as a gid ({}), defaulting to effective gid ({})",
+                    gid_string, e, egid
+                );
+                config.gid = egid;
+            }
+        },
+        None => config.gid = unsafe { libc::getegid() },
+    }
 
     let input_source = args.value_of("INPUT").expect("input source");
 
