@@ -1,18 +1,20 @@
 use clap::{App, Arg};
-use fuser::FileAttr;
-use fuser::FileType;
-use fuser::Filesystem;
-use fuser::MountOption;
-use fuser::ReplyAttr;
-use fuser::ReplyData;
-use fuser::ReplyDirectory;
-use fuser::ReplyEntry;
-use fuser::Request;
+
+use fuser::{
+    FileAttr, FileType, Filesystem, MountOption, ReplyAttr, ReplyData, ReplyDirectory, ReplyEntry,
+    Request,
+};
+
 use serde_json::Value;
+
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::Path;
 use std::time::Duration;
+
+use tracing::{info, error, instrument, span, Level};
+use tracing_subscriber::prelude::*;
+use tracing_subscriber::{filter::LevelFilter, fmt};
 
 fn main() {
     let config = App::new("ffs")
@@ -38,12 +40,20 @@ fn main() {
         )
         .get_matches();
 
+    let filter_layer = LevelFilter::DEBUG;
+    let fmt_layer = fmt::layer();
+    tracing_subscriber::registry()
+        .with(filter_layer)
+        .with(fmt_layer)
+        .init();
+
     let autounmount = config.is_present("AUTOUNMOUNT");
 
     // TODO 2021-06-08 infer and create mountpoint from filename as possible
     let mount_point = Path::new(config.value_of("MOUNT").expect("mount point"));
     if !mount_point.exists() {
-        panic!("Mount point {} does not exist.", mount_point.display());
+        error!("Mount point {} does not exist.", mount_point.display());
+        std::process::exit(1);
     }
 
     let input_source = config.value_of("INPUT").expect("input source");
@@ -51,20 +61,37 @@ fn main() {
     let reader: Box<dyn std::io::BufRead> = if input_source == "-" {
         Box::new(std::io::BufReader::new(std::io::stdin()))
     } else {
-        let file = std::fs::File::open(input_source)
-            .unwrap_or_else(|e| panic!("Unable to open {} for JSON input: {}", input_source, e));
+        let file = std::fs::File::open(input_source).unwrap_or_else(|e| {
+            error!("Unable to open {} for JSON input: {}", input_source, e);
+            std::process::exit(1);
+        });
         Box::new(std::io::BufReader::new(file))
     };
 
-    let json: Value = serde_json::from_reader(reader).expect("JSON");
-    let fs = FS::from(json);
-    // TODO 2021-06-07 debugging
+    let json: Value = {
+        let span = span!(Level::INFO, "parsing");
+        let _enter = span.enter();
+        info!("start");
+        let json = serde_json::from_reader(reader).expect("JSON");
+        info!("done");
+        json
+    };
+    let fs = {
+        let span = span!(Level::INFO, "building filesystem");
+        let _enter = span.enter();
+        info!("start");
+        let fs = FS::from(json);
+        info!("stop");
+        fs
+    };
 
     let mut options = vec![MountOption::RO, MountOption::FSName(input_source.into())];
     if autounmount {
         options.push(MountOption::AutoUnmount);
     }
+    info!("mounting on {:?} with options {:?}", mount_point, options);
     fuser::mount2(fs, mount_point, &options).unwrap();
+    info!("unmounted");
 }
 
 #[derive(Debug)]
@@ -305,6 +332,7 @@ fn kind(v: &Value) -> FileType {
 }
 
 fn normalize_name(s: String) -> String {
+    // inspired by https://en.wikipedia.org/wiki/Filename#Number_of_names_per_file
     s.replace(".", "dot")
         .replace("/", "slash")
         .replace("\\", "backslash")
@@ -321,6 +349,7 @@ fn normalize_name(s: String) -> String {
 }
 
 impl From<Value> for FS {
+    #[instrument(level = "info", skip(v))]
     fn from(v: Value) -> Self {
         let mut inodes: Vec<Option<Inode>> = Vec::new();
         // get zero-indexing for free, with a nice non-zero check to boot

@@ -89,7 +89,10 @@ for examples of external dependency installation.
   + [x] Check on validity of filenames/fieldnames
   + [ ] Options for naming of ListDirectory elements
   + [ ] Metadata (as extensions or as dotfiles)
-- [ ] Debugging/logging
+- [x] Debugging/logging
+  + [ ] Instrument all `Filesystem` trait methods
   + [ ] Timing
+  + [ ] Clean stderr output for `error!` and `warn!`
+  + [ ] Quiet mode
 - [ ] Writable FS
   + [ ] JSON output
