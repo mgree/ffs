@@ -10,6 +10,8 @@ use tracing::instrument;
 
 use serde_json::Value;
 
+use super::config::Config;
+
 #[derive(Debug)]
 pub struct FS {
     inodes: Vec<Option<Inode>>,
@@ -358,12 +360,12 @@ impl From<Value> for FS {
         }
         assert_eq!(inodes.len() as u64, next_id);
 
+        let config = Config::default();
         FS {
             inodes,
-            timestamp: std::time::SystemTime::now(),
-            // TODO 2021-07-07 getpwnam upfront, store in fs
-            uid: 501, // first created user on macOS
-            gid: 20, // staff on macOS
+            timestamp: config.timestamp,
+            uid: config.uid,
+            gid: config.gid,
         }
     }
 }

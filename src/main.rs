@@ -2,18 +2,19 @@ use std::path::Path;
 
 use clap::{App, Arg};
 
-use tracing::{info, error};
+use tracing::{error, info};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::LevelFilter, fmt};
 
+mod config;
 mod fs;
 mod parse;
 
-use serde_json::Value;
 use fuser::MountOption;
+use serde_json::Value;
 
 fn main() {
-    let config = App::new("ffs")
+    let args = App::new("ffs")
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
         .about("file fileystem")
@@ -43,16 +44,16 @@ fn main() {
         .with(fmt_layer)
         .init();
 
-    let autounmount = config.is_present("AUTOUNMOUNT");
+    let autounmount = args.is_present("AUTOUNMOUNT");
 
     // TODO 2021-06-08 infer and create mountpoint from filename as possible
-    let mount_point = Path::new(config.value_of("MOUNT").expect("mount point"));
+    let mount_point = Path::new(args.value_of("MOUNT").expect("mount point"));
     if !mount_point.exists() {
         error!("Mount point {} does not exist.", mount_point.display());
         std::process::exit(1);
     }
 
-    let input_source = config.value_of("INPUT").expect("input source");
+    let input_source = args.value_of("INPUT").expect("input source");
 
     let reader: Box<dyn std::io::BufRead> = if input_source == "-" {
         Box::new(std::io::BufReader::new(std::io::stdin()))
