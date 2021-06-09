@@ -373,6 +373,7 @@ impl From<Value> for FS {
             let (parent, inum, v) = worklist.pop().unwrap();
 
             let entry = match v {
+                // TODO 2021-06-09 option to add newlines
                 Value::Null => Entry::File("".into()),
                 Value::Bool(b) => Entry::File(format!("{}", b)),
                 Value::Number(n) => Entry::File(format!("{}", n)),
