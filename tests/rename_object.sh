@@ -4,6 +4,7 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
+        umount "$MNT"
         rmdir "$MNT"
     fi
     exit 1
@@ -20,7 +21,7 @@ case $(ls) in
     (*) fail ls;;
 esac
 [ "$(cat dot)" = "first" ] || fail dot
-[ "$(cat dotdot)" = "second"] || fail dotdot
+[ "$(cat dotdot)" = "second" ] || fail dotdot
 [ "$(cat dot_)" = "third" ] || fail dot_
 [ "$(cat dotdot_)" = "fourth" ] || fail dotdot_
 cd - >/dev/null 2>&1
