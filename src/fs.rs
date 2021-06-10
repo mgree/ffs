@@ -133,7 +133,6 @@ impl Filesystem for FS {
             Entry::Directory(_kind, files) => match files.get(filename) {
                 None => {
                     reply.error(libc::ENOENT);
-                    return;
                 }
                 Some(DirEntry { inum, .. }) => {
                     let file = match self.get(*inum) {
@@ -145,12 +144,10 @@ impl Filesystem for FS {
                     };
 
                     reply.entry(&TTL, &self.attr(file), 0);
-                    return;
                 }
             },
             _ => {
                 reply.error(libc::ENOTDIR);
-                return;
             }
         }
     }
@@ -217,7 +214,7 @@ impl Filesystem for FS {
                 ];
 
                 let entries = files
-                    .into_iter()
+                    .iter()
                     .map(|(filename, DirEntry { inum, kind })| (*inum, *kind, filename.as_str()));
 
                 for (i, entry) in dot_entries
@@ -236,4 +233,3 @@ impl Filesystem for FS {
         }
     }
 }
-
