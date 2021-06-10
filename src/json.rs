@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-use tracing::instrument;
+use tracing::{info, instrument};
 
 use fuser::FileType;
 
@@ -21,12 +21,22 @@ fn kind(v: &Value) -> FileType {
     }
 }
 
+fn size(v: &Value) -> usize {
+    match v {
+        Value::Null | Value::Bool(_) | Value::Number(_) | Value::String(_) => 1,
+        Value::Array(vs) => vs.iter().map(|v| size(v)).sum::<usize>() + 1,
+        Value::Object(fvs) => fvs.iter().map(|(_, v)| size(v)).sum::<usize>() + 1,
+    }
+}
+
 #[instrument(level = "info", skip(v, config))]
 pub fn fs(config: Config, v: Value) -> FS {
     let mut inodes: Vec<Option<Inode>> = Vec::new();
-    // get zero-indexing for free, with a nice non-zero check to boot
-    inodes.push(None);
-    // TODO 2021-06-07 reserve based on guess or calculated size
+
+    // reserve space for everyone else
+    // won't work with streaming or lazy generation, but avoids having to resize the vector midway through
+    inodes.resize_with(size(&v) + 1, || None);
+    info!("allocated {} inodes", inodes.len());
 
     let mut next_id = fuser::FUSE_ROOT_ID;
     // parent inum, inum, value
@@ -79,13 +89,20 @@ pub fn fs(config: Config, v: Value) -> FS {
                 children.reserve(fvs.len());
 
                 for (field, child) in fvs.into_iter() {
+                    let original = field.clone();
                     let mut nfield = config.normalize_name(field);
 
                     while children.contains_key(&nfield) {
                         nfield.push('_');
                     }
 
-                    // TODO 2021-06-08 log field vs. nfield
+                    if original != nfield {
+                        info!(
+                            "renamed {} to {} (inode {} with parent {})",
+                            original, nfield, next_id, parent
+                        );
+                    }
+
                     children.insert(
                         nfield,
                         DirEntry {
@@ -102,11 +119,7 @@ pub fn fs(config: Config, v: Value) -> FS {
             }
         };
 
-        let idx = inum as usize;
-        if idx >= inodes.len() {
-            inodes.resize_with(idx + 1, || None);
-        }
-        inodes[idx] = Some(Inode {
+        inodes[inum as usize] = Some(Inode {
             parent,
             inum,
             entry,
@@ -114,8 +127,5 @@ pub fn fs(config: Config, v: Value) -> FS {
     }
     assert_eq!(inodes.len() as u64, next_id);
 
-    FS {
-        inodes,
-        config,
-    }
+    FS { inodes, config }
 }
