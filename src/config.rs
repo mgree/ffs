@@ -4,6 +4,7 @@ pub struct Config {
     pub uid: u32,
     pub gid: u32,
     pub add_newlines: bool,
+    pub pad_element_names: bool,
 }
 
 impl Config {
@@ -33,6 +34,7 @@ impl Default for Config {
             uid: 501,
             gid: 501,
             add_newlines: false,
+            pad_element_names: true,
         }
     }
 }

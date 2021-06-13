@@ -68,8 +68,12 @@ pub fn fs(config: Config, v: Value) -> FS {
                 let width = num_elts.log10().ceil() as usize;
 
                 for (i, child) in vs.into_iter().enumerate() {
-                    // TODO 2021-06-08 ability to turn off padding, add prefixes
-                    let name = format!("{:0width$}", i, width = width);
+                    // TODO 2021-06-08 ability to add prefixes
+                    let name = if config.pad_element_names {
+                        format!("{:0width$}", i, width = width)
+                    } else {
+                        format!("{}", i)
+                    };
 
                     children.insert(
                         name,

@@ -50,6 +50,17 @@ fn main() {
             .overrides_with("NEWLINE-ADD")
         )
         .arg(
+            Arg::with_name("ELTNAME-PADDED")
+            .help("Pad the numeric names of list elements with zeroes, for proper sorting (e.g., 00, 01, ..., 09, 10) (overrides --unpadded)")
+            .long("padded")
+        )
+        .arg(
+            Arg::with_name("ELTNAME-UNPADDED")
+            .help("Use plain numbers for list elements (e.g., 0, 1, ..., 9, 10) (overrides --padded)")
+            .long("unpadded")
+            .overrides_with("ELTNAME-PADDED")
+        )
+        .arg(
             Arg::with_name("MOUNT")
                 .help("Sets the mountpoint")
                 .required(true)
@@ -73,7 +84,7 @@ fn main() {
         .init();
 
     config.add_newlines = args.is_present("NEWLINE-ADD");
-        
+    config.pad_element_names = args.is_present("ELTNAME-PADDED");
     let autounmount = args.is_present("AUTOUNMOUNT");
 
     // TODO 2021-06-08 infer and create mountpoint from filename as possible
@@ -97,7 +108,6 @@ fn main() {
         },
         None => config.uid = unsafe { libc::geteuid() },
     }
-    
     match args.value_of("GID") {
         Some(gid_string) => match gid_string.parse() {
             Ok(gid) => config.gid = gid,
