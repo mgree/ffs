@@ -9,11 +9,16 @@ use fuser::FileType;
 use super::config::Config;
 use super::fs::{DirEntry, DirType, Entry, Inode, FS};
 
+/// Parses JSON into a value; just a shim for `serde_json::from_reader`.
 #[instrument(level = "info", skip(reader))]
 pub fn parse(reader: Box<dyn std::io::BufRead>) -> Value {
     serde_json::from_reader(reader).expect("JSON")
 }
 
+/// Predicts filetypes from JSON values.
+///
+/// `Value::Object` and `Value::Array` map to directories; everything else is a
+/// regular file.
 fn kind(v: &Value) -> FileType {
     match v {
         Value::Object(_) | Value::Array(_) => FileType::Directory,
@@ -21,6 +26,8 @@ fn kind(v: &Value) -> FileType {
     }
 }
 
+/// Calculates the size of a JSON value, i.e., the number of AST nodes used to
+/// represent it. Used for pre-allocating space for inodes in `fs()` below.
 fn size(v: &Value) -> usize {
     match v {
         Value::Null | Value::Bool(_) | Value::Number(_) | Value::String(_) => 1,
@@ -29,6 +36,13 @@ fn size(v: &Value) -> usize {
     }
 }
 
+/// Generates `fs::FS` from a `serde_json::Value` in a particular `Config`.
+///
+/// The current implementation is eager: it preallocates enough inodes and then
+/// fills them in using a depth-first traversal.
+///
+/// Invariant: the index in the vector is the inode number. Inode 0 is invalid,
+/// and is left empty.
 #[instrument(level = "info", skip(v, config))]
 pub fn fs(config: Config, v: Value) -> FS {
     let mut inodes: Vec<Option<Inode>> = Vec::new();

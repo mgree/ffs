@@ -8,14 +8,22 @@ use fuser::{
 
 use super::config::Config;
 
+/// A filesystem `FS` is just a vector of nullable inodes, where the index is
+/// the inode number.
+/// 
+/// NB that inode 0 is always invalid.
 #[derive(Debug)]
 pub struct FS {
+    /// Vector of nullable inodes; the index is the inode number.
     pub inodes: Vec<Option<Inode>>,
+    /// Configuration, which determines various file attributes.
     pub config: Config,
 }
 
+/// Default TTL on information passed to the OS, which caches responses.
 const TTL: Duration = Duration::from_secs(300);
 
+/// An inode, the core structure in the filesystem.
 #[derive(Debug)]
 pub struct Inode {
     pub parent: u64,
