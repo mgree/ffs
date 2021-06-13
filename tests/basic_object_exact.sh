@@ -4,6 +4,7 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
+        cd
         umount "$MNT"
         rmdir "$MNT"
         rm -r "$EXP"
@@ -20,7 +21,7 @@ printf "2"                 >"${EXP}/eyes"
 printf "10"                >"${EXP}/fingernails"
 printf "true"              >"${EXP}/human"
 
-ffs --exact "$MNT" ../json/object.json &
+ffs --newline false "$MNT" ../json/object.json &
 PID=$!
 sleep 1
 cd "$MNT"

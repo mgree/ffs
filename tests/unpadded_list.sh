@@ -4,6 +4,7 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
+        cd
         umount "$MNT"
         rmdir "$MNT"
     fi
@@ -12,7 +13,7 @@ fail() {
 
 MNT=$(mktemp -d)
 
-ffs --unpadded "$MNT" ../json/list2.json &
+ffs --padded false "$MNT" ../json/list2.json &
 PID=$!
 sleep 1
 cd "$MNT"

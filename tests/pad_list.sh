@@ -4,6 +4,7 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
+        cd
         umount "$MNT"
         rmdir "$MNT"
     fi

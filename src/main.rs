@@ -39,26 +39,16 @@ fn main() {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("NEWLINE-ADD")
-            .help("Add a newline to the end of values that don't already have them (overrides --exact)")
+            Arg::with_name("NEWLINE")
+            .help("Add a newline to the end of values that don't already have them")
             .long("newline")
+            .default_value("false")
         )
         .arg(
-            Arg::with_name("NEWLINE-EXACT")
-            .help("Render values exactly, with no added newlines (overrides --newline)")
-            .long("exact")
-            .overrides_with("NEWLINE-ADD")
-        )
-        .arg(
-            Arg::with_name("ELTNAME-PADDED")
-            .help("Pad the numeric names of list elements with zeroes, for proper sorting (e.g., 00, 01, ..., 09, 10) (overrides --unpadded)")
+            Arg::with_name("PADDED")
+            .help("Pad the numeric names of list elements with zeroes, for proper sorting (e.g., 00, 01, ..., 09, 10)")
             .long("padded")
-        )
-        .arg(
-            Arg::with_name("ELTNAME-UNPADDED")
-            .help("Use plain numbers for list elements (e.g., 0, 1, ..., 9, 10) (overrides --padded)")
-            .long("unpadded")
-            .overrides_with("ELTNAME-PADDED")
+            .default_value("true")
         )
         .arg(
             Arg::with_name("MOUNT")
@@ -83,8 +73,16 @@ fn main() {
         .with(fmt_layer)
         .init();
 
-    config.add_newlines = args.is_present("NEWLINE-ADD");
-    config.pad_element_names = args.is_present("ELTNAME-PADDED");
+    config.add_newlines = match args.value_of("NEWLINE") {
+        Some("true") | None => true,
+        Some("false") => false,
+        Some(s) => panic!("Got `--newline {}`; please give either `true` or `false`.", s),
+    };
+    config.pad_element_names = match args.value_of("PADDED") {
+        Some("true") | None => true,
+        Some("false") => false,
+        Some(s) => panic!("Got `--padded {}`; please give either `true` or `false`.", s),
+    };
     let autounmount = args.is_present("AUTOUNMOUNT");
 
     // TODO 2021-06-08 infer and create mountpoint from filename as possible
