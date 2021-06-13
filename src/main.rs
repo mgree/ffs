@@ -39,6 +39,17 @@ fn main() {
                 .takes_value(true),
         )
         .arg(
+            Arg::with_name("NEWLINE-ADD")
+            .help("Add a newline to the end of values that don't already have them (overrides --exact)")
+            .long("newline")
+        )
+        .arg(
+            Arg::with_name("NEWLINE-EXACT")
+            .help("Render values exactly, with no added newlines (overrides --newline)")
+            .long("exact")
+            .overrides_with("NEWLINE-ADD")
+        )
+        .arg(
             Arg::with_name("MOUNT")
                 .help("Sets the mountpoint")
                 .required(true)
@@ -61,6 +72,8 @@ fn main() {
         .with(fmt_layer)
         .init();
 
+    config.add_newlines = args.is_present("NEWLINE-ADD");
+        
     let autounmount = args.is_present("AUTOUNMOUNT");
 
     // TODO 2021-06-08 infer and create mountpoint from filename as possible

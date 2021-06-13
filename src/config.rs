@@ -3,6 +3,7 @@ pub struct Config {
     pub timestamp: std::time::SystemTime,
     pub uid: u32,
     pub gid: u32,
+    pub add_newlines: bool,
 }
 
 impl Config {
@@ -31,6 +32,7 @@ impl Default for Config {
             timestamp: std::time::SystemTime::now(),
             uid: 501,
             gid: 501,
+            add_newlines: false,
         }
     }
 }

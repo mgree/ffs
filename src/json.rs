@@ -54,12 +54,12 @@ pub fn fs(config: Config, v: Value) -> FS {
     while !worklist.is_empty() {
         let (parent, inum, v) = worklist.pop().unwrap();
 
+        let nl = if config.add_newlines { "\n" } else { "" };
         let entry = match v {
-            // TODO 2021-06-09 option to add newlines
-            Value::Null => Entry::File("".into()),
-            Value::Bool(b) => Entry::File(format!("{}", b)),
-            Value::Number(n) => Entry::File(format!("{}", n)),
-            Value::String(s) => Entry::File(s),
+            Value::Null => Entry::File(nl.into()),
+            Value::Bool(b) => Entry::File(format!("{}{}", b, nl)),
+            Value::Number(n) => Entry::File(format!("{}{}", n, nl)),
+            Value::String(s) => Entry::File(if s.ends_with('\n') { s } else { s + nl }),
             Value::Array(vs) => {
                 let mut children = HashMap::new();
                 children.reserve(vs.len());
