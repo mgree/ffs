@@ -71,13 +71,23 @@ impl FS {
             0o644
         };
 
+        let nlink: u32 = match &inode.entry {
+            Entry::Directory(_, files) => {
+                2 + files
+                    .iter()
+                    .filter(|(_, de)| de.kind == FileType::Directory)
+                    .count() as u32
+            }
+            Entry::File(_) => 1,
+        };
+
         FileAttr {
             ino: inode.inum,
             atime: self.config.timestamp,
             crtime: self.config.timestamp,
             ctime: self.config.timestamp,
             mtime: self.config.timestamp,
-            nlink: 1,
+            nlink,
             size,
             blksize: 1,
             blocks: size,
