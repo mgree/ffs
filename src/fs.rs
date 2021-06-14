@@ -133,7 +133,6 @@ impl FS {
             gid: self.config.gid,
             perm,
             rdev: 0,
-            padding: 0,
             flags: 0, // weird macOS thing
         }
     }

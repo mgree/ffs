@@ -95,4 +95,11 @@ for examples of external dependency installation.
   + [ ] Clean stderr output for `error!` and `warn!`
   + [ ] Quiet mode
 - [ ] Writable FS
+  + [ ] rename
+  + [ ] write
+  + [ ] fsync
+  + [ ] fallocate
+  + [ ] access
+  + [ ] create
+  + [ ] copy_file_range
   + [ ] JSON output
