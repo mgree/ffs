@@ -30,6 +30,11 @@ case $(ls) in
     (eyes*fingernails*human*name) ;;
     (*) fail ls2;;
 esac
+mkdir recipes && fail mkdir
+case $(ls) in
+    (eyes*fingernails*human*name) ;;
+    (*) fail ls3;;
+esac
 cd - >/dev/null 2>&1
 umount "$MNT" || fail unmount
 sleep 1

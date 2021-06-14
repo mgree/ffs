@@ -6,7 +6,7 @@ use fuser::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyData, ReplyDirectory, ReplyEntry, Request,
 };
 
-use tracing::{warn, debug};
+use tracing::{debug, warn};
 
 use super::config::Config;
 
@@ -365,6 +365,75 @@ impl Filesystem for FS {
         };
 
         reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
+    }
 
+    fn mkdir(
+        &mut self,
+        req: &Request,
+        parent: u64,
+        name: &OsStr,
+        mode: u32,
+        _umask: u32,
+        reply: ReplyEntry,
+    ) {
+        if mode != 0o755 {
+            warn!("Given mode {:o}, using 755", mode);
+        }
+
+        // access control
+        if req.uid() != self.config.uid || req.gid() != self.config.gid {
+            reply.error(libc::EACCES);
+            return;
+        }
+
+        // get the new directory name
+        let filename = match name.to_str() {
+            None => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Some(name) => name,
+        };
+
+        // make sure the parent exists, is a directory, and doesn't have anything with that name
+        match self.get(parent) {
+            Err(_e) => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Ok(inode) => match &inode.entry {
+                Entry::File(_) => {
+                    reply.error(libc::ENOTDIR);
+                    return;
+                }
+                Entry::Directory(_dirtype, files) => {
+                    if files.contains_key(filename) {
+                        reply.error(libc::EEXIST);
+                        return;
+                    }
+                }
+            },
+        };
+
+        // create the inode entry
+        let entry = Entry::Directory(DirType::Named, HashMap::new());
+        let kind = FileType::Directory;
+
+        // allocate the inode
+        let inum = self.fresh_inode(parent, entry);
+
+        // update the parent
+        // NB we can't get_mut the parent earlier due to borrowing restrictions
+        match self.get_mut(parent) {
+            Err(_e) => unreachable!("error finding parent again"),
+            Ok(inode) => match &mut inode.entry {
+                Entry::File(_) => unreachable!("parent changed to a regular file"),
+                Entry::Directory(_dirtype, files) => {
+                    files.insert(filename.into(), DirEntry { kind, inum });
+                }
+            },
+        };
+
+        reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
     }
 }
