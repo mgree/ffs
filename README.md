@@ -96,7 +96,7 @@ for examples of external dependency installation.
   + [ ] Quiet mode
 - [ ] Writable FS
   + [ ] rename
-  + [ ] write
+  + [x] write
   + [ ] fsync
   + [ ] fallocate
   + [ ] access
