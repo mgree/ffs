@@ -103,3 +103,7 @@ for examples of external dependency installation.
   + [ ] create
   + [ ] copy_file_range
   + [ ] JSON output
+- [ ] Other formats
+  + [ ] TOML
+  + [ ] XML
+  + [ ] Generic framework (detect/parse/unparse)
