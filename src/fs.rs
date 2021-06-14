@@ -74,6 +74,10 @@ impl FS {
         inum
     }
 
+    fn check_access(&self, req: &Request) -> bool {
+        req.uid() == self.config.uid && req.gid() == self.config.gid
+    }
+
     fn get(&self, inum: u64) -> Result<&Inode, FSError> {
         let idx = inum as usize;
 
@@ -296,7 +300,7 @@ impl Filesystem for FS {
         reply: ReplyEntry,
     ) {
         // access control
-        if req.uid() != self.config.uid || req.gid() != self.config.gid {
+        if !self.check_access(req) {
             reply.error(libc::EACCES);
             return;
         }
@@ -382,9 +386,7 @@ impl Filesystem for FS {
         if mode != 0o755 {
             warn!("Given mode {:o}, using 755", mode);
         }
-
-        // access control
-        if req.uid() != self.config.uid || req.gid() != self.config.gid {
+        if !self.check_access(req) {
             reply.error(libc::EACCES);
             return;
         }
@@ -442,7 +444,7 @@ impl Filesystem for FS {
 
     fn write(
         &mut self,
-        _req: &Request<'_>,
+        req: &Request,
         ino: u64,
         _fh: u64,
         offset: i64,
@@ -453,6 +455,12 @@ impl Filesystem for FS {
         reply: ReplyWrite,
     ) {
         assert!(offset >= 0);
+
+        // access control
+        if !self.check_access(req) {
+            reply.error(libc::EACCES);
+            return;
+        }
 
         // find inode
         let file = match self.get_mut(ino) {
@@ -483,6 +491,45 @@ impl Filesystem for FS {
         contents[offset..offset + data.len()].copy_from_slice(data);
 
         reply.written(data.len() as u32);
+    }
+
+    fn unlink(&mut self, req: &Request, parent: u64, name: &OsStr, reply: ReplyEmpty) {
+        // access control
+        if !self.check_access(req) {
+            reply.error(libc::EACCES);
+            return;
+        }
+
+        // get the filename
+        let filename = match name.to_str() {
+            None => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Some(name) => name,
+        };
+
+        // find the parent
+        let files = match self.get_mut(parent) {
+            Err(_e) => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Ok(Inode { entry: Entry::Directory(_dirtype, files), .. }) => {
+                files
+            } 
+            Ok(Inode { entry: Entry::File(_), .. }) => { 
+                reply.error(libc::ENOTDIR);
+                return;
+            }
+        };
+
+        // try to remove it
+        if files.remove(filename).is_some() {
+            reply.ok();
+        } else {
+            reply.error(libc::ENOENT);
+        }
     }
 
     // TODO

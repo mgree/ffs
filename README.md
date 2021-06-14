@@ -85,6 +85,7 @@ for examples of external dependency installation.
 # TODO
 
 - [x] `ListDirectory` (need element names, otherwise basically the same)
+- [ ] Settable mode
 - [ ] Filenames
   + [x] Check on validity of filenames/fieldnames
   + [ ] Options for naming of ListDirectory elements
@@ -96,13 +97,14 @@ for examples of external dependency installation.
   + [ ] Quiet mode
 - [ ] Writable FS
   + [ ] rename
-  + [x] write
+  + [ ] rmdir
   + [ ] fsync
   + [ ] fallocate
   + [ ] access
   + [ ] create
   + [ ] copy_file_range
-  + [ ] JSON output
+- [ ] Output final FS to file at unmount
+  + [ ] Choose target
 - [ ] Other formats
   + [ ] TOML
   + [ ] XML
