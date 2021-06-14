@@ -71,9 +71,12 @@ pub fn fs(config: Config, v: Value) -> FS {
         let nl = if config.add_newlines { "\n" } else { "" };
         let entry = match v {
             Value::Null => Entry::File(nl.into()),
-            Value::Bool(b) => Entry::File(format!("{}{}", b, nl)),
-            Value::Number(n) => Entry::File(format!("{}{}", n, nl)),
-            Value::String(s) => Entry::File(if s.ends_with('\n') { s } else { s + nl }),
+            Value::Bool(b) => Entry::File(format!("{}{}", b, nl).into_bytes()),
+            Value::Number(n) => Entry::File(format!("{}{}", n, nl).into_bytes()),
+            Value::String(s) => {
+                let contents = if s.ends_with('\n') { s } else { s + nl };
+                Entry::File(contents.into_bytes())
+            },
             Value::Array(vs) => {
                 let mut children = HashMap::new();
                 children.reserve(vs.len());

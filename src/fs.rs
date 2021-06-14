@@ -37,7 +37,9 @@ pub struct Inode {
 
 #[derive(Debug)]
 pub enum Entry {
-    File(String),
+    // TODO 2021-06-14 need a 'written' flag to determine whether or not to
+    // strip newlines during writeback
+    File(Vec<u8>),
     Directory(DirType, HashMap<String, DirEntry>),
 }
 
@@ -234,7 +236,7 @@ impl Filesystem for FS {
         };
 
         match &file.entry {
-            Entry::File(s) => reply.data(&s.as_bytes()[offset as usize..]),
+            Entry::File(s) => reply.data(&s[offset as usize..]),
             _ => reply.error(libc::ENOENT),
         }
     }
@@ -341,7 +343,7 @@ impl Filesystem for FS {
 
         // create the inode entry
         let (entry, kind) = if file_type == libc::S_IFREG as u32 {
-            (Entry::File(String::new()), FileType::RegularFile)
+            (Entry::File(Vec::new()), FileType::RegularFile)
         } else {
             assert_eq!(file_type, libc::S_IFDIR as u32);
             (
@@ -438,6 +440,51 @@ impl Filesystem for FS {
         reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
     }
 
+    fn write(
+        &mut self,
+        _req: &Request<'_>,
+        ino: u64,
+        _fh: u64,
+        offset: i64,
+        data: &[u8],
+        _write_flags: u32,
+        _flags: i32,
+        _lock_owner: Option<u64>,
+        reply: ReplyWrite,
+    ) {
+        assert!(offset >= 0);
+
+        // find inode
+        let file = match self.get_mut(ino) {
+            Err(_e) => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Ok(inode) => inode,
+        };
+
+        // load contents
+        let contents = match &mut file.entry {
+            Entry::File(contents) => contents,
+            Entry::Directory(_, _) => {
+                reply.error(libc::EISDIR);
+                return;
+            }
+        };
+
+        // make space
+        let extra_bytes = contents.len() as i64 - offset + data.len() as i64;
+        if extra_bytes > 0 {
+            contents.resize(extra_bytes as usize, 0);
+        }
+
+        // actually write
+        let offset = offset as usize;
+        contents[offset..offset + data.len()].copy_from_slice(data);
+
+        reply.written(data.len() as u32);
+    }
+
     // TODO
     fn rename(
         &mut self,
@@ -448,22 +495,6 @@ impl Filesystem for FS {
         _newname: &OsStr,
         _flags: u32,
         reply: ReplyEmpty,
-    ) {
-        reply.error(libc::ENOSYS);
-    }
-
-    // TODO
-    fn write(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
-        _offset: i64,
-        _data: &[u8],
-        _write_flags: u32,
-        _flags: i32,
-        _lock_owner: Option<u64>,
-        reply: ReplyWrite,
     ) {
         reply.error(libc::ENOSYS);
     }
