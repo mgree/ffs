@@ -27,7 +27,7 @@ MNT=$(mktemp -d)
 
 ffs "$MNT" ../json/nlink.json &
 PID=$!
-sleep 1
+sleep 2
 cd "$MNT"
 case $(ls) in
     (child1*child2*child3) ;;

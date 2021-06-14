@@ -15,7 +15,7 @@ MNT=$(mktemp -d)
 
 ffs "$MNT" ../json/obj_rename.json &
 PID=$!
-sleep 1
+sleep 2
 cd "$MNT"
 case $(ls) in
     (dot*dot_*dotdot*dotdot_) ;;

@@ -23,7 +23,7 @@ printf "true"              >"${EXP}/human"
 
 ffs --newline false "$MNT" ../json/object.json &
 PID=$!
-sleep 1
+sleep 2
 cd "$MNT"
 case $(ls) in
     (eyes*fingernails*human*name) ;;

@@ -15,7 +15,7 @@ MNT=$(mktemp -d)
 
 ffs "$MNT" ../json/list.json &
 PID=$!
-sleep 1
+sleep 2
 cd "$MNT"
 case $(ls) in
     (0*1*2*3) ;;
