@@ -1,3 +1,5 @@
+use fuser::ReplyWrite;
+use fuser::ReplyEmpty;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::time::Duration;
@@ -435,5 +437,61 @@ impl Filesystem for FS {
         };
 
         reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
+    }
+
+    // TODO
+    fn rename(
+        &mut self,
+        _req: &Request<'_>,
+        _parent: u64,
+        _name: &OsStr,
+        _newparent: u64,
+        _newname: &OsStr,
+        _flags: u32,
+        reply: ReplyEmpty,
+    ) {
+        reply.error(libc::ENOSYS);
+    }
+
+    // TODO
+    fn write(
+        &mut self,
+        _req: &Request<'_>,
+        _ino: u64,
+        _fh: u64,
+        _offset: i64,
+        _data: &[u8],
+        _write_flags: u32,
+        _flags: i32,
+        _lock_owner: Option<u64>,
+        reply: ReplyWrite,
+    ) {
+        reply.error(libc::ENOSYS);
+    }
+
+    // TODO
+    fn fsync(
+        &mut self,
+        _req: &Request<'_>,
+        _ino: u64,
+        _fh: u64,
+        _datasync: bool,
+        reply: ReplyEmpty,
+    ) {
+        reply.error(libc::ENOSYS);
+    }
+
+    // TODO would be nice but whatever
+    fn fallocate(
+        &mut self,
+        _req: &Request<'_>,
+        _ino: u64,
+        _fh: u64,
+        _offset: i64,
+        _length: i64,
+        _mode: i32,
+        reply: ReplyEmpty,
+    ) {
+        reply.error(libc::ENOSYS);
     }
 }
