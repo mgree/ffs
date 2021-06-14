@@ -6,11 +6,13 @@ use fuser::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyData, ReplyDirectory, ReplyEntry, Request,
 };
 
+use tracing::{warn, debug};
+
 use super::config::Config;
 
 /// A filesystem `FS` is just a vector of nullable inodes, where the index is
 /// the inode number.
-/// 
+///
 /// NB that inode 0 is always invalid.
 #[derive(Debug)]
 pub struct FS {
@@ -56,6 +58,18 @@ pub enum FSError {
 }
 
 impl FS {
+    fn fresh_inode(&mut self, parent: u64, entry: Entry) -> u64 {
+        let inum = self.inodes.len() as u64;
+
+        self.inodes.push(Some(Inode {
+            parent,
+            inum,
+            entry,
+        }));
+
+        inum
+    }
+
     fn get(&self, inum: u64) -> Result<&Inode, FSError> {
         let idx = inum as usize;
 
@@ -66,6 +80,19 @@ impl FS {
         match &self.inodes[idx] {
             None => Err(FSError::InvalidInode(inum)),
             Some(inode) => Ok(inode),
+        }
+    }
+
+    fn get_mut(&mut self, inum: u64) -> Result<&mut Inode, FSError> {
+        let idx = inum as usize;
+
+        if idx >= self.inodes.len() {
+            return Err(FSError::NoSuchInode(inum));
+        }
+
+        match self.inodes.get_mut(idx) {
+            Some(Some(inode)) => Ok(inode),
+            _ => Err(FSError::InvalidInode(inum)),
         }
     }
 
@@ -130,6 +157,10 @@ impl Entry {
 }
 
 impl Filesystem for FS {
+    fn destroy(&mut self, _req: &Request) {
+        debug!("{:?}", self);
+    }
+
     fn lookup(&mut self, _req: &Request, parent: u64, name: &OsStr, reply: ReplyEntry) {
         let dir = match self.get(parent) {
             Err(_e) => {
@@ -249,5 +280,91 @@ impl Filesystem for FS {
                 reply.ok()
             }
         }
+    }
+
+    fn mknod(
+        &mut self,
+        req: &Request,
+        parent: u64,
+        name: &OsStr,
+        mode: u32,
+        _umask: u32,
+        _rdev: u32,
+        reply: ReplyEntry,
+    ) {
+        // access control
+        if req.uid() != self.config.uid || req.gid() != self.config.gid {
+            reply.error(libc::EACCES);
+            return;
+        }
+
+        // make sure we have a good file type
+        let file_type = mode & libc::S_IFMT as u32;
+        if !vec![libc::S_IFREG as u32, libc::S_IFDIR as u32].contains(&file_type) {
+            warn!(
+                "mknod only supports regular files and directories; got {:o}",
+                mode
+            );
+            reply.error(libc::ENOSYS);
+            return;
+        }
+
+        // get the filename
+        let filename = match name.to_str() {
+            None => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Some(name) => name,
+        };
+
+        // make sure the parent exists, is a directory, and doesn't have that file
+        match self.get(parent) {
+            Err(_e) => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Ok(inode) => match &inode.entry {
+                Entry::File(_) => {
+                    reply.error(libc::ENOTDIR);
+                    return;
+                }
+                Entry::Directory(_dirtype, files) => {
+                    if files.contains_key(filename) {
+                        reply.error(libc::EEXIST);
+                        return;
+                    }
+                }
+            },
+        };
+
+        // create the inode entry
+        let (entry, kind) = if file_type == libc::S_IFREG as u32 {
+            (Entry::File(String::new()), FileType::RegularFile)
+        } else {
+            assert_eq!(file_type, libc::S_IFDIR as u32);
+            (
+                Entry::Directory(DirType::Named, HashMap::new()),
+                FileType::Directory,
+            )
+        };
+
+        // allocate the inode
+        let inum = self.fresh_inode(parent, entry);
+
+        // update the parent
+        // NB we can't get_mut the parent earlier due to borrowing restrictions
+        match self.get_mut(parent) {
+            Err(_e) => unreachable!("error finding parent again"),
+            Ok(inode) => match &mut inode.entry {
+                Entry::File(_) => unreachable!("parent changed to a regular file"),
+                Entry::Directory(_dirtype, files) => {
+                    files.insert(filename.into(), DirEntry { kind, inum });
+                }
+            },
+        };
+
+        reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
+
     }
 }

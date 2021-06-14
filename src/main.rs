@@ -51,6 +51,12 @@ fn main() {
             .default_value("true")
         )
         .arg(
+            Arg::with_name("READONLY")
+            .help("Mounted filesystem will be readonly")
+            .long("readonly")
+            .default_value("false")
+        )
+        .arg(
             Arg::with_name("MOUNT")
                 .help("Sets the mountpoint")
                 .required(true)
@@ -82,6 +88,11 @@ fn main() {
         Some("true") | None => true,
         Some("false") => false,
         Some(s) => panic!("Got `--padded {}`; please give either `true` or `false`.", s),
+    };
+    config.read_only = match args.value_of("READONLY") {
+        Some("true") | None => true,
+        Some("false") => false,
+        Some(s) => panic!("Got `--readonly {}`; please give either `true` or `false`.", s),
     };
     let autounmount = args.is_present("AUTOUNMOUNT");
 
@@ -133,13 +144,17 @@ fn main() {
         Box::new(std::io::BufReader::new(file))
     };
 
-    let v = json::parse(reader);
-    let fs = json::fs(config, v);
-
-    let mut options = vec![MountOption::RO, MountOption::FSName(input_source.into())];
+    let mut options = vec![MountOption::FSName(input_source.into())];
     if autounmount {
         options.push(MountOption::AutoUnmount);
     }
+    if config.read_only {
+        options.push(MountOption::RO);
+    }
+
+    let v = json::parse(reader);
+    let fs = json::fs(config, v);
+
     info!("mounting on {:?} with options {:?}", mount_point, options);
     fuser::mount2(fs, mount_point, &options).unwrap();
     info!("unmounted");
