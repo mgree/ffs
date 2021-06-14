@@ -1,5 +1,5 @@
-use fuser::ReplyWrite;
 use fuser::ReplyEmpty;
+use fuser::ReplyWrite;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::time::Duration;
@@ -473,9 +473,9 @@ impl Filesystem for FS {
         };
 
         // make space
-        let extra_bytes = contents.len() as i64 - offset + data.len() as i64;
+        let extra_bytes = (offset + data.len() as i64) - contents.len() as i64;
         if extra_bytes > 0 {
-            contents.resize(extra_bytes as usize, 0);
+            contents.resize(contents.len() + extra_bytes as usize, 0);
         }
 
         // actually write
