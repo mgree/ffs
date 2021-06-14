@@ -25,12 +25,14 @@ esac
 [ "$(cat eyes)" -eq 2 ] || fail eyes
 [ "$(cat fingernails)" -eq 10 ] || fail fingernails
 [ "$(cat human)" = "true" ] || fail human
-touch jokes && fail touch
+touch jokes
+[ -e touch ] && fail touch
 case $(ls) in
     (eyes*fingernails*human*name) ;;
     (*) fail ls2;;
 esac
-mkdir recipes && fail mkdir
+mkdir recipes
+[ -e recipes ] && fail mkdir
 case $(ls) in
     (eyes*fingernails*human*name) ;;
     (*) fail ls3;;
