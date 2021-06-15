@@ -1,3 +1,4 @@
+use fuser::ReplyIoctl;
 use fuser::ReplyCreate;
 use fuser::ReplyEmpty;
 use fuser::ReplyWrite;
@@ -805,6 +806,72 @@ impl Filesystem for FS {
         reply.ok();
     }
 
+    // TODO would be nice but whatever
+    fn fallocate(
+        &mut self,
+        req: &Request<'_>,
+        ino: u64,
+        _fh: u64,
+        offset: i64,
+        length: i64,
+        mode: i32,
+        reply: ReplyEmpty,
+    ) {
+        if offset < 0 || length <= 0 {
+            reply.error(libc::EINVAL);
+            return;
+        }
+
+        if mode != 0 {
+            reply.error(libc::EOPNOTSUPP);
+            return;
+        }
+
+        // access control
+        if !self.check_access(req) {
+            reply.error(libc::EACCES);
+            return;
+        }
+
+        // load the contents
+        let contents = match self.get_mut(ino) {
+            Ok(Inode { entry: Entry::File(contents), .. }) => contents,
+            Ok(Inode { entry: Entry::Directory(..), .. }) => {
+                reply.error(libc::EBADF);
+                return;
+            }
+            Err(_e) => {
+                reply.error(libc::ENODEV);
+                return;
+            }
+        };
+
+        // extend the vector
+        let extra_bytes = (offset + length as i64) - contents.len() as i64;
+        if extra_bytes > 0 {
+            contents.resize(contents.len() + extra_bytes as usize, 0);
+        }
+
+        reply.ok()
+    }
+
+    // TODO
+    fn copy_file_range(
+        &mut self,
+        _req: &Request<'_>,
+        _ino_in: u64,
+        _fh_in: u64,
+        _offset_in: i64,
+        _ino_out: u64,
+        _fh_out: u64,
+        _offset_out: i64,
+        _len: u64,
+        _flags: u32,
+        reply: ReplyWrite
+    ) {
+        reply.error(libc::ENOSYS);
+    }
+
     // TODO
     fn fsync(
         &mut self,
@@ -817,16 +884,17 @@ impl Filesystem for FS {
         reply.error(libc::ENOSYS);
     }
 
-    // TODO would be nice but whatever
-    fn fallocate(
+    // TODO
+    fn ioctl(
         &mut self,
         _req: &Request<'_>,
         _ino: u64,
         _fh: u64,
-        _offset: i64,
-        _length: i64,
-        _mode: i32,
-        reply: ReplyEmpty,
+        _flags: u32,
+        _cmd: u32,
+        _in_data: &[u8],
+        _out_size: u32,
+        reply: ReplyIoctl,
     ) {
         reply.error(libc::ENOSYS);
     }
