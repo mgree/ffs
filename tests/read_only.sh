@@ -13,7 +13,7 @@ fail() {
 
 MNT=$(mktemp -d)
 
-ffs --readonly true "$MNT" ../json/object.json &
+ffs --readonly "$MNT" ../json/object.json &
 PID=$!
 sleep 2
 cd "$MNT"

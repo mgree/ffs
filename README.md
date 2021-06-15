@@ -100,7 +100,7 @@ for examples of external dependency installation.
   + [x] rmdir
   + [x] access
   + [x] create
-  + [ ] fallocate
+  + [x] fallocate
   + [ ] copy_file_range
 - [ ] Output final FS to file at unmount
   + [ ] Choose target

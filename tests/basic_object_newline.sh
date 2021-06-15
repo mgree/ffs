@@ -21,7 +21,7 @@ printf "2\n"                 >"${EXP}/eyes"
 printf "10\n"                >"${EXP}/fingernails"
 printf "true\n"              >"${EXP}/human"
 
-ffs --newline true "$MNT" ../json/object.json &
+ffs --newline "$MNT" ../json/object.json &
 PID=$!
 sleep 2
 cd "$MNT"

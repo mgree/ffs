@@ -42,19 +42,16 @@ fn main() {
             Arg::with_name("NEWLINE")
             .help("Add a newline to the end of values that don't already have them")
             .long("newline")
-            .default_value("false")
         )
         .arg(
-            Arg::with_name("PADDED")
-            .help("Pad the numeric names of list elements with zeroes, for proper sorting (e.g., 00, 01, ..., 09, 10)")
-            .long("padded")
-            .default_value("true")
+            Arg::with_name("UNPADDED")
+            .help("Don't pad the numeric names of list elements with zeroes; will not sort properly")
+            .long("unpadded")
         )
         .arg(
             Arg::with_name("READONLY")
             .help("Mounted filesystem will be readonly")
             .long("readonly")
-            .default_value("false")
         )
         .arg(
             Arg::with_name("MOUNT")
@@ -79,21 +76,9 @@ fn main() {
         .with(fmt_layer)
         .init();
 
-    config.add_newlines = match args.value_of("NEWLINE") {
-        Some("true") | None => true,
-        Some("false") => false,
-        Some(s) => panic!("Got `--newline {}`; please give either `true` or `false`.", s),
-    };
-    config.pad_element_names = match args.value_of("PADDED") {
-        Some("true") | None => true,
-        Some("false") => false,
-        Some(s) => panic!("Got `--padded {}`; please give either `true` or `false`.", s),
-    };
-    config.read_only = match args.value_of("READONLY") {
-        Some("true") | None => true,
-        Some("false") => false,
-        Some(s) => panic!("Got `--readonly {}`; please give either `true` or `false`.", s),
-    };
+    config.add_newlines = args.is_present("NEWLINE");
+    config.pad_element_names = !args.is_present("UNPADDED");
+    config.read_only = args.is_present("READONLY");
     let autounmount = args.is_present("AUTOUNMOUNT");
 
     // TODO 2021-06-08 infer and create mountpoint from filename as possible

@@ -13,7 +13,7 @@ fail() {
 
 MNT=$(mktemp -d)
 
-ffs --padded false "$MNT" ../json/list2.json &
+ffs --unpadded "$MNT" ../json/list2.json &
 PID=$!
 sleep 2
 cd "$MNT"
