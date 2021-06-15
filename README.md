@@ -100,7 +100,7 @@ for examples of external dependency installation.
   + [x] rmdir
   + [ ] fsync
   + [ ] fallocate
-  + [ ] access
+  + [x] access
   + [ ] create
   + [ ] copy_file_range
 - [ ] Output final FS to file at unmount
@@ -109,3 +109,7 @@ for examples of external dependency installation.
   + [ ] TOML
   + [ ] XML
   + [ ] Generic framework (detect/parse/unparse)
+- [ ] Missing tests
+  + [ ] access
+  + [ ] multi-user stuff
+  + [ ] error code coverage

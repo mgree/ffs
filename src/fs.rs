@@ -165,7 +165,20 @@ impl Entry {
 
 impl Filesystem for FS {
     fn destroy(&mut self, _req: &Request) {
-        debug!("{:?}", self);
+        debug!("{:?}", self.inodes);
+    }
+
+    fn access(&mut self, req: &Request, inode: u64, _mask: i32, reply: ReplyEmpty) {
+        match self.get(inode) {
+            Ok(_) => {
+                if self.check_access(req) {
+                    reply.ok()
+                } else {
+                    reply.error(libc::EACCES)
+                }
+            }
+            Err(_) => reply.error(libc::ENOENT),
+        }
     }
 
     fn lookup(&mut self, _req: &Request, parent: u64, name: &OsStr, reply: ReplyEntry) {

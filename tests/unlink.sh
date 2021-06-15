@@ -35,7 +35,7 @@ case $(ls) in
     (eyes*fingernails*human*name) ;;
     (*) fail ls3;;
 esac
-[ "$(cat human)" = "true" ] || fail human2
+[ "$(cat human)" = "false" ] || fail human2
 cd - >/dev/null 2>&1
 umount "$MNT" || fail unmount
 sleep 1
