@@ -106,15 +106,19 @@ impl FS {
         }
     }
 
+    fn mode(&self, kind: FileType) -> u16 {
+        if kind == FileType::Directory {
+            self.config.dirmode
+        } else {
+            self.config.filemode
+        }
+    }
+
     pub fn attr(&self, inode: &Inode) -> FileAttr {
         let size = inode.entry.size();
         let kind = inode.entry.kind();
 
-        let perm = if kind == FileType::Directory {
-            0o755
-        } else {
-            0o644
-        };
+        let perm = self.mode(kind);
 
         let nlink: u32 = match &inode.entry {
             Entry::Directory(_, files) => {

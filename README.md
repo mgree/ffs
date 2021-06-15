@@ -85,7 +85,7 @@ for examples of external dependency installation.
 # TODO
 
 - [x] `ListDirectory` (need element names, otherwise basically the same)
-- [ ] Settable mode
+- [x] Settable mode
 - [ ] Filenames
   + [x] Check on validity of filenames/fieldnames
   + [ ] Options for naming of ListDirectory elements

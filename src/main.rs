@@ -39,6 +39,20 @@ fn main() {
                 .takes_value(true),
         )
         .arg(
+            Arg::with_name("FILEMODE")
+            .help("Sets the default mode of files (parsed as octal; defaults to 644; if unspecified, directories will have this mode with execute bits set when read bits are set)")
+            .long("mode")
+            .takes_value(true)
+            .default_value("644")
+        )
+        .arg(
+            Arg::with_name("DIRMODE")
+            .help("Sets the default mode of directories (parsed as octal; defaults to 755; )")
+            .long("dirmode")
+            .takes_value(true)
+            .default_value("755")
+        )
+        .arg(
             Arg::with_name("NEWLINE")
             .help("Add a newline to the end of values that don't already have them")
             .long("newline")
@@ -79,6 +93,46 @@ fn main() {
     config.add_newlines = args.is_present("NEWLINE");
     config.pad_element_names = !args.is_present("UNPADDED");
     config.read_only = args.is_present("READONLY");
+    config.filemode = match u16::from_str_radix(args.value_of("FILEMODE").unwrap(), 8) {
+        Ok(filemode) => filemode,
+        Err(e) => {
+            error!(
+                "Couldn't parse `--mode {}`: {}.",
+                args.value_of("FILEMODE").unwrap(),
+                e
+            );
+            std::process::exit(1)
+        }
+    };
+    if args.occurrences_of("FILEMODE") > 0 && args.occurrences_of("DIRMODE") == 0 {
+        // wherever a read bit is set, the dirmode should have an execute bit, too
+        config.dirmode = config.filemode;
+
+        if config.dirmode & 0o400 != 0 {
+            config.dirmode |= 0o100;
+        }
+
+        if config.dirmode & 0o040 != 0 {
+            config.dirmode |= 0o010;
+        }
+
+        if config.dirmode & 0o004 != 0 {
+            config.dirmode |= 0o001;
+        }
+    } else {
+        config.dirmode = match u16::from_str_radix(args.value_of("DIRMODE").unwrap(), 8) {
+            Ok(filemode) => filemode,
+            Err(e) => {
+                error!(
+                    "Couldn't parse `--dirmode {}`: {}.",
+                    args.value_of("DIRMODE").unwrap(),
+                    e
+                );
+                std::process::exit(1)
+            }
+        };
+    }
+
     let autounmount = args.is_present("AUTOUNMOUNT");
 
     // TODO 2021-06-08 infer and create mountpoint from filename as possible
