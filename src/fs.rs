@@ -194,7 +194,7 @@ impl Filesystem for FS {
                 } else {
                     mask -= mask & mode;
                 }
-                
+
                 if mask == 0 {
                     reply.ok();
                 } else {
@@ -679,7 +679,6 @@ impl Filesystem for FS {
         reply.ok();
     }
 
-    // TODO
     fn rename(
         &mut self,
         req: &Request<'_>,
