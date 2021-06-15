@@ -100,11 +100,11 @@ for examples of external dependency installation.
   + [x] rmdir
   + [x] access
   + [x] create
-  + [ ] fsync
   + [ ] fallocate
   + [ ] copy_file_range
 - [ ] Output final FS to file at unmount
   + [ ] Choose target
+  + [ ] fsync
 - [ ] Other formats
   + [ ] TOML
   + [ ] XML
