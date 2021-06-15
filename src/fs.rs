@@ -515,21 +515,117 @@ impl Filesystem for FS {
                 reply.error(libc::ENOENT);
                 return;
             }
-            Ok(Inode { entry: Entry::Directory(_dirtype, files), .. }) => {
-                files
-            } 
-            Ok(Inode { entry: Entry::File(_), .. }) => { 
+            Ok(Inode {
+                entry: Entry::Directory(_dirtype, files),
+                ..
+            }) => files,
+            Ok(Inode {
+                entry: Entry::File(_),
+                ..
+            }) => {
                 reply.error(libc::ENOTDIR);
                 return;
             }
         };
 
-        // try to remove it
-        if files.remove(filename).is_some() {
-            reply.ok();
-        } else {
-            reply.error(libc::ENOENT);
+        // ensure it's a regular file
+        match files.get(filename) {
+            Some(DirEntry {
+                kind: FileType::RegularFile,
+                ..
+            }) => (),
+            _ => {
+                reply.error(libc::EPERM);
+                return;
+            }
         }
+
+        // try to remove it
+        let res = files.remove(filename);
+        assert!(res.is_some());
+        reply.ok();
+    }
+
+    fn rmdir(&mut self, req: &Request<'_>, parent: u64, name: &OsStr, reply: ReplyEmpty) {
+        // access control
+        if !self.check_access(req) {
+            reply.error(libc::EACCES);
+            return;
+        }
+
+        // get the filename
+        let filename = match name.to_str() {
+            None => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Some(name) => name,
+        };
+
+        // find the parent
+        let files = match self.get(parent) {
+            Err(_e) => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Ok(Inode {
+                entry: Entry::Directory(_dirtype, files),
+                ..
+            }) => files,
+            Ok(Inode {
+                entry: Entry::File(_),
+                ..
+            }) => {
+                reply.error(libc::ENOTDIR);
+                return;
+            }
+        };
+
+        // find the actual directory being deleted
+        let inum = match files.get(filename) {
+            Some(DirEntry {
+                kind: FileType::Directory,
+                inum,
+            }) => inum,
+            Some(_) => {
+                reply.error(libc::ENOTDIR);
+                return;
+            }
+            None => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+        };
+
+        // make sure it's empty
+        match self.get(*inum) {
+            Ok(Inode {
+                entry: Entry::Directory(_, dir_files),
+                ..
+            }) => {
+                if !dir_files.is_empty() {
+                    reply.error(libc::ENOTEMPTY);
+                    return;
+                }
+            }
+            Ok(_) => unreachable!("mismatched metadata on inode {} in parent {}", inum, parent),
+            _ => unreachable!("couldn't find inode {} in parent {}", inum, parent),
+        };
+
+        // find the parent again, mutably
+        let files = match self.get_mut(parent) {
+            Ok(Inode {
+                entry: Entry::Directory(_dirtype, files),
+                ..
+            }) => files,
+            Ok(_) => unreachable!("parent changed to a regular file"),
+            Err(_) => unreachable!("error finding parent again"),
+        };
+
+        // try to remove it
+        let res = files.remove(filename);
+        assert!(res.is_some());
+        reply.ok();
     }
 
     // TODO
