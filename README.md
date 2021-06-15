@@ -96,12 +96,12 @@ for examples of external dependency installation.
   + [ ] Clean stderr output for `error!` and `warn!`
   + [ ] Quiet mode
 - [ ] Writable FS
-  + [ ] rename
+  + [x] rename
   + [x] rmdir
-  + [ ] fsync
-  + [ ] fallocate
   + [x] access
   + [x] create
+  + [ ] fsync
+  + [ ] fallocate
   + [ ] copy_file_range
 - [ ] Output final FS to file at unmount
   + [ ] Choose target
