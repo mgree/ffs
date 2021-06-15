@@ -1,3 +1,4 @@
+use fuser::ReplyCreate;
 use fuser::ReplyEmpty;
 use fuser::ReplyWrite;
 use std::collections::HashMap;
@@ -75,7 +76,7 @@ impl FS {
     }
 
     fn check_access(&self, req: &Request) -> bool {
-        req.uid() == self.config.uid && req.gid() == self.config.gid
+        req.uid() == self.config.uid
     }
 
     fn get(&self, inum: u64) -> Result<&Inode, FSError> {
@@ -168,13 +169,36 @@ impl Filesystem for FS {
         debug!("{:?}", self.inodes);
     }
 
-    fn access(&mut self, req: &Request, inode: u64, _mask: i32, reply: ReplyEmpty) {
+    fn access(&mut self, req: &Request, inode: u64, mut mask: i32, reply: ReplyEmpty) {
+        if mask == libc::F_OK {
+            reply.ok();
+            return;
+        }
+
         match self.get(inode) {
-            Ok(_) => {
-                if self.check_access(req) {
-                    reply.ok()
+            Ok(inode) => {
+                // cribbed from https://github.com/cberner/fuser/blob/4639a490f4aa7dfe8a342069a761d4cf2bd8f821/examples/simple.rs#L1703-L1736
+                let attr = self.attr(inode);
+                let mode = attr.perm as i32;
+
+                if req.uid() == 0 {
+                    // root only allowed to exec if one of the X bits is set
+                    mask &= libc::X_OK;
+                    mask -= mask & (mode >> 6);
+                    mask -= mask & (mode >> 3);
+                    mask -= mask & mode;
+                } else if req.uid() == self.config.uid {
+                    mask -= mask & (mode >> 6);
+                } else if req.gid() == self.config.gid {
+                    mask -= mask & (mode >> 3);
                 } else {
-                    reply.error(libc::EACCES)
+                    mask -= mask & mode;
+                }
+                
+                if mask == 0 {
+                    reply.ok();
+                } else {
+                    reply.error(libc::EACCES);
                 }
             }
             Err(_) => reply.error(libc::ENOENT),
@@ -300,6 +324,20 @@ impl Filesystem for FS {
                 reply.ok()
             }
         }
+    }
+
+    fn create(
+        &mut self,
+        _req: &Request<'_>,
+        _parent: u64,
+        _name: &OsStr,
+        _mode: u32,
+        _umask: u32,
+        _flags: i32,
+        reply: ReplyCreate,
+    ) {
+        // force the system to use mknod and open
+        reply.error(libc::ENOSYS);
     }
 
     fn mknod(
@@ -644,15 +682,128 @@ impl Filesystem for FS {
     // TODO
     fn rename(
         &mut self,
-        _req: &Request<'_>,
-        _parent: u64,
-        _name: &OsStr,
-        _newparent: u64,
-        _newname: &OsStr,
-        _flags: u32,
+        req: &Request<'_>,
+        parent: u64,
+        name: &OsStr,
+        newparent: u64,
+        newname: &OsStr,
+        _flags: u32, // TODO 2021-06-14 support RENAME_ flags
         reply: ReplyEmpty,
     ) {
-        reply.error(libc::ENOSYS);
+        // access control
+        if !self.check_access(req) {
+            reply.error(libc::EACCES);
+            return;
+        }
+
+        let src = match name.to_str() {
+            None => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Some(name) => name,
+        };
+
+        if src == "." || src == ".." {
+            reply.error(libc::EINVAL);
+            return;
+        }
+
+        let tgt = match newname.to_str() {
+            None => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Some(name) => name,
+        };
+
+        // make sure src exists
+        let (src_kind, src_inum) = match self.get(parent) {
+            Ok(Inode {
+                entry: Entry::Directory(_kind, files),
+                ..
+            }) => match files.get(src) {
+                Some(DirEntry { kind, inum }) => (*kind, *inum),
+                None => {
+                    reply.error(libc::ENOENT);
+                    return;
+                }
+            },
+            _ => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+        };
+        // determine whether tgt exists
+        let tgt_info = match self.get(newparent) {
+            Ok(Inode {
+                entry: Entry::Directory(_kind, files),
+                ..
+            }) => match files.get(tgt) {
+                Some(DirEntry { kind, inum }) => {
+                    if src_kind != *kind {
+                        reply.error(libc::ENOTDIR);
+                        return;
+                    }
+                    Some((*kind, *inum))
+                }
+                None => None,
+            },
+            _ => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+        };
+
+        // if tgt exists and is a directory, make sure it's empty
+        if let Some((FileType::Directory, tgt_inum)) = tgt_info {
+            match self.get(tgt_inum) {
+                Ok(Inode {
+                    entry: Entry::Directory(_type, files),
+                    ..
+                }) => {
+                    if !files.is_empty() {
+                        reply.error(libc::ENOTEMPTY);
+                        return;
+                    }
+                }
+                _ => unreachable!("bad metadata on inode {} in {}", tgt_inum, newparent),
+            }
+        }
+        // remove src from parent
+        match self.get_mut(parent) {
+            Ok(Inode {
+                entry: Entry::Directory(_kind, files),
+                ..
+            }) => files.remove(src),
+            _ => unreachable!("parent changed"),
+        };
+
+        // add src as tgt to newparent
+        match self.get_mut(newparent) {
+            Ok(Inode {
+                entry: Entry::Directory(_kind, files),
+                ..
+            }) => files.insert(
+                tgt.into(),
+                DirEntry {
+                    kind: src_kind,
+                    inum: src_inum,
+                },
+            ),
+            _ => unreachable!("parent changed"),
+        };
+
+        // set src's parent inode
+        match self.get_mut(src_inum) {
+            Ok(inode) => inode.parent = newparent,
+            Err(_) => unreachable!(
+                "missing inode {} moved from {} to {}",
+                src_inum, parent, newparent
+            ),
+        }
+
+        reply.ok();
     }
 
     // TODO

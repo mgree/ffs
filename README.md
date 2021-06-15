@@ -101,7 +101,7 @@ for examples of external dependency installation.
   + [ ] fsync
   + [ ] fallocate
   + [x] access
-  + [ ] create
+  + [x] create
   + [ ] copy_file_range
 - [ ] Output final FS to file at unmount
   + [ ] Choose target
