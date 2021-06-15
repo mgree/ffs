@@ -81,35 +81,3 @@ You need an appropriate [FUSE](https://github.com/libfuse/libfuse) or
 See [the GitHub build
 workflow](https://github.com/mgree/ffs/blob/main/.github/workflows/build.yml)
 for examples of external dependency installation.
-
-# TODO
-
-- [x] `ListDirectory` (need element names, otherwise basically the same)
-- [x] Settable mode
-- [ ] Filenames
-  + [x] Check on validity of filenames/fieldnames
-  + [ ] Options for naming of ListDirectory elements
-  + [ ] Metadata (as extensions or as dotfiles)
-- [x] Debugging/logging
-  + [ ] Instrument all `Filesystem` trait methods
-  + [ ] Timing
-  + [ ] Clean stderr output for `error!` and `warn!`
-  + [ ] Quiet mode
-- [ ] Writable FS
-  + [x] rename
-  + [x] rmdir
-  + [x] access
-  + [x] create
-  + [x] fallocate
-  + [ ] copy_file_range
-- [ ] Output final FS to file at unmount
-  + [ ] Choose target
-  + [ ] fsync
-- [ ] Other formats
-  + [ ] TOML
-  + [ ] XML
-  + [ ] Generic framework (detect/parse/unparse)
-- [ ] Missing tests
-  + [ ] access
-  + [ ] multi-user stuff
-  + [ ] error code coverage
