@@ -13,31 +13,33 @@ fail() {
     exit 1
 }
 
+gcc -o fsync fsync.c || fail gcc
+
 MNT=$(mktemp -d)
 TGT=$(mktemp)
-TGT2=$(mktemp)
 
-ffs "$MNT" ../json/object.json >"$TGT" &
+ffs -o "$TGT" "$MNT" ../json/object.json &
 PID=$!
 sleep 2
 mkdir "$MNT"/pockets
 echo keys >"$MNT"/pockets/pants
 echo pen >"$MNT"/pockets/shirt
-cd - >/dev/null 2>&1
+./fsync "$MNT"
+cat "$TGT"
+stat "$TGT"
+[ -f "$TGT" ] || fail output1
+[ -s "$TGT" ] || fail output2
+
 umount "$MNT" || fail unmount1    
 sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process1
 
 # easiest to just test using ffs, but would be cool to get outside validation
-[ -f "$TGT" ] || fail output1
-if [ "$RUNNER_OS" = "Linux" ]
-then
-    echo "ABORTING TEST, currently broken on Linux (see https://github.com/cberner/fuser/issues/153)"
-    exit 0
-fi
-[ -s "$TGT" ] || fail output2
-cat "$TGT"
-stat "$TGT"
+#if [ "$RUNNER_OS" = "Linux" ]
+#then
+#    echo "ABORTING TEST, currently broken on Linux (see https://github.com/cberner/fuser/issues/153)"
+#    exit 0
+#fi
 ffs --no-output "$MNT" "$TGT" >"$TGT2" &
 PID=$!
 sleep 2
@@ -61,10 +63,6 @@ esac
 umount "$MNT" || fail unmount2
 sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process2
-
-stat "$TGT2"
-[ -f "$TGT2" ] || fail tgt2
-[ -s "$TGT2" ] && fail tgt2_nonemptty
 
 rmdir "$MNT" || fail mount
 rm "$TGT"

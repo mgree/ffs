@@ -879,6 +879,18 @@ impl Filesystem for FS {
         reply.ok()
     }
 
+    fn fsync(
+        &mut self,
+        _req: &Request<'_>,
+        _ino: u64,
+        _fh: u64,
+        _datasync: bool,
+        reply: ReplyEmpty,
+    ) {
+        self.sync();
+        reply.ok();
+    }
+
     // TODO
     fn copy_file_range(
         &mut self,
@@ -892,18 +904,6 @@ impl Filesystem for FS {
         _len: u64,
         _flags: u32,
         reply: ReplyWrite,
-    ) {
-        reply.error(libc::ENOSYS);
-    }
-
-    // TODO
-    fn fsync(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
-        _datasync: bool,
-        reply: ReplyEmpty,
     ) {
         reply.error(libc::ENOSYS);
     }
