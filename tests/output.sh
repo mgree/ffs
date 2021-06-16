@@ -32,7 +32,7 @@ kill -0 $PID >/dev/null 2>&1 && fail process1
 [ -f "$TGT" ] || fail output1
 if [ "$RUNNER_OS" = "Linux" ]
 then
-    echo ABORTING TEST, currently broken on Linux (see https://github.com/cberner/fuser/issues/153)
+    echo "ABORTING TEST, currently broken on Linux (see https://github.com/cberner/fuser/issues/153)"
     exit 0
 fi
 [ -s "$TGT" ] || fail output2
