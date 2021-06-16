@@ -157,6 +157,7 @@ pub fn load_fs(config: Config, v: Value) -> FS {
 pub fn save_fs(fs: &FS) {
     let writer : Box<dyn std::io::Write> = match &fs.config.output {
         Output::Stdout => {
+            debug!("outputting on STDOUT");
             Box::new(std::io::stdout())
         }
         Output::File(path) => {
@@ -170,6 +171,7 @@ pub fn save_fs(fs: &FS) {
     };
 
     let v = value_from_fs(fs, fuser::FUSE_ROOT_ID);
+    debug!("outputting {}", v);
     serde_json::to_writer(writer, &v).unwrap();
 }
 
