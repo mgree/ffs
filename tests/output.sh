@@ -24,7 +24,12 @@ mkdir "$MNT"/pockets
 echo keys >"$MNT"/pockets/pants
 echo pen >"$MNT"/pockets/shirt
 cd - >/dev/null 2>&1
-umount "$MNT" || fail unmount1
+if [ "$RUNNER_OS" = "Linux" ]
+then
+    fusemount -u "$MNT" || fail unmount1
+else
+    umount "$MNT" || fail unmount1    
+fi
 sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process1
 
