@@ -31,6 +31,7 @@ kill -0 $PID >/dev/null 2>&1 && fail process1
 # easiest to just test using ffs, but would be cool to get outside validation
 [ -f "$TGT" ] || fail output1
 cat "$TGT"
+stat "$TGT"
 ffs --no-output "$MNT" "$TGT" >"$TGT2" &
 PID=$!
 sleep 2

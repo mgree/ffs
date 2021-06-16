@@ -183,7 +183,9 @@ impl Entry {
 
 impl Filesystem for FS {
     fn destroy(&mut self, _req: &Request) {
+        debug!("calling sync");
         self.sync();
+        debug!("done syncing");
     }
 
     fn access(&mut self, req: &Request, inode: u64, mut mask: i32, reply: ReplyEmpty) {
