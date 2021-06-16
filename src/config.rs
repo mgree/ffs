@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 #[derive(Debug)]
 pub struct Config {
     pub timestamp: std::time::SystemTime,
@@ -8,6 +10,14 @@ pub struct Config {
     pub add_newlines: bool,
     pub pad_element_names: bool,
     pub read_only: bool,
+    pub output: Output,
+}
+
+#[derive(Debug)]
+pub enum Output {
+    Quiet,
+    Stdout,
+    File(PathBuf),
 }
 
 impl Config {
@@ -41,6 +51,7 @@ impl Default for Config {
             add_newlines: false,
             pad_element_names: true,
             read_only: false,
+            output: Output::Stdout,
         }
     }
 }

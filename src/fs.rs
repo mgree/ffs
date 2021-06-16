@@ -1,6 +1,6 @@
-use fuser::ReplyIoctl;
 use fuser::ReplyCreate;
 use fuser::ReplyEmpty;
+use fuser::ReplyIoctl;
 use fuser::ReplyWrite;
 use std::collections::HashMap;
 use std::ffi::OsStr;
@@ -10,9 +10,11 @@ use fuser::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyData, ReplyDirectory, ReplyEntry, Request,
 };
 
-use tracing::{debug, warn};
+use tracing::{debug, instrument, warn};
 
 use super::config::Config;
+
+use super::json;
 
 /// A filesystem `FS` is just a vector of nullable inodes, where the index is
 /// the inode number.
@@ -80,7 +82,7 @@ impl FS {
         req.uid() == self.config.uid
     }
 
-    fn get(&self, inum: u64) -> Result<&Inode, FSError> {
+    pub fn get(&self, inum: u64) -> Result<&Inode, FSError> {
         let idx = inum as usize;
 
         if idx >= self.inodes.len() {
@@ -148,6 +150,16 @@ impl FS {
             flags: 0, // weird macOS thing
         }
     }
+
+    /// Syncs the FS with its on-disk representation
+    /// 
+    /// TODO 2021-06-16 need some reference to the output format to do the right thing
+    #[instrument(level = "debug", skip(self))]
+    pub fn sync(&self) {
+        debug!("{:?}", self.inodes);
+
+        json::save_fs(self);
+    }
 }
 
 impl Entry {
@@ -171,7 +183,7 @@ impl Entry {
 
 impl Filesystem for FS {
     fn destroy(&mut self, _req: &Request) {
-        debug!("{:?}", self.inodes);
+        self.sync();
     }
 
     fn access(&mut self, req: &Request, inode: u64, mut mask: i32, reply: ReplyEmpty) {
@@ -839,8 +851,14 @@ impl Filesystem for FS {
 
         // load the contents
         let contents = match self.get_mut(ino) {
-            Ok(Inode { entry: Entry::File(contents), .. }) => contents,
-            Ok(Inode { entry: Entry::Directory(..), .. }) => {
+            Ok(Inode {
+                entry: Entry::File(contents),
+                ..
+            }) => contents,
+            Ok(Inode {
+                entry: Entry::Directory(..),
+                ..
+            }) => {
                 reply.error(libc::EBADF);
                 return;
             }
@@ -871,7 +889,7 @@ impl Filesystem for FS {
         _offset_out: i64,
         _len: u64,
         _flags: u32,
-        reply: ReplyWrite
+        reply: ReplyWrite,
     ) {
         reply.error(libc::ENOSYS);
     }

@@ -1,4 +1,5 @@
 use std::path::Path;
+use std::path::PathBuf;
 
 use clap::{App, Arg};
 
@@ -10,7 +11,7 @@ mod config;
 mod fs;
 mod json;
 
-use config::Config;
+use config::{Config, Output};
 
 use fuser::MountOption;
 
@@ -68,6 +69,27 @@ fn main() {
             .long("readonly")
         )
         .arg(
+            Arg::with_name("OUTPUT")
+                .help("Sets the output file for saving changes (defaults to stdout)")
+                .long("output")
+                .short("o")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::with_name("NOOUTPUT")
+                .help("Disables output")
+                .long("no-output")
+                .overrides_with("OUTPUT")
+        )
+        .arg(
+            Arg::with_name("INPLACE")
+                .help("Writes the output back over the input file")
+                .long("in-place")
+                .short("i")
+                .overrides_with("OUTPUT")            
+                .overrides_with("NOOUTPUT")
+        )
+        .arg(
             Arg::with_name("MOUNT")
                 .help("Sets the mountpoint")
                 .required(true)
@@ -84,7 +106,7 @@ fn main() {
     let mut config = Config::default();
 
     let filter_layer = LevelFilter::DEBUG;
-    let fmt_layer = fmt::layer();
+    let fmt_layer = fmt::layer().with_writer(std::io::stderr);
     tracing_subscriber::registry()
         .with(filter_layer)
         .with(fmt_layer)
@@ -172,7 +194,21 @@ fn main() {
     }
 
     let input_source = args.value_of("INPUT").expect("input source");
-
+    config.output = if let Some(output) = args.value_of("OUTPUT") {
+        Output::File(PathBuf::from(output))
+    } else if args.is_present("NOOUTPUT") {
+        Output::Quiet
+    } else if args.is_present("INPLACE"){
+        if input_source == "-" {
+            warn!("In-place output `-i` with STDIN input makes no sense; outputting on STDOUT.");
+            Output::Stdout
+        } else {
+            Output::File(PathBuf::from(input_source))            
+        }
+    } else {
+        Output::Stdout
+    };
+    
     let reader: Box<dyn std::io::BufRead> = if input_source == "-" {
         Box::new(std::io::BufReader::new(std::io::stdin()))
     } else {
@@ -192,7 +228,7 @@ fn main() {
     }
 
     let v = json::parse(reader);
-    let fs = json::fs(config, v);
+    let fs = json::load_fs(config, v);
 
     info!("mounting on {:?} with options {:?}", mount_point, options);
     fuser::mount2(fs, mount_point, &options).unwrap();
