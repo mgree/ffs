@@ -26,7 +26,7 @@ echo pen >"$MNT"/pockets/shirt
 cd - >/dev/null 2>&1
 if [ "$RUNNER_OS" = "Linux" ]
 then
-    fusermount -u "$MNT" || fail unmount1
+    kill $PID
 else
     umount "$MNT" || fail unmount1    
 fi
