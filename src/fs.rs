@@ -6,8 +6,11 @@ use std::time::{Duration, SystemTime};
 use fuser::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyBmap, ReplyCreate, ReplyData, ReplyDirectory,
     ReplyDirectoryPlus, ReplyEmpty, ReplyEntry, ReplyIoctl, ReplyLock, ReplyLseek, ReplyOpen,
-    ReplyStatfs, ReplyWrite, ReplyXTimes, ReplyXattr, Request, TimeOrNow,
+    ReplyStatfs, ReplyWrite, ReplyXattr, Request, TimeOrNow,
 };
+
+#[cfg(target_os = "macos")]
+use fuser::{ReplyXTimes};
 
 use tracing::{debug, instrument, warn};
 
