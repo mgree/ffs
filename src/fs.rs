@@ -1,3 +1,4 @@
+use std::cell::Cell;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::Path;
@@ -28,6 +29,10 @@ pub struct FS {
     pub inodes: Vec<Option<Inode>>,
     /// Configuration, which determines various file attributes.
     pub config: Config,
+    /// Dirty bit: set to `true` when there are outstanding writes
+    dirty: Cell<bool>,
+    /// Synced bit: set to `true` if syncing has _ever_ happened
+    synced: Cell<bool>,
 }
 
 /// Default TTL on information passed to the OS, which caches responses.
@@ -68,7 +73,18 @@ pub enum FSError {
 }
 
 impl FS {
+    pub fn new(inodes: Vec<Option<Inode>>, config: Config) -> Self {
+        FS {
+            inodes,
+            config,
+            dirty: Cell::new(false),
+            synced: Cell::new(false),
+        }
+    }
+
     fn fresh_inode(&mut self, parent: u64, entry: Entry) -> u64 {
+        self.dirty.set(true);
+
         let inum = self.inodes.len() as u64;
 
         self.inodes.push(Some(Inode {
@@ -156,12 +172,16 @@ impl FS {
     /// Syncs the FS with its on-disk representation
     ///
     /// TODO 2021-06-16 need some reference to the output format to do the right thing
-    #[instrument(level = "debug", skip(self))]
+    #[instrument(level = "debug", skip(self), fields(synced = self.dirty.get(), dirty = self.dirty.get()))]
     pub fn sync(&self) {
         info!("called");
         debug!("{:?}", self.inodes);
-
+        if !self.synced.get() && !self.dirty.get() {
+            info!("skipping sync; already synced and not dirty");
+        }
         json::save_fs(self);
+        self.dirty.set(false);
+        self.synced.set(true);
     }
 }
 
@@ -184,8 +204,15 @@ impl Entry {
     }
 }
 
+impl Drop for FS {
+    #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
+    fn drop(&mut self) {
+        self.sync();
+    }
+}
+
 impl Filesystem for FS {
-    #[instrument(level = "debug", skip(self, _req))]
+    #[instrument(level = "debug", skip(self, _req), fields(dirty = self.dirty.get()))]
     fn destroy(&mut self, _req: &Request) {
         info!("called");
         self.sync();
@@ -453,7 +480,7 @@ impl Filesystem for FS {
             )
         };
 
-        // allocate the inode
+        // allocate the inode (sets dirty bit)
         let inum = self.fresh_inode(parent, entry);
 
         // update the parent
@@ -468,6 +495,7 @@ impl Filesystem for FS {
             },
         };
 
+        assert!(self.dirty.get());
         reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
     }
 
@@ -524,7 +552,7 @@ impl Filesystem for FS {
         let entry = Entry::Directory(DirType::Named, HashMap::new());
         let kind = FileType::Directory;
 
-        // allocate the inode
+        // allocate the inode (sets dirty bit)
         let inum = self.fresh_inode(parent, entry);
 
         // update the parent
@@ -539,6 +567,7 @@ impl Filesystem for FS {
             },
         };
 
+        assert!(self.dirty.get());
         reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
     }
 
@@ -592,6 +621,7 @@ impl Filesystem for FS {
         // actually write
         let offset = offset as usize;
         contents[offset..offset + data.len()].copy_from_slice(data);
+        self.dirty.set(true);
 
         reply.written(data.len() as u32);
     }
@@ -649,6 +679,7 @@ impl Filesystem for FS {
         // try to remove it
         let res = files.remove(filename);
         assert!(res.is_some());
+        self.dirty.set(true);
         reply.ok();
     }
 
@@ -734,6 +765,7 @@ impl Filesystem for FS {
         // try to remove it
         let res = files.remove(filename);
         assert!(res.is_some());
+        self.dirty.set(true);
         reply.ok();
     }
 
@@ -863,6 +895,7 @@ impl Filesystem for FS {
             ),
         }
 
+        self.dirty.set(true);
         reply.ok();
     }
 
@@ -920,6 +953,7 @@ impl Filesystem for FS {
             contents.resize(contents.len() + extra_bytes as usize, 0);
         }
 
+        self.dirty.set(true);
         reply.ok()
     }
 

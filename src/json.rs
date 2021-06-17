@@ -150,12 +150,12 @@ pub fn load_fs(config: Config, v: Value) -> FS {
     }
     assert_eq!(inodes.len() as u64, next_id);
 
-    FS { inodes, config }
+    FS::new(inodes, config)
 }
 
 #[instrument(level = "info", skip(fs))]
 pub fn save_fs(fs: &FS) {
-    let writer : Box<dyn std::io::Write> = match &fs.config.output {
+    let writer: Box<dyn std::io::Write> = match &fs.config.output {
         Output::Stdout => {
             debug!("outputting on STDOUT");
             Box::new(std::io::stdout())
