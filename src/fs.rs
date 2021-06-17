@@ -215,7 +215,7 @@ impl Filesystem for FS {
     #[instrument(level = "debug", skip(self, _req), fields(dirty = self.dirty.get()))]
     fn destroy(&mut self, _req: &Request) {
         info!("called");
-        self.sync();
+//        self.sync();
         debug!("done syncing");
     }
 
@@ -967,10 +967,7 @@ impl Filesystem for FS {
         reply: ReplyEmpty,
     ) {
         info!("called");
-
-        // TODO 2021-06-16 not really what fsync is meant to mean (it's per inode)
-        self.sync();
-        reply.ok();
+        reply.error(libc::ENOSYS);
     }
 
     // TODO
