@@ -10,9 +10,9 @@ use fuser::{
 };
 
 #[cfg(target_os = "macos")]
-use fuser::{ReplyXTimes};
+use fuser::ReplyXTimes;
 
-use tracing::{debug, instrument, warn};
+use tracing::{debug, info, instrument, warn};
 
 use super::config::Config;
 
@@ -158,6 +158,7 @@ impl FS {
     /// TODO 2021-06-16 need some reference to the output format to do the right thing
     #[instrument(level = "debug", skip(self))]
     pub fn sync(&self) {
+        info!("called");
         debug!("{:?}", self.inodes);
 
         json::save_fs(self);
@@ -184,20 +185,22 @@ impl Entry {
 }
 
 impl Filesystem for FS {
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req))]
     fn destroy(&mut self, _req: &Request) {
-        debug!("calling sync");
+        info!("called");
         self.sync();
         debug!("done syncing");
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn statfs(&mut self, _req: &Request<'_>, _ino: u64, reply: ReplyStatfs) {
+        info!("called");
         reply.statfs(0, 0, 0, 0, 0, 1, 255, 0);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, req, reply))]
     fn access(&mut self, req: &Request, inode: u64, mut mask: i32, reply: ReplyEmpty) {
+        info!("called");
         if mask == libc::F_OK {
             reply.ok();
             return;
@@ -233,8 +236,9 @@ impl Filesystem for FS {
         }
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn lookup(&mut self, _req: &Request, parent: u64, name: &OsStr, reply: ReplyEntry) {
+        info!("called");
         let dir = match self.get(parent) {
             Err(_e) => {
                 reply.error(libc::ENOENT);
@@ -274,8 +278,9 @@ impl Filesystem for FS {
         }
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn getattr(&mut self, _req: &Request, ino: u64, reply: ReplyAttr) {
+        info!("called");
         let file = match self.get(ino) {
             Err(_e) => {
                 reply.error(libc::ENOENT);
@@ -287,7 +292,7 @@ impl Filesystem for FS {
         reply.attr(&TTL, &self.attr(file));
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn read(
         &mut self,
         _req: &Request,
@@ -299,6 +304,7 @@ impl Filesystem for FS {
         _lock: Option<u64>,
         reply: ReplyData,
     ) {
+        info!("called");
         let file = match self.get(ino) {
             Err(_e) => {
                 reply.error(libc::ENOENT);
@@ -313,7 +319,7 @@ impl Filesystem for FS {
         }
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn readdir(
         &mut self,
         _req: &Request,
@@ -322,6 +328,8 @@ impl Filesystem for FS {
         offset: i64,
         mut reply: ReplyDirectory,
     ) {
+        info!("called");
+
         let inode = match self.get(ino) {
             Err(_e) => {
                 reply.error(libc::ENOENT);
@@ -358,7 +366,7 @@ impl Filesystem for FS {
         }
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn create(
         &mut self,
         _req: &Request<'_>,
@@ -369,11 +377,13 @@ impl Filesystem for FS {
         _flags: i32,
         reply: ReplyCreate,
     ) {
+        info!("called");
+
         // force the system to use mknod and open
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, req, reply))]
     fn mknod(
         &mut self,
         req: &Request,
@@ -384,6 +394,8 @@ impl Filesystem for FS {
         _rdev: u32,
         reply: ReplyEntry,
     ) {
+        info!("called");
+
         // access control
         if !self.check_access(req) {
             reply.error(libc::EACCES);
@@ -459,7 +471,7 @@ impl Filesystem for FS {
         reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, req, reply))]
     fn mkdir(
         &mut self,
         req: &Request,
@@ -469,6 +481,8 @@ impl Filesystem for FS {
         _umask: u32,
         reply: ReplyEntry,
     ) {
+        info!("called");
+
         if mode != 0o755 {
             warn!("Given mode {:o}, using 755", mode);
         }
@@ -528,7 +542,7 @@ impl Filesystem for FS {
         reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, req, reply))]
     fn write(
         &mut self,
         req: &Request,
@@ -541,6 +555,8 @@ impl Filesystem for FS {
         _lock_owner: Option<u64>,
         reply: ReplyWrite,
     ) {
+        info!("called");
+
         assert!(offset >= 0);
 
         // access control
@@ -580,8 +596,10 @@ impl Filesystem for FS {
         reply.written(data.len() as u32);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, req, reply))]
     fn unlink(&mut self, req: &Request, parent: u64, name: &OsStr, reply: ReplyEmpty) {
+        info!("called");
+
         // access control
         if !self.check_access(req) {
             reply.error(libc::EACCES);
@@ -634,8 +652,10 @@ impl Filesystem for FS {
         reply.ok();
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, req, reply))]
     fn rmdir(&mut self, req: &Request<'_>, parent: u64, name: &OsStr, reply: ReplyEmpty) {
+        info!("called");
+
         // access control
         if !self.check_access(req) {
             reply.error(libc::EACCES);
@@ -717,7 +737,7 @@ impl Filesystem for FS {
         reply.ok();
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, req, reply))]
     fn rename(
         &mut self,
         req: &Request<'_>,
@@ -728,6 +748,8 @@ impl Filesystem for FS {
         _flags: u32, // TODO 2021-06-14 support RENAME_ flags
         reply: ReplyEmpty,
     ) {
+        info!("called");
+
         // access control
         if !self.check_access(req) {
             reply.error(libc::EACCES);
@@ -844,7 +866,7 @@ impl Filesystem for FS {
         reply.ok();
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, req, reply))]
     fn fallocate(
         &mut self,
         req: &Request<'_>,
@@ -855,6 +877,8 @@ impl Filesystem for FS {
         mode: i32,
         reply: ReplyEmpty,
     ) {
+        info!("called");
+
         if offset < 0 || length <= 0 {
             reply.error(libc::EINVAL);
             return;
@@ -899,7 +923,7 @@ impl Filesystem for FS {
         reply.ok()
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn fsync(
         &mut self,
         _req: &Request<'_>,
@@ -908,13 +932,15 @@ impl Filesystem for FS {
         _datasync: bool,
         reply: ReplyEmpty,
     ) {
+        info!("called");
+
         // TODO 2021-06-16 not really what fsync is meant to mean (it's per inode)
         self.sync();
         reply.ok();
     }
 
     // TODO
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn copy_file_range(
         &mut self,
         _req: &Request<'_>,
@@ -928,11 +954,13 @@ impl Filesystem for FS {
         _flags: u32,
         reply: ReplyWrite,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
     // TODO
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn ioctl(
         &mut self,
         _req: &Request<'_>,
@@ -944,14 +972,16 @@ impl Filesystem for FS {
         _out_size: u32,
         reply: ReplyIoctl,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
     // Unimplemented/default-implementation calls
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req))]
     fn forget(&mut self, _req: &Request<'_>, _ino: u64, _nlookup: u64) {}
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn setattr(
         &mut self,
         _req: &Request<'_>,
@@ -970,15 +1000,19 @@ impl Filesystem for FS {
         _flags: Option<u32>,
         reply: ReplyAttr,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn readlink(&mut self, _req: &Request<'_>, _ino: u64, reply: ReplyData) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn symlink(
         &mut self,
         _req: &Request<'_>,
@@ -987,10 +1021,12 @@ impl Filesystem for FS {
         _link: &Path,
         reply: ReplyEntry,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn link(
         &mut self,
         _req: &Request<'_>,
@@ -999,16 +1035,20 @@ impl Filesystem for FS {
         _newname: &OsStr,
         reply: ReplyEntry,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn open(&mut self, _req: &Request<'_>, _ino: u64, _flags: i32, reply: ReplyOpen) {
+        info!("called");
+
         // TODO 2021-06-16 access check?
         reply.opened(0, 0);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn flush(
         &mut self,
         _req: &Request<'_>,
@@ -1017,10 +1057,12 @@ impl Filesystem for FS {
         _lock_owner: u64,
         reply: ReplyEmpty,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn release(
         &mut self,
         _req: &Request<'_>,
@@ -1031,14 +1073,18 @@ impl Filesystem for FS {
         _flush: bool,
         reply: ReplyEmpty,
     ) {
+        info!("called");
+
         reply.ok();
     }
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn opendir(&mut self, _req: &Request<'_>, _ino: u64, _flags: i32, reply: ReplyOpen) {
+        info!("called");
+
         reply.opened(0, 0);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn readdirplus(
         &mut self,
         _req: &Request<'_>,
@@ -1047,10 +1093,12 @@ impl Filesystem for FS {
         _offset: i64,
         reply: ReplyDirectoryPlus,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn releasedir(
         &mut self,
         _req: &Request<'_>,
@@ -1059,10 +1107,12 @@ impl Filesystem for FS {
         _flags: i32,
         reply: ReplyEmpty,
     ) {
+        info!("called");
+
         reply.ok();
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn fsyncdir(
         &mut self,
         _req: &Request<'_>,
@@ -1071,10 +1121,12 @@ impl Filesystem for FS {
         _datasync: bool,
         reply: ReplyEmpty,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn setxattr(
         &mut self,
         _req: &Request<'_>,
@@ -1085,10 +1137,12 @@ impl Filesystem for FS {
         _position: u32,
         reply: ReplyEmpty,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn getxattr(
         &mut self,
         _req: &Request<'_>,
@@ -1097,20 +1151,26 @@ impl Filesystem for FS {
         _size: u32,
         reply: ReplyXattr,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn listxattr(&mut self, _req: &Request<'_>, _ino: u64, _size: u32, reply: ReplyXattr) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn removexattr(&mut self, _req: &Request<'_>, _ino: u64, _name: &OsStr, reply: ReplyEmpty) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn getlk(
         &mut self,
         _req: &Request<'_>,
@@ -1123,10 +1183,12 @@ impl Filesystem for FS {
         _pid: u32,
         reply: ReplyLock,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn setlk(
         &mut self,
         _req: &Request<'_>,
@@ -1140,10 +1202,12 @@ impl Filesystem for FS {
         _sleep: bool,
         reply: ReplyEmpty,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn bmap(
         &mut self,
         _req: &Request<'_>,
@@ -1152,10 +1216,12 @@ impl Filesystem for FS {
         _idx: u64,
         reply: ReplyBmap,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn lseek(
         &mut self,
         _req: &Request<'_>,
@@ -1165,17 +1231,21 @@ impl Filesystem for FS {
         _whence: i32,
         reply: ReplyLseek,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
     #[cfg(target_os = "macos")]
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn setvolname(&mut self, _req: &Request<'_>, _name: &OsStr, reply: ReplyEmpty) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
     #[cfg(target_os = "macos")]
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn exchange(
         &mut self,
         _req: &Request<'_>,
@@ -1186,12 +1256,16 @@ impl Filesystem for FS {
         _options: u64,
         reply: ReplyEmpty,
     ) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 
     #[cfg(target_os = "macos")]
-    #[instrument(level = "debug")]
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn getxtimes(&mut self, _req: &Request<'_>, _ino: u64, reply: ReplyXTimes) {
+        info!("called");
+
         reply.error(libc::ENOSYS);
     }
 }

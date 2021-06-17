@@ -5,7 +5,7 @@ use clap::{App, Arg};
 
 use tracing::{error, info, warn};
 use tracing_subscriber::prelude::*;
-use tracing_subscriber::{filter::LevelFilter, fmt};
+use tracing_subscriber::{filter::EnvFilter, fmt};
 
 mod config;
 mod fs;
@@ -105,7 +105,9 @@ fn main() {
 
     let mut config = Config::default();
 
-    let filter_layer = LevelFilter::DEBUG;
+    let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
+        EnvFilter::from_default_env().add_directive("ffs=debug".parse().unwrap())
+    });
     let fmt_layer = fmt::layer().with_writer(std::io::stderr);
     tracing_subscriber::registry()
         .with(filter_layer)
@@ -198,17 +200,16 @@ fn main() {
         Output::File(PathBuf::from(output))
     } else if args.is_present("NOOUTPUT") {
         Output::Quiet
-    } else if args.is_present("INPLACE"){
+    } else if args.is_present("INPLACE") {
         if input_source == "-" {
             warn!("In-place output `-i` with STDIN input makes no sense; outputting on STDOUT.");
             Output::Stdout
         } else {
-            Output::File(PathBuf::from(input_source))            
+            Output::File(PathBuf::from(input_source))
         }
     } else {
         Output::Stdout
     };
-    
     let reader: Box<dyn std::io::BufRead> = if input_source == "-" {
         Box::new(std::io::BufReader::new(std::io::stdin()))
     } else {
