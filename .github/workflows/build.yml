@@ -41,7 +41,7 @@ jobs:
           cd tests
           for test in *.sh
           do
-            echo $(basename ${test%*.sh})
+            echo ========== RUNNING TEST: $(basename ${test%*.sh})
             ./${test} || exit 1
           done
       

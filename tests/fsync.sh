@@ -25,6 +25,7 @@ mkdir "$MNT"/pockets
 echo keys >"$MNT"/pockets/pants
 echo pen >"$MNT"/pockets/shirt
 ./fsync "$MNT"
+sleep 1
 cat "$TGT"
 stat "$TGT"
 [ -f "$TGT" ] || fail output1
