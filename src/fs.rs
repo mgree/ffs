@@ -15,7 +15,7 @@ use fuser::ReplyXTimes;
 
 use tracing::{debug, info, instrument, warn};
 
-use super::config::Config;
+use super::config::{Config, Output};
 
 use super::json;
 
@@ -171,14 +171,29 @@ impl FS {
 
     /// Syncs the FS with its on-disk representation
     ///
+    /// # Arguments
+    ///
+    /// * `last_sync` whether this is the last sync or not
+    ///
     /// TODO 2021-06-16 need some reference to the output format to do the right thing
     #[instrument(level = "debug", skip(self), fields(synced = self.dirty.get(), dirty = self.dirty.get()))]
-    pub fn sync(&self) {
+    pub fn sync(&self, last_sync: bool) {
         info!("called");
         debug!("{:?}", self.inodes);
+
         if !self.synced.get() && !self.dirty.get() {
             info!("skipping sync; already synced and not dirty");
+            return;
         }
+
+        match self.config.output {
+            Output::Stdout if !last_sync => {
+                info!("skipping sync; not last sync, using stdout");
+                return;
+            }
+            _ => (),
+        };
+
         json::save_fs(self);
         self.dirty.set(false);
         self.synced.set(true);
@@ -207,7 +222,7 @@ impl Entry {
 impl Drop for FS {
     #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
     fn drop(&mut self) {
-        self.sync();
+        self.sync(true); // last sync
     }
 }
 
@@ -215,7 +230,7 @@ impl Filesystem for FS {
     #[instrument(level = "debug", skip(self, _req), fields(dirty = self.dirty.get()))]
     fn destroy(&mut self, _req: &Request) {
         info!("called");
-//        self.sync();
+        //        self.sync();
         debug!("done syncing");
     }
 
