@@ -30,11 +30,11 @@ kill -0 $PID >/dev/null 2>&1 && fail process1
 
 # easiest to just test using ffs, but would be cool to get outside validation
 [ -f "$TGT" ] || fail output1
-if [ "$RUNNER_OS" = "Linux" ]
-then
-    echo "ABORTING TEST, currently broken on Linux (see https://github.com/cberner/fuser/issues/153)"
-    exit 0
-fi
+#if [ "$RUNNER_OS" = "Linux" ]
+#then
+#    echo "ABORTING TEST, currently broken on Linux (see https://github.com/cberner/fuser/issues/153)"
+#    exit 0
+#fi
 [ -s "$TGT" ] || fail output2
 cat "$TGT"
 stat "$TGT"
@@ -64,7 +64,7 @@ kill -0 $PID >/dev/null 2>&1 && fail process2
 
 stat "$TGT2"
 [ -f "$TGT2" ] || fail tgt2
-[ -s "$TGT2" ] && fail tgt2_nonemptty
+[ -s "$TGT2" ] && fail tgt2_nonempty
 
 rmdir "$MNT" || fail mount
 rm "$TGT"
