@@ -134,6 +134,8 @@ impl FS {
         }
     }
 
+    /// Gets the `FileAttr` of a given `Inode`. Much of this is computed each
+    /// time: the size, the kind, permissions, and number of hard links.
     pub fn attr(&self, inode: &Inode) -> FileAttr {
         let size = inode.entry.size();
         let kind = inode.entry.kind();
@@ -169,13 +171,19 @@ impl FS {
         }
     }
 
-    /// Syncs the FS with its on-disk representation
+    /// Tries to synchronize the in-memory `FS` with its on-disk representation.
     ///
-    /// # Arguments
+    /// Depending on output conventions and the state of the `FS`, nothing may
+    /// happen. In particular:
     ///
-    /// * `last_sync` whether this is the last sync or not
+    ///   - if a sync has happened before and the `FS` isn't dirty, nothing will
+    ///     happen (to prevent pointless writes)
     ///
-    /// TODO 2021-06-16 need some reference to the output format to do the right thing
+    ///   - if `self.config.output == Output::Stdout` and `last_sync == false`,
+    ///     nothing will happen (to prevent redundant writes to STDOUT)
+    ///
+    /// TODO 2021-06-16 need some reference to the output format to do the right
+    /// thing
     #[instrument(level = "debug", skip(self), fields(synced = self.dirty.get(), dirty = self.dirty.get()))]
     pub fn sync(&self, last_sync: bool) {
         info!("called");
@@ -201,6 +209,16 @@ impl FS {
 }
 
 impl Entry {
+    /// Computes the size of an entry
+    ///
+    /// Files are simply their length (not capacity)
+    ///
+    /// Directory size is informed by the object model:
+    ///
+    ///   - `DirType::List` directories are only their length (since names won't
+    ///     matter)
+    ///   - `DirType::Named` directories are the sum of the length of the
+    ///     filenames
     pub fn size(&self) -> u64 {
         match self {
             Entry::File(s) => s.len() as u64,
@@ -211,6 +229,7 @@ impl Entry {
         }
     }
 
+    /// Determines the `FileType` of an `Entry`
     pub fn kind(&self) -> FileType {
         match self {
             Entry::File(_) => FileType::RegularFile,
@@ -220,6 +239,7 @@ impl Entry {
 }
 
 impl Drop for FS {
+    /// Synchronizes the `FS`, calling `FS::sync` with `last_sync == true`.
     #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
     fn drop(&mut self) {
         self.sync(true); // last sync
@@ -230,8 +250,11 @@ impl Filesystem for FS {
     #[instrument(level = "debug", skip(self, _req), fields(dirty = self.dirty.get()))]
     fn destroy(&mut self, _req: &Request) {
         info!("called");
-        //        self.sync();
-        debug!("done syncing");
+        // It WOULD make sense to call `sync` here, but this function doesn't
+        // seem to be called on Linux... so we call `self.sync(true)` in
+        // `Drop::drop`, instead.
+        //
+        // See https://github.com/cberner/fuser/issues/153
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
