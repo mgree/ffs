@@ -181,7 +181,7 @@ pub fn value_from_fs(fs: &FS, inum: u64) -> Value {
             // TODO 2021-06-16 better newline handling
             let contents = match String::from_utf8(contents.clone()) {
                 Ok(mut contents) => {
-                    if contents.ends_with('\n') {
+                    if fs.config.add_newlines && contents.ends_with('\n') {
                         contents.truncate(contents.len() - 1);
                     }
                     contents
