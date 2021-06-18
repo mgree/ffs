@@ -72,7 +72,7 @@ pub fn load_fs(config: Config, v: Value) -> FS {
 
         let nl = if config.add_newlines { "\n" } else { "" };
         let entry = match v {
-            Value::Null => Entry::File(nl.into()),
+            Value::Null => Entry::File("".into()),
             Value::Bool(b) => Entry::File(format!("{}{}", b, nl).into_bytes()),
             Value::Number(n) => Entry::File(format!("{}{}", n, nl).into_bytes()),
             Value::String(s) => {
