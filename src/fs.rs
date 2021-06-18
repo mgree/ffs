@@ -17,8 +17,6 @@ use tracing::{debug, info, instrument, warn};
 
 use super::config::{Config, Output};
 
-use super::json;
-
 /// A filesystem `FS` is just a vector of nullable inodes, where the index is
 /// the inode number.
 ///
@@ -202,7 +200,7 @@ impl FS {
             _ => (),
         };
 
-        json::save_fs(self);
+        self.config.output_format.save(self);
         self.dirty.set(false);
         self.synced.set(true);
     }

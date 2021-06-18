@@ -9,7 +9,7 @@ use tracing_subscriber::{filter::EnvFilter, fmt};
 
 mod config;
 mod fs;
-mod json;
+mod format;
 
 use config::{Config, Output};
 
@@ -247,8 +247,8 @@ fn main() {
         options.push(MountOption::RO);
     }
 
-    let v = json::parse(reader);
-    let fs = json::load_fs(config, v);
+    let input_format = config.input_format;
+    let fs = input_format.load(reader, config);
 
     info!("mounting on {:?} with options {:?}", mount_point, options);
     fuser::mount2(fs, mount_point, &options).unwrap();
