@@ -176,8 +176,6 @@ fn main() {
         };
     }
 
-    let autounmount = args.is_present("AUTOUNMOUNT");
-
     // TODO 2021-06-08 infer and create mountpoint from filename as possible
     let mount_point = Path::new(args.value_of("MOUNT").expect("mount point"));
     if !mount_point.exists() {
@@ -240,7 +238,7 @@ fn main() {
     };
 
     let mut options = vec![MountOption::FSName(input_source.into())];
-    if autounmount {
+    if args.is_present("AUTOUNMOUNT") {
         options.push(MountOption::AutoUnmount);
     }
     if config.read_only {
