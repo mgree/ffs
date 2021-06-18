@@ -549,8 +549,9 @@ impl Filesystem for FS {
     ) {
         info!("called");
 
-        if mode != 0o755 {
-            warn!("Given mode {:o}, using 755", mode);
+        let mode = mode & 0o777; // high bits are sometimes set, e.g., 0o40755. no idea.
+        if mode != self.config.dirmode as u32 {
+            warn!("Given mode {:o}, using {}", mode, self.config.dirmode);
         }
         if !self.check_access(req) {
             reply.error(libc::EACCES);
