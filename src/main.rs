@@ -21,6 +21,12 @@ fn main() {
         .author(env!("CARGO_PKG_AUTHORS"))
         .about("file fileystem")
         .arg(
+            Arg::with_name("DEBUG")
+                .help("Give debug output on stderr")
+                .long("debug")
+                .short("d")
+        )
+        .arg(
             Arg::with_name("AUTOUNMOUNT")
                 .help("Automatically unmount the filesystem when the mounting process exits")
                 .long("autounmount"),
@@ -106,7 +112,11 @@ fn main() {
     let mut config = Config::default();
 
     let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
-        EnvFilter::from_default_env().add_directive("ffs=debug".parse().unwrap())
+        if args.is_present("DEBUG") {
+            EnvFilter::new("ffs=debug")
+        } else {
+            EnvFilter::new("ffs=warn")
+        }
     });
     let fmt_layer = fmt::layer().with_writer(std::io::stderr);
     tracing_subscriber::registry()

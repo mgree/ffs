@@ -40,6 +40,8 @@ jobs:
           PATH="$(pwd)/target/debug:$PATH"
           cd tests
           for test in *.sh
+          RUST_LOG="ffs=info"
+          export RUST_LOG
           do
             echo ========== RUNNING TEST: $(basename ${test%*.sh})
             ./${test} || exit 1
