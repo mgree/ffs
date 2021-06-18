@@ -21,6 +21,13 @@ fn main() {
         .author(env!("CARGO_PKG_AUTHORS"))
         .about("file fileystem")
         .arg(
+            Arg::with_name("QUIET")
+                .help("Quiet mode (turns off all errors and warnings, enables `--no-output`)")
+                .long("quiet")
+                .short("q")
+                .overrides_with("DEBUG")
+        )
+        .arg(
             Arg::with_name("DEBUG")
                 .help("Give debug output on stderr")
                 .long("debug")
@@ -111,18 +118,20 @@ fn main() {
 
     let mut config = Config::default();
 
-    let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
-        if args.is_present("DEBUG") {
-            EnvFilter::new("ffs=debug")
-        } else {
-            EnvFilter::new("ffs=warn")
-        }
-    });
-    let fmt_layer = fmt::layer().with_writer(std::io::stderr);
-    tracing_subscriber::registry()
-        .with(filter_layer)
-        .with(fmt_layer)
-        .init();
+    if !args.is_present("QUIET") {
+        let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
+            if args.is_present("DEBUG") {
+                EnvFilter::new("ffs=debug")
+            } else {
+                EnvFilter::new("ffs=warn")
+            }
+        });
+        let fmt_layer = fmt::layer().with_writer(std::io::stderr);
+        tracing_subscriber::registry()
+            .with(filter_layer)
+            .with(fmt_layer)
+            .init();
+    }
 
     config.add_newlines = args.is_present("NEWLINE");
     config.pad_element_names = !args.is_present("UNPADDED");
@@ -208,8 +217,6 @@ fn main() {
     let input_source = args.value_of("INPUT").expect("input source");
     config.output = if let Some(output) = args.value_of("OUTPUT") {
         Output::File(PathBuf::from(output))
-    } else if args.is_present("NOOUTPUT") {
-        Output::Quiet
     } else if args.is_present("INPLACE") {
         if input_source == "-" {
             warn!("In-place output `-i` with STDIN input makes no sense; outputting on STDOUT.");
@@ -217,6 +224,8 @@ fn main() {
         } else {
             Output::File(PathBuf::from(input_source))
         }
+    } else if args.is_present("NOOUTPUT") || args.is_present("QUIET") {
+        Output::Quiet
     } else {
         Output::Stdout
     };
