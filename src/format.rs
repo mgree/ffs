@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::str::FromStr;
 
-use tracing::{debug, info, instrument};
+use tracing::{debug, error, info, instrument};
 
 use fuser::FileType;
 
@@ -93,7 +93,6 @@ enum Node<V> {
     Bytes(Vec<u8>),
 
     /// TODO 2021-06-18 can we make these Iter, to avoid any intermediate allocation/structures?
-
     List(Vec<V>),
     /// We use a `Vec` rather than a `Map` or `HashMap` to ensure we preserve
     /// whatever order.
@@ -111,6 +110,10 @@ where
     fn size(&self) -> usize;
 
     /// Predicts filetypes (directory vs. regular file) for values.
+    ///
+    /// Since FUSE filesystems need to have directories at the root, it's
+    /// important that only compound values be converted to fileysstems, i.e.,
+    /// values which yield `FileType::Directory`.
     fn kind(&self) -> FileType;
 
     /// Characterizes the outermost value. Drives the worklist algorithm.
@@ -132,12 +135,17 @@ where
 /// and is left empty.
 fn fs_from_value<V>(v: V, config: &Config, inodes: &mut Vec<Option<Inode>>)
 where
-    V: Nodelike,
+    V: Nodelike + std::fmt::Display,
 {
     // reserve space for everyone else
     // won't work with streaming or lazy generation, but avoids having to resize the vector midway through
     inodes.resize_with(v.size() + 1, || None);
     info!("allocated {} inodes", inodes.len());
+
+    if v.kind() != FileType::Directory {
+        error!("The root of the filesystem must be a directory, but '{}' only generates a single file.", v);
+        std::process::exit(1);
+    }
 
     let mut next_id = fuser::FUSE_ROOT_ID;
     // parent inum, inum, value
