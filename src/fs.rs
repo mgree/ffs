@@ -179,9 +179,6 @@ impl FS {
     ///
     ///   - if `self.config.output == Output::Stdout` and `last_sync == false`,
     ///     nothing will happen (to prevent redundant writes to STDOUT)
-    ///
-    /// TODO 2021-06-16 need some reference to the output format to do the right
-    /// thing
     #[instrument(level = "debug", skip(self), fields(synced = self.dirty.get(), dirty = self.dirty.get()))]
     pub fn sync(&self, last_sync: bool) {
         info!("called");
