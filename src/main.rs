@@ -8,10 +8,11 @@ use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::EnvFilter, fmt};
 
 mod config;
-mod fs;
 mod format;
+mod fs;
 
 use config::{Config, Output};
+use format::Format;
 
 use fuser::MountOption;
 
@@ -227,14 +228,14 @@ fn main() {
     } else {
         Output::Stdout
     };
-    let reader: Box<dyn std::io::BufRead> = if input_source == "-" {
-        Box::new(std::io::BufReader::new(std::io::stdin()))
+    let reader: Box<dyn std::io::Read> = if input_source == "-" {
+        Box::new(std::io::stdin())
     } else {
         let file = std::fs::File::open(input_source).unwrap_or_else(|e| {
             error!("Unable to open {} for JSON input: {}", input_source, e);
             std::process::exit(1);
         });
-        Box::new(std::io::BufReader::new(file))
+        Box::new(file)
     };
 
     let mut options = vec![MountOption::FSName(input_source.into())];
@@ -244,6 +245,25 @@ fn main() {
     if config.read_only {
         options.push(MountOption::RO);
     }
+
+    // try to autodetect the input format... poorly
+    config.input_format = match Path::new(input_source)
+        .extension()
+        .map(|s| s.to_str().expect("utf8 filename").to_lowercase())
+    {
+        Some(s) => {
+            if &s == "json" {
+                Format::Json
+            } else if &s == "toml" {
+                Format::Toml
+            } else {
+                warn!("Unrecognized format {}, defaulting to JSON.", s);
+                Format::Json
+            }
+        }
+        None => Format::Json,
+    };
+    config.output_format = config.input_format;
 
     let input_format = config.input_format;
     let fs = input_format.load(reader, config);
