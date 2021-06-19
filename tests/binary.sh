@@ -14,6 +14,18 @@ fail() {
     exit 1
 }
 
+if [ "$RUNNER_OS" = "Linux" ]; then
+    decode() {
+        base64 -d $1 >$2
+    }
+elif [ "$RUNNER_OS" = "macOS" ]; then
+    decode() {
+        base64 -D -i $1 -o $2
+    }
+else
+    fail os
+fi
+
 MNT=$(mktemp -d)
 TGT=$(mktemp)
 TGT2=$(mktemp)
@@ -37,7 +49,7 @@ sleep 2
 ICO=$(mktemp)
 
 ls "$MNT" | grep favicon >/dev/null 2>&1 || fail field
-base64 -D -i "$MNT"/favicon -o "$ICO"
+decode "$MNT"/favicon "$ICO"
 diff ../binary/twitter.ico "$ICO" || fail diff
 
 umount "$MNT" || fail unmount2
