@@ -91,6 +91,9 @@ impl Format {
 enum Node<V> {
     String(String),
     Bytes(Vec<u8>),
+
+    /// TODO 2021-06-18 can we make these Iter, to avoid any intermediate allocation/structures?
+
     List(Vec<V>),
     /// We use a `Vec` rather than a `Map` or `HashMap` to ensure we preserve
     /// whatever order.
