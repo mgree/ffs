@@ -119,8 +119,10 @@ where
     /// Characterizes the outermost value. Drives the worklist algorithm.
     fn node(self, config: &Config) -> Node<Self>;
 
-    #[allow(clippy::ptr_arg)]
-    fn from_bytes(v: &Vec<u8>, config: &Config) -> Self;
+    fn from_bytes<T>(v: T, config: &Config) -> Self
+    where
+        T: AsRef<[u8]>;
+    fn from_string(v: String, config: &Config) -> Self;
     fn from_list_dir(files: Vec<Self>, config: &Config) -> Self;
     fn from_named_dir(files: HashMap<String, Self>, config: &Config) -> Self;
 }
@@ -238,7 +240,15 @@ where
     V: Nodelike,
 {
     match &fs.get(inum).unwrap().entry {
-        Entry::File(contents) => V::from_bytes(contents, &fs.config),
+        Entry::File(contents) => match String::from_utf8(contents.clone()) {
+            Ok(mut contents) => {
+                if fs.config.add_newlines && contents.ends_with('\n') {
+                    contents.truncate(contents.len() - 1);
+                }
+                V::from_string(contents, &fs.config)
+            }
+            Err(_) => V::from_bytes(contents, &fs.config),
+        },
         Entry::Directory(DirType::List, files) => {
             let mut entries = Vec::with_capacity(files.len());
 
@@ -294,25 +304,20 @@ mod json {
                 Value::Bool(b) => Node::Bytes(format!("{}{}", b, nl).into_bytes()),
                 Value::Number(n) => Node::Bytes(format!("{}{}", n, nl).into_bytes()),
                 Value::String(s) => {
-                    let contents = if s.ends_with('\n') { s } else { s + nl };
-                    Node::Bytes(contents.into_bytes())
+                    if config.try_decode_base64 {
+                        if let Ok(bytes) = base64::decode_config(&s, config.base64) {
+                            return Node::Bytes(bytes);
+                        }
+                    }
+
+                    Node::String(if s.ends_with('\n') { s } else { s + nl })
                 }
                 Value::Array(vs) => Node::List(vs),
                 Value::Object(fvs) => Node::Map(fvs.into_iter().collect()),
             }
         }
 
-        fn from_bytes(contents: &Vec<u8>, config: &Config) -> Self {
-            let contents = match String::from_utf8(contents.clone()) {
-                Ok(mut contents) => {
-                    if config.add_newlines && contents.ends_with('\n') {
-                        contents.truncate(contents.len() - 1);
-                    }
-                    contents
-                }
-                Err(_) => unimplemented!("binary data JSON serialization"),
-            };
-
+        fn from_string(contents: String, _config: &Config) -> Self {
             if contents.is_empty() {
                 Value::Null
             } else if contents == "true" {
@@ -324,6 +329,13 @@ mod json {
             } else {
                 Value::String(contents)
             }
+        }
+
+        fn from_bytes<T>(contents: T, config: &Config) -> Self
+        where
+            T: AsRef<[u8]>,
+        {
+            Value::String(base64::encode_config(contents, config.base64))
         }
 
         fn from_list_dir(files: Vec<Self>, _config: &Config) -> Self {
@@ -340,7 +352,6 @@ mod toml {
     use super::*;
 
     use serde_toml::Value;
-
     #[derive(Debug)]
     pub enum Error<E> {
         Io(std::io::Error),
@@ -392,25 +403,20 @@ mod toml {
                 Value::Float(n) => Node::Bytes(format!("{}{}", n, nl).into_bytes()),
                 Value::Integer(n) => Node::Bytes(format!("{}{}", n, nl).into_bytes()),
                 Value::String(s) => {
-                    let contents = if s.ends_with('\n') { s } else { s + nl };
-                    Node::Bytes(contents.into_bytes())
+                    if config.try_decode_base64 {
+                        if let Ok(bytes) = base64::decode_config(&s, config.base64) {
+                            return Node::Bytes(bytes);
+                        }
+                    }
+
+                    Node::String(if s.ends_with('\n') { s } else { s + nl })
                 }
                 Value::Array(vs) => Node::List(vs),
                 Value::Table(fvs) => Node::Map(fvs.into_iter().collect()),
             }
         }
 
-        fn from_bytes(contents: &Vec<u8>, config: &Config) -> Self {
-            let contents = match String::from_utf8(contents.clone()) {
-                Ok(mut contents) => {
-                    if config.add_newlines && contents.ends_with('\n') {
-                        contents.truncate(contents.len() - 1);
-                    }
-                    contents
-                }
-                Err(_) => unimplemented!("binary data TOML serialization"),
-            };
-
+        fn from_string(contents: String, _config: &Config) -> Self {
             if contents == "true" {
                 Value::Boolean(true)
             } else if contents == "false" {
@@ -422,6 +428,13 @@ mod toml {
             } else {
                 Value::String(contents)
             }
+        }
+
+        fn from_bytes<T>(contents: T, config: &Config) -> Self
+        where
+            T: AsRef<[u8]>,
+        {
+            Value::String(base64::encode_config(contents, config.base64))
         }
 
         fn from_list_dir(files: Vec<Self>, _config: &Config) -> Self {

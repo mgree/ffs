@@ -13,6 +13,8 @@ pub struct Config {
     pub dirmode: u16,
     pub add_newlines: bool,
     pub pad_element_names: bool,
+    pub base64: base64::Config,
+    pub try_decode_base64: bool,
     pub read_only: bool,
     pub output: Output,
 }
@@ -41,7 +43,6 @@ impl Config {
             .replace("=", "equal")
             .replace(" ", "space")
     }
-    
 }
 
 impl Default for Config {
@@ -56,6 +57,8 @@ impl Default for Config {
             dirmode: 0o755,
             add_newlines: false,
             pad_element_names: true,
+            base64: base64::STANDARD,
+            try_decode_base64: false,
             read_only: false,
             output: Output::Stdout,
         }
