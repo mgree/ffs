@@ -15,11 +15,11 @@ MNT=$(mktemp -d)
 OUT=$(mktemp)
 MSG=$(mktemp)
 
-ffs "$MNT" ../json/null.json >"$OUT" 2>"$MSG" &
+echo \"just a string\" | ffs "$MNT" >"$OUT" 2>"$MSG" &
 PID=$!
 sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process
-cat "$MSG" | grep -i -e  "must be a directory" >/dev/null 2>&1 || fail error
+cat "$MSG" | grep -i -e "must be a directory" >/dev/null 2>&1 || fail error
 [ -f "$OUT" ] && ! [ -s "$OUT" ] || fail output
 sleep 1
 
