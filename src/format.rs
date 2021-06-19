@@ -92,7 +92,9 @@ enum Node<V> {
     String(String),
     Bytes(Vec<u8>),
     List(Vec<V>),
-    Map(HashMap<String, V>),
+    /// We use a `Vec` rather than a `Map` or `HashMap` to ensure we preserve
+    /// whatever order.
+    Map(Vec<(String, V)>),
 }
 
 /// Values that can be converted to a `Node`, which can be in turn processed by
