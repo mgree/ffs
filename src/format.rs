@@ -15,6 +15,7 @@ use ::toml as serde_toml;
 pub enum Format {
     Json,
     Toml,
+    Yaml,
 }
 
 pub const POSSIBLE_FORMATS: &[&str] = &["json", "toml"];
@@ -27,6 +28,7 @@ impl std::fmt::Display for Format {
             match self {
                 Format::Json => "json",
                 Format::Toml => "toml",
+                Format::Yaml => "yaml",
             }
         )
     }
@@ -48,6 +50,8 @@ impl FromStr for Format {
             Ok(Format::Json)
         } else if s == "toml" {
             Ok(Format::Toml)
+        } else if s == "yaml" {
+            Ok(Format::Yaml)
         } else {
             Err(ParseFormatError::NoSuchFormat(s))
         }
@@ -74,6 +78,13 @@ impl Format {
             Format::Toml => {
                 info!("reading toml value");
                 let v = toml::from_reader(reader).expect("TOML");
+                info!("building inodes");
+                fs_from_value(v, &config, &mut inodes);
+                info!("done");
+            }
+            Format::Yaml => {
+                info!("reading toml value");
+                let v = yaml::from_reader(reader).expect("YAML");
                 info!("building inodes");
                 fs_from_value(v, &config, &mut inodes);
                 info!("done");
@@ -119,6 +130,14 @@ impl Format {
                 info!("writing");
                 debug!("outputting {}", v);
                 toml::to_writer(writer, &v).unwrap();
+                info!("done");
+            }
+            Format::Yaml => {
+                info!("generating yaml value");
+                let v: yaml::Value = value_from_fs(fs, fuser::FUSE_ROOT_ID);
+                info!("writing");
+                debug!("outputting {}", v);
+                yaml::to_writer(writer, &v).unwrap();
                 info!("done");
             }
         }
@@ -482,6 +501,121 @@ mod toml {
 
         fn from_named_dir(files: HashMap<String, Self>, _config: &Config) -> Self {
             Value::Table(files.into_iter().collect())
+        }
+    }
+}
+
+mod yaml {
+    use super::*;
+    use yaml_rust::{EmitError, ScanError, Yaml};
+
+    #[derive(Clone, Debug)]
+    pub struct Value(Yaml);
+
+    pub fn from_reader(mut reader: Box<dyn std::io::Read>) -> Result<Value, ScanError> {
+        todo!()
+    }
+
+    pub fn to_writer(mut writer: Box<dyn std::io::Write>, v: &Value) -> Result<(), EmitError> {
+        todo!()
+    }
+
+    impl std::fmt::Display for Value {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+            let mut emitter = yaml_rust::YamlEmitter::new(f);
+            emitter.dump(&self.0).map_err(|e| match e {
+                yaml_rust::EmitError::FmtError(e) => e,
+                yaml_rust::EmitError::BadHashmapKey => panic!("unrecoverable YAML display error"),
+            })
+        }
+    }
+
+    fn yaml_size(v: &Yaml) -> usize {
+        match v {
+            Yaml::Real(_)
+            | Yaml::Integer(_)
+            | Yaml::String(_)
+            | Yaml::Boolean(_)
+            | Yaml::Null
+            | Yaml::BadValue
+            | Yaml::Alias(_) => 1,
+            Yaml::Array(vs) => vs.iter().map(|v| yaml_size(v)).sum::<usize>() + 1,
+            Yaml::Hash(fvs) => fvs.iter().map(|(_, v)| yaml_size(v)).sum::<usize>() + 1,
+        }
+    }
+
+    fn yaml_key_to_string(v: Yaml) -> String {
+        match v {
+            Yaml::Boolean(b) => format!("{}", b),
+            Yaml::Real(s) => s,
+            Yaml::Integer(n) => format!("{}", n),
+            Yaml::String(s) => s,
+            Yaml::Alias(n) => format!("alias{}", n),
+            Yaml::Array(_) => "array".into(),
+            Yaml::Hash(_) => "hash".into(),
+            Yaml::Null => "null".into(),
+            Yaml::BadValue => "badvalue".into(),
+        }
+    }
+
+    impl Nodelike for Value {
+        fn kind(&self) -> FileType {
+            match &self.0 {
+                Yaml::Array(_) | Yaml::Hash(_) => FileType::Directory,
+                _ => FileType::RegularFile,
+            }
+        }
+
+        fn size(&self) -> usize {
+            yaml_size(&self.0)
+        }
+
+        fn node(self, config: &Config) -> Node<Self> {
+            let nl = if config.add_newlines { "\n" } else { "" };
+
+            match self.0 {
+                Yaml::Null => Node::String("".into()),
+                Yaml::Boolean(b) => Node::Bytes(format!("{}{}", b, nl).into_bytes()),
+                Yaml::Real(s) => Node::String(s + nl),
+                Yaml::Integer(n) => Node::Bytes(format!("{}{}", n, nl).into_bytes()),
+                Yaml::String(s) => {
+                    if config.try_decode_base64 {
+                        if let Ok(bytes) = base64::decode_config(&s, config.base64) {
+                            return Node::Bytes(bytes);
+                        }
+                    }
+
+                    Node::String(if s.ends_with('\n') { s } else { s + nl })
+                }
+                Yaml::Array(vs) => Node::List(vs.into_iter().map(Value).collect()),
+                Yaml::Hash(fvs) => Node::Map(
+                    fvs.into_iter()
+                        .map(|(k, v)| (yaml_key_to_string(k), Value(v)))
+                        .collect(),
+                ),
+                // ??? 2021-06-21 support aliases w/hard links?
+                Yaml::Alias(n) => Node::Bytes(format!("alias{}{}", n, nl).into_bytes()),
+                Yaml::BadValue => Node::Bytes("bad YAML value".into()),
+            }
+        }
+
+        fn from_named_dir(_: HashMap<std::string::String, Self>, _: &Config) -> Self {
+            todo!()
+        }
+
+        fn from_list_dir(_: Vec<Self>, _: &Config) -> Self {
+            todo!()
+        }
+
+        fn from_string(_: String, _: &Config) -> Self {
+            todo!()
+        }
+
+        fn from_bytes<T>(_: T, _: &Config) -> Self
+        where
+            T: AsRef<[u8]>,
+        {
+            todo!()
         }
     }
 }
