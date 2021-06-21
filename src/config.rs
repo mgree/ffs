@@ -1,7 +1,11 @@
 use std::path::PathBuf;
 
+use super::format::Format;
+
 #[derive(Debug)]
 pub struct Config {
+    pub input_format: Format,
+    pub output_format: Format,
     pub timestamp: std::time::SystemTime,
     pub uid: u32,
     pub gid: u32,
@@ -9,6 +13,8 @@ pub struct Config {
     pub dirmode: u16,
     pub add_newlines: bool,
     pub pad_element_names: bool,
+    pub base64: base64::Config,
+    pub try_decode_base64: bool,
     pub read_only: bool,
     pub output: Output,
 }
@@ -37,12 +43,13 @@ impl Config {
             .replace("=", "equal")
             .replace(" ", "space")
     }
-    
 }
 
 impl Default for Config {
     fn default() -> Self {
         Config {
+            input_format: Format::Json,
+            output_format: Format::Json,
             timestamp: std::time::SystemTime::now(),
             uid: 501,
             gid: 501,
@@ -50,6 +57,8 @@ impl Default for Config {
             dirmode: 0o755,
             add_newlines: false,
             pad_element_names: true,
+            base64: base64::STANDARD,
+            try_decode_base64: false,
             read_only: false,
             output: Output::Stdout,
         }

@@ -17,8 +17,6 @@ use tracing::{debug, info, instrument, warn};
 
 use super::config::{Config, Output};
 
-use super::json;
-
 /// A filesystem `FS` is just a vector of nullable inodes, where the index is
 /// the inode number.
 ///
@@ -181,15 +179,12 @@ impl FS {
     ///
     ///   - if `self.config.output == Output::Stdout` and `last_sync == false`,
     ///     nothing will happen (to prevent redundant writes to STDOUT)
-    ///
-    /// TODO 2021-06-16 need some reference to the output format to do the right
-    /// thing
     #[instrument(level = "debug", skip(self), fields(synced = self.dirty.get(), dirty = self.dirty.get()))]
     pub fn sync(&self, last_sync: bool) {
         info!("called");
         debug!("{:?}", self.inodes);
 
-        if !self.synced.get() && !self.dirty.get() {
+        if self.synced.get() && !self.dirty.get() {
             info!("skipping sync; already synced and not dirty");
             return;
         }
@@ -202,7 +197,7 @@ impl FS {
             _ => (),
         };
 
-        json::save_fs(self);
+        self.config.output_format.save(self);
         self.dirty.set(false);
         self.synced.set(true);
     }
