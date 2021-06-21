@@ -184,7 +184,7 @@ impl FS {
         info!("called");
         debug!("{:?}", self.inodes);
 
-        if !self.synced.get() && !self.dirty.get() {
+        if self.synced.get() && !self.dirty.get() {
             info!("skipping sync; already synced and not dirty");
             return;
         }

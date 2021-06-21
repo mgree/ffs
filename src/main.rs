@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use clap::{App, Arg};
 
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::EnvFilter, fmt};
 
@@ -102,6 +102,22 @@ fn main() {
                 .short("i")
                 .overrides_with("OUTPUT")            
                 .overrides_with("NOOUTPUT")
+        )
+        .arg(
+            Arg::with_name("SOURCE_FORMAT")
+                .help("Specify the source format explicitly (by default, automatically inferred from filename extension)")
+                .long("source")
+                .short("s")
+                .takes_value(true)
+                .possible_values(format::POSSIBLE_FORMATS)
+        )
+        .arg(
+            Arg::with_name("TARGET_FORMAT")
+                .help("Specify the target format explicitly (by default, automatically inferred from filename extension)")
+                .long("target")
+                .short("t")
+                .takes_value(true)
+                .possible_values(format::POSSIBLE_FORMATS)
         )
         .arg(
             Arg::with_name("MOUNT")
@@ -228,14 +244,90 @@ fn main() {
     } else {
         Output::Stdout
     };
-    let reader: Box<dyn std::io::Read> = if input_source == "-" {
-        Box::new(std::io::stdin())
-    } else {
-        let file = std::fs::File::open(input_source).unwrap_or_else(|e| {
-            error!("Unable to open {} for JSON input: {}", input_source, e);
-            std::process::exit(1);
-        });
-        Box::new(file)
+
+    // try to autodetect the input format.
+    //
+    // first see if it's specified and parses okay.
+    //
+    // then see if we can pull it out of the extension.
+    //
+    // then give up and use json
+    config.input_format = match args
+        .value_of("SOURCE_FORMAT")
+        .ok_or(format::ParseFormatError::NoFormatProvided)
+        .and_then(|s| s.parse::<Format>())
+    {
+        Ok(source_format) => source_format,
+        Err(e) => {
+            match e {
+                format::ParseFormatError::NoSuchFormat(s) => {
+                    warn!("Unrecognized format '{}', inferring from input.", s)
+                }
+                format::ParseFormatError::NoFormatProvided => {
+                    debug!("Inferring format from input.")
+                }
+            };
+
+            match Path::new(input_source)
+                .extension() // will fail for STDIN, no worries
+                .map(|s| s.to_str().expect("utf8 filename").to_lowercase())
+            {
+                Some(s) => match s.parse::<Format>() {
+                    Ok(format) => format,
+                    Err(_) => {
+                        warn!("Unrecognized format {}, defaulting to JSON.", s);
+                        Format::Json
+                    }
+                },
+                None => Format::Json,
+            }
+        }
+    };
+
+    // try to autodetect the input format.
+    //
+    // first see if it's specified and parses okay.
+    //
+    // then see if we can pull it out of the extension (if specified)
+    //
+    // then give up and use the input format
+    config.output_format = match args
+        .value_of("TARGET_FORMAT")
+        .ok_or(format::ParseFormatError::NoFormatProvided)
+        .and_then(|s| s.parse::<Format>())
+    {
+        Ok(target_format) => target_format,
+        Err(e) => {
+            match e {
+                format::ParseFormatError::NoSuchFormat(s) => {
+                    warn!(
+                        "Unrecognized format '{}', inferring from input and output.",
+                        s
+                    )
+                }
+                format::ParseFormatError::NoFormatProvided => {
+                    debug!("Inferring output format from input.")
+                }
+            };
+
+            match args
+                .value_of("OUTPUT")
+                .and_then(|s| Path::new(s).extension())
+                .and_then(|s| s.to_str())
+            {
+                Some(s) => match s.parse::<Format>() {
+                    Ok(format) => format,
+                    Err(_) => {
+                        warn!(
+                            "Unrecognized format {}, defaulting to input format '{}'.",
+                            s, config.input_format
+                        );
+                        config.input_format
+                    }
+                },
+                None => config.input_format,
+            }
+        }
     };
 
     let mut options = vec![MountOption::FSName(input_source.into())];
@@ -246,26 +338,16 @@ fn main() {
         options.push(MountOption::RO);
     }
 
-    // try to autodetect the input format... poorly
-    config.input_format = match Path::new(input_source)
-        .extension()
-        .map(|s| s.to_str().expect("utf8 filename").to_lowercase())
-    {
-        Some(s) => {
-            if &s == "json" {
-                Format::Json
-            } else if &s == "toml" {
-                Format::Toml
-            } else {
-                warn!("Unrecognized format {}, defaulting to JSON.", s);
-                Format::Json
-            }
-        }
-        None => Format::Json,
-    };
-    config.output_format = config.input_format;
-
     let input_format = config.input_format;
+    let reader: Box<dyn std::io::Read> = if input_source == "-" {
+        Box::new(std::io::stdin())
+    } else {
+        let file = std::fs::File::open(input_source).unwrap_or_else(|e| {
+            error!("Unable to open {} for JSON input: {}", input_source, e);
+            std::process::exit(1);
+        });
+        Box::new(file)
+    };
     let fs = input_format.load(reader, config);
 
     info!("mounting on {:?} with options {:?}", mount_point, options);

@@ -17,6 +17,43 @@ pub enum Format {
     Toml,
 }
 
+pub const POSSIBLE_FORMATS: &[&str] = &["json", "toml"];
+
+impl std::fmt::Display for Format {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(
+            f,
+            "{}",
+            match self {
+                Format::Json => "json",
+                Format::Toml => "toml",
+            }
+        )
+    }
+}
+
+#[derive(Debug)]
+pub enum ParseFormatError {
+    NoSuchFormat(String),
+    NoFormatProvided,
+}
+
+impl FromStr for Format {
+    type Err = ParseFormatError;
+
+    fn from_str(s: &str) -> Result<Self, ParseFormatError> {
+        let s = s.trim().to_lowercase();
+
+        if s == "json" {
+            Ok(Format::Json)
+        } else if s == "toml" {
+            Ok(Format::Toml)
+        } else {
+            Err(ParseFormatError::NoSuchFormat(s))
+        }
+    }
+}
+
 impl Format {
     /// Generates a filesystem `fs`, reading from `reader` according to a
     /// particular `Config`.
