@@ -39,12 +39,27 @@ const TTL: Duration = Duration::from_secs(300);
 /// An inode, the core structure in the filesystem.
 #[derive(Debug)]
 pub struct Inode {
+    /// Inode number of the parent of the current inode.
+    /// 
+    /// For the root, it will be `FUSE_ROOT_ID`, i.e., itself.
     pub parent: u64,
+    /// Inode number of this node. Will not be 0.
     pub inum: u64,
+    /// Mode of this inode. Defaults to values set in `FS.config`, but calls to
+    /// `mknod` and `mkdir` and `setattr` (as `chmod`) can change this.
     pub mode: u16,
+    /// The actual file contents.
     pub entry: Entry,
 }
 
+/// File contents. Either a `File` containing bytes or a `Directory`, mapping
+/// names to entries (see `DirEntry`)
+///
+/// Directories come in two kinds (per `DirType`): `DirType::Named` directories
+/// are conventional mappings of names to entries, but `DirType::List`
+/// directories only use name in the filesystem, and most of those names will be
+/// generated (see `format::fs_from_value`). When writing a `DirType::List`
+/// directory back out, only the sort order of the name matters.
 #[derive(Debug)]
 pub enum Entry {
     // TODO 2021-06-14 need a 'written' flag to determine whether or not to
@@ -53,6 +68,8 @@ pub enum Entry {
     Directory(DirType, HashMap<String, DirEntry>),
 }
 
+/// Directory entries. We record the kind and inode (for faster
+/// `Filesystem::readdir`).
 #[derive(Debug)]
 pub struct DirEntry {
     pub kind: FileType,
@@ -100,7 +117,7 @@ impl FS {
     pub fn get(&self, inum: u64) -> Result<&Inode, FSError> {
         let idx = inum as usize;
 
-        if idx >= self.inodes.len() {
+        if idx >= self.inodes.len() || idx == 0 {
             return Err(FSError::NoSuchInode(inum));
         }
 
