@@ -21,7 +21,6 @@ sleep 2
 cd "$MNT"
 ls -l eyes | grep -e 'rw-rw-rw-' >/dev/null 2>&1 || fail file1
 mkdir pockets
-ls -ld pockets
 ls -ld pockets | grep -e 'rwxr-xr-x' >/dev/null 2>&1 || fail dir1
 cd - >/dev/null 2>&1
 umount "$MNT" || fail unmount1

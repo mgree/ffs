@@ -40,7 +40,7 @@ const TTL: Duration = Duration::from_secs(300);
 #[derive(Debug)]
 pub struct Inode {
     /// Inode number of the parent of the current inode.
-    /// 
+    ///
     /// For the root, it will be `FUSE_ROOT_ID`, i.e., itself.
     pub parent: u64,
     /// Inode number of this node. Will not be 0.
@@ -112,7 +112,7 @@ impl FS {
     }
 
     fn check_access(&self, req: &Request) -> bool {
-        req.uid() == self.config.uid
+        req.uid() == 0 || req.uid() == self.config.uid
     }
 
     pub fn get(&self, inum: u64) -> Result<&Inode, FSError> {
@@ -375,7 +375,13 @@ impl Filesystem for FS {
         reply.attr(&TTL, &self.attr(file));
     }
 
-    #[instrument(level = "debug", skip(self, req, reply))]
+    #[instrument(
+        level = "debug",
+        skip(
+            self, req, reply, mode, _uid, _gid, size, _atime, _mtime, _ctime, _fh, _crtime,
+            _chgtime, _bkuptime, _flags
+        )
+    )]
     fn setattr(
         &mut self,
         req: &Request<'_>,
@@ -383,7 +389,7 @@ impl Filesystem for FS {
         mode: Option<u32>,
         _uid: Option<u32>,
         _gid: Option<u32>,
-        _size: Option<u64>,
+        size: Option<u64>,
         _atime: Option<TimeOrNow>,
         _mtime: Option<TimeOrNow>,
         _ctime: Option<SystemTime>,
@@ -396,32 +402,51 @@ impl Filesystem for FS {
     ) {
         info!("called");
 
-        let file = match self.get(ino) {
-            Err(_e) => {
-                reply.error(libc::ENOENT);
-                return;
-            }
-            Ok(inode) => inode,
-        };
+        if !self.check_access(req) {
+            reply.error(libc::EPERM);
+            return;
+        }
 
         if let Some(mode) = mode {
-            debug!("chmod() called with {:?}, {:o}", ino, mode);
+            info!("chmod to {:o}", mode);
 
             if mode != mode & 0o777 {
                 info!("truncating mode {:o} to {:o}", mode, mode & 0o777);
             }
             let mode = (mode as u16) & 0o777;
 
-            let mut attrs = self.attr(file);
-            if req.uid() != 0 && req.uid() != attrs.uid {
-                reply.error(libc::EPERM);
-                return;
-            }
+            match self.get_mut(ino) {
+                Ok(inode) => inode.mode = mode,
+                Err(_) => {
+                    reply.error(libc::ENOENT);
+                    return;
+                }
+            };
 
-            attrs.perm = mode;
-            reply.attr(&Duration::new(0, 0), &attrs);
+            reply.attr(&TTL, &self.attr(self.get(ino).unwrap()));
+            return;
+        }
 
-            self.get_mut(ino).unwrap().mode = mode;
+        if let Some(size) = size {
+            info!("truncate() to {}", size);
+
+            match self.get_mut(ino) {
+                Ok(inode) => match &mut inode.entry {
+                    Entry::File(contents) => {
+                        contents.resize(size as usize, 0);
+                    }
+                    Entry::Directory(..) => {
+                        reply.error(libc::EISDIR);
+                        return;
+                    }
+                },
+                Err(_) => {
+                    reply.error(libc::ENOENT);
+                    return;
+                }
+            };
+
+            reply.attr(&TTL, &self.attr(self.get(ino).unwrap()));
             return;
         }
 
