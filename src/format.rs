@@ -15,9 +15,10 @@ use ::toml as serde_toml;
 pub enum Format {
     Json,
     Toml,
+    Yaml,
 }
 
-pub const POSSIBLE_FORMATS: &[&str] = &["json", "toml"];
+pub const POSSIBLE_FORMATS: &[&str] = &["json", "toml", "yaml"];
 
 impl std::fmt::Display for Format {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
@@ -27,6 +28,7 @@ impl std::fmt::Display for Format {
             match self {
                 Format::Json => "json",
                 Format::Toml => "toml",
+                Format::Yaml => "yaml",
             }
         )
     }
@@ -48,6 +50,8 @@ impl FromStr for Format {
             Ok(Format::Json)
         } else if s == "toml" {
             Ok(Format::Toml)
+        } else if s == "yaml" || s == "yml" {
+            Ok(Format::Yaml)
         } else {
             Err(ParseFormatError::NoSuchFormat(s))
         }
@@ -74,6 +78,13 @@ impl Format {
             Format::Toml => {
                 info!("reading toml value");
                 let v = toml::from_reader(reader).expect("TOML");
+                info!("building inodes");
+                fs_from_value(v, &config, &mut inodes);
+                info!("done");
+            }
+            Format::Yaml => {
+                info!("reading toml value");
+                let v = yaml::from_reader(reader).expect("YAML");
                 info!("building inodes");
                 fs_from_value(v, &config, &mut inodes);
                 info!("done");
@@ -119,6 +130,14 @@ impl Format {
                 info!("writing");
                 debug!("outputting {}", v);
                 toml::to_writer(writer, &v).unwrap();
+                info!("done");
+            }
+            Format::Yaml => {
+                info!("generating yaml value");
+                let v: yaml::Value = value_from_fs(fs, fuser::FUSE_ROOT_ID);
+                info!("writing");
+                debug!("outputting {}", v);
+                yaml::to_writer(writer, &v).unwrap();
                 info!("done");
             }
         }
@@ -389,8 +408,8 @@ mod json {
 
 mod toml {
     use super::*;
-
     use serde_toml::Value;
+
     #[derive(Debug)]
     pub enum Error<E> {
         Io(std::io::Error),
@@ -482,6 +501,168 @@ mod toml {
 
         fn from_named_dir(files: HashMap<String, Self>, _config: &Config) -> Self {
             Value::Table(files.into_iter().collect())
+        }
+    }
+}
+
+mod yaml {
+    use super::*;
+    use std::hash::{Hash, Hasher};
+    use yaml_rust::{EmitError, ScanError, Yaml};
+
+    #[derive(Clone, Debug)]
+    pub struct Value(Yaml);
+
+    #[derive(Debug)]
+    pub enum Error<E> {
+        Io(std::io::Error),
+        Yaml(E),
+    }
+
+    pub fn from_reader(mut reader: Box<dyn std::io::Read>) -> Result<Value, Error<ScanError>> {
+        let mut text = String::new();
+        let _len = reader.read_to_string(&mut text).map_err(Error::Io)?;
+        yaml_rust::YamlLoader::load_from_str(&text)
+            .map(|vs| {
+                Value(if vs.len() == 1 {
+                    vs.into_iter().next().unwrap()
+                } else {
+                    Yaml::Array(vs)
+                })
+            })
+            .map_err(Error::Yaml)
+    }
+
+    pub fn to_writer(
+        mut writer: Box<dyn std::io::Write>,
+        v: &Value,
+    ) -> Result<(), Error<EmitError>> {
+        let mut text = String::new();
+        let mut emitter = yaml_rust::YamlEmitter::new(&mut text);
+        emitter.dump(&v.0).map_err(Error::Yaml)?;
+        writer.write_all(text.as_bytes()).map_err(Error::Io)
+    }
+
+    impl std::fmt::Display for Value {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+            let mut emitter = yaml_rust::YamlEmitter::new(f);
+            emitter.dump(&self.0).map_err(|e| match e {
+                yaml_rust::EmitError::FmtError(e) => e,
+                yaml_rust::EmitError::BadHashmapKey => {
+                    panic!("unrecoverable YAML display error: BadHashmapKey")
+                }
+            })
+        }
+    }
+
+    fn yaml_size(v: &Yaml) -> usize {
+        match v {
+            Yaml::Real(_)
+            | Yaml::Integer(_)
+            | Yaml::String(_)
+            | Yaml::Boolean(_)
+            | Yaml::Null
+            | Yaml::BadValue
+            | Yaml::Alias(_) => 1,
+            Yaml::Array(vs) => vs.iter().map(|v| yaml_size(v)).sum::<usize>() + 1,
+            Yaml::Hash(fvs) => fvs.iter().map(|(_, v)| yaml_size(v)).sum::<usize>() + 1,
+        }
+    }
+
+    fn yaml_key_to_string(v: Yaml) -> String {
+        match v {
+            Yaml::Boolean(b) => format!("{}", b),
+            Yaml::Real(s) => s,
+            Yaml::Integer(n) => format!("{}", n),
+            Yaml::String(s) => s,
+            Yaml::Alias(n) => format!("alias{}", n),
+            Yaml::Array(vs) => {
+                let mut hasher = std::collections::hash_map::DefaultHasher::new();
+                vs.hash(&mut hasher);
+                format!("{}", hasher.finish())
+            }
+            Yaml::Hash(fvs) => {
+                let mut hasher = std::collections::hash_map::DefaultHasher::new();
+                fvs.hash(&mut hasher);
+                format!("{}", hasher.finish())
+            }
+            Yaml::Null => "null".into(),
+            Yaml::BadValue => "badvalue".into(),
+        }
+    }
+
+    impl Nodelike for Value {
+        fn kind(&self) -> FileType {
+            match &self.0 {
+                Yaml::Array(_) | Yaml::Hash(_) => FileType::Directory,
+                _ => FileType::RegularFile,
+            }
+        }
+
+        fn size(&self) -> usize {
+            yaml_size(&self.0)
+        }
+
+        fn node(self, config: &Config) -> Node<Self> {
+            let nl = if config.add_newlines { "\n" } else { "" };
+
+            match self.0 {
+                Yaml::Null => Node::String("".into()),
+                Yaml::Boolean(b) => Node::Bytes(format!("{}{}", b, nl).into_bytes()),
+                Yaml::Real(s) => Node::String(s + nl),
+                Yaml::Integer(n) => Node::Bytes(format!("{}{}", n, nl).into_bytes()),
+                Yaml::String(s) => {
+                    if config.try_decode_base64 {
+                        if let Ok(bytes) = base64::decode_config(&s, config.base64) {
+                            return Node::Bytes(bytes);
+                        }
+                    }
+
+                    Node::String(if s.ends_with('\n') { s } else { s + nl })
+                }
+                Yaml::Array(vs) => Node::List(vs.into_iter().map(Value).collect()),
+                Yaml::Hash(fvs) => Node::Map(
+                    fvs.into_iter()
+                        .map(|(k, v)| (yaml_key_to_string(k), Value(v)))
+                        .collect(),
+                ),
+                // ??? 2021-06-21 support aliases w/hard links?
+                Yaml::Alias(n) => Node::Bytes(format!("alias{}{}", n, nl).into_bytes()),
+                Yaml::BadValue => Node::Bytes("bad YAML value".into()),
+            }
+        }
+
+        fn from_string(contents: String, _config: &Config) -> Self {
+            if contents == "true" {
+                Value(Yaml::Boolean(true))
+            } else if contents == "false" {
+                Value(Yaml::Boolean(false))
+            } else if let Ok(n) = i64::from_str(&contents) {
+                Value(Yaml::Integer(n))
+            } else if f64::from_str(&contents).is_ok() {
+                Value(Yaml::Real(contents))
+            } else {
+                Value(Yaml::String(contents))
+            }
+        }
+
+        fn from_bytes<T>(contents: T, config: &Config) -> Self
+        where
+            T: AsRef<[u8]>,
+        {
+            Value(Yaml::String(base64::encode_config(contents, config.base64)))
+        }
+
+        fn from_list_dir(vs: Vec<Self>, _config: &Config) -> Self {
+            Value(Yaml::Array(vs.into_iter().map(|v| v.0).collect()))
+        }
+
+        fn from_named_dir(fvs: HashMap<String, Self>, config: &Config) -> Self {
+            Value(Yaml::Hash(
+                fvs.into_iter()
+                    .map(|(k, v)| (Value::from_string(k, config).0, v.0))
+                    .collect(),
+            ))
         }
     }
 }
