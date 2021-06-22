@@ -18,7 +18,7 @@ pub enum Format {
     Yaml,
 }
 
-pub const POSSIBLE_FORMATS: &[&str] = &["json", "toml"];
+pub const POSSIBLE_FORMATS: &[&str] = &["json", "toml", "yaml"];
 
 impl std::fmt::Display for Format {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
@@ -50,7 +50,7 @@ impl FromStr for Format {
             Ok(Format::Json)
         } else if s == "toml" {
             Ok(Format::Toml)
-        } else if s == "yaml" {
+        } else if s == "yaml" || s == "yml" {
             Ok(Format::Yaml)
         } else {
             Err(ParseFormatError::NoSuchFormat(s))
@@ -408,8 +408,8 @@ mod json {
 
 mod toml {
     use super::*;
-
     use serde_toml::Value;
+
     #[derive(Debug)]
     pub enum Error<E> {
         Io(std::io::Error),
@@ -507,17 +507,40 @@ mod toml {
 
 mod yaml {
     use super::*;
+    use std::hash::{Hash, Hasher};
     use yaml_rust::{EmitError, ScanError, Yaml};
 
     #[derive(Clone, Debug)]
     pub struct Value(Yaml);
 
-    pub fn from_reader(mut reader: Box<dyn std::io::Read>) -> Result<Value, ScanError> {
-        todo!()
+    #[derive(Debug)]
+    pub enum Error<E> {
+        Io(std::io::Error),
+        Yaml(E),
     }
 
-    pub fn to_writer(mut writer: Box<dyn std::io::Write>, v: &Value) -> Result<(), EmitError> {
-        todo!()
+    pub fn from_reader(mut reader: Box<dyn std::io::Read>) -> Result<Value, Error<ScanError>> {
+        let mut text = String::new();
+        let _len = reader.read_to_string(&mut text).map_err(Error::Io)?;
+        yaml_rust::YamlLoader::load_from_str(&text)
+            .map(|vs| {
+                Value(if vs.len() == 1 {
+                    vs.into_iter().next().unwrap()
+                } else {
+                    Yaml::Array(vs)
+                })
+            })
+            .map_err(Error::Yaml)
+    }
+
+    pub fn to_writer(
+        mut writer: Box<dyn std::io::Write>,
+        v: &Value,
+    ) -> Result<(), Error<EmitError>> {
+        let mut text = String::new();
+        let mut emitter = yaml_rust::YamlEmitter::new(&mut text);
+        emitter.dump(&v.0).map_err(Error::Yaml)?;
+        writer.write_all(text.as_bytes()).map_err(Error::Io)
     }
 
     impl std::fmt::Display for Value {
@@ -525,7 +548,9 @@ mod yaml {
             let mut emitter = yaml_rust::YamlEmitter::new(f);
             emitter.dump(&self.0).map_err(|e| match e {
                 yaml_rust::EmitError::FmtError(e) => e,
-                yaml_rust::EmitError::BadHashmapKey => panic!("unrecoverable YAML display error"),
+                yaml_rust::EmitError::BadHashmapKey => {
+                    panic!("unrecoverable YAML display error: BadHashmapKey")
+                }
             })
         }
     }
@@ -551,8 +576,16 @@ mod yaml {
             Yaml::Integer(n) => format!("{}", n),
             Yaml::String(s) => s,
             Yaml::Alias(n) => format!("alias{}", n),
-            Yaml::Array(_) => "array".into(),
-            Yaml::Hash(_) => "hash".into(),
+            Yaml::Array(vs) => {
+                let mut hasher = std::collections::hash_map::DefaultHasher::new();
+                vs.hash(&mut hasher);
+                format!("{}", hasher.finish())
+            }
+            Yaml::Hash(fvs) => {
+                let mut hasher = std::collections::hash_map::DefaultHasher::new();
+                fvs.hash(&mut hasher);
+                format!("{}", hasher.finish())
+            }
             Yaml::Null => "null".into(),
             Yaml::BadValue => "badvalue".into(),
         }
@@ -599,23 +632,37 @@ mod yaml {
             }
         }
 
-        fn from_named_dir(_: HashMap<std::string::String, Self>, _: &Config) -> Self {
-            todo!()
+        fn from_string(contents: String, _config: &Config) -> Self {
+            if contents == "true" {
+                Value(Yaml::Boolean(true))
+            } else if contents == "false" {
+                Value(Yaml::Boolean(false))
+            } else if let Ok(n) = i64::from_str(&contents) {
+                Value(Yaml::Integer(n))
+            } else if f64::from_str(&contents).is_ok() {
+                Value(Yaml::Real(contents))
+            } else {
+                Value(Yaml::String(contents))
+            }
         }
 
-        fn from_list_dir(_: Vec<Self>, _: &Config) -> Self {
-            todo!()
-        }
-
-        fn from_string(_: String, _: &Config) -> Self {
-            todo!()
-        }
-
-        fn from_bytes<T>(_: T, _: &Config) -> Self
+        fn from_bytes<T>(contents: T, config: &Config) -> Self
         where
             T: AsRef<[u8]>,
         {
-            todo!()
+            Value(Yaml::String(base64::encode_config(contents, config.base64)))
+        }
+
+        fn from_list_dir(vs: Vec<Self>, _config: &Config) -> Self {
+            Value(Yaml::Array(vs.into_iter().map(|v| v.0).collect()))
+        }
+
+        fn from_named_dir(fvs: HashMap<String, Self>, config: &Config) -> Self {
+            Value(Yaml::Hash(
+                fvs.into_iter()
+                    .map(|(k, v)| (Value::from_string(k, config).0, v.0))
+                    .collect(),
+            ))
         }
     }
 }

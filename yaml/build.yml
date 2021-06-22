@@ -1,0 +1,49 @@
+name: Main workflow
+
+on:
+  - pull_request
+  - push
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Install FUSE
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get install fuse libfuse-dev pkg-config
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            brew install macfuse pkg-config
+          else
+            echo Unsupported RUNNER_OS=$RUNNER_OS
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build ffs and run unit tests
+        run: |
+          cargo build --verbose --all
+          cargo test
+        
+      - name: Integration tests
+        run: |
+          PATH="$(pwd)/target/debug:$PATH"
+          RUST_LOG="ffs=info"
+          export RUST_LOG
+          cd tests
+          for test in *.sh
+          do
+            echo ========== RUNNING TEST: $(basename ${test%*.sh})
+            ./${test} || exit 1
+          done
+      
