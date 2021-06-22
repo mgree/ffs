@@ -11,11 +11,11 @@ fail() {
     exit 1
 }
 
-if [ "$RUNNER_OS" = "Linux" ]; then
+if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
     num_links() {
         stat --format %h "$@"
     }
-elif [ "$RUNNER_OS" = "macOS" ]; then
+elif [ "$RUNNER_OS" = "macOS" ] || [ "$(uname)" = "Darwin" ]; then
     num_links() {
         stat -f %l "$@"
     }

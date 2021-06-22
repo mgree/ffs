@@ -14,11 +14,11 @@ fail() {
     exit 1
 }
 
-if [ "$RUNNER_OS" = "Linux" ]; then
+if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
     decode() {
         base64 -d $1 >$2
     }
-elif [ "$RUNNER_OS" = "macOS" ]; then
+elif [ "$RUNNER_OS" = "macOS" ] || [ "$(uname)" = "Darwin" ]; then
     decode() {
         base64 -D -i $1 -o $2
     }

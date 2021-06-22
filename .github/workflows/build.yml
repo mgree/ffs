@@ -36,14 +36,5 @@ jobs:
           cargo test
         
       - name: Integration tests
-        run: |
-          PATH="$(pwd)/target/debug:$PATH"
-          RUST_LOG="ffs=info"
-          export RUST_LOG
-          cd tests
-          for test in *.sh
-          do
-            echo ========== RUNNING TEST: $(basename ${test%*.sh})
-            ./${test} || exit 1
-          done
+        run: ./run_tests.sh
       
