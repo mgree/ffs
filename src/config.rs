@@ -1,3 +1,4 @@
+use fuser::FileType;
 use std::path::PathBuf;
 
 use super::format::Format;
@@ -42,6 +43,15 @@ impl Config {
             .replace(";", "semi")
             .replace("=", "equal")
             .replace(" ", "space")
+    }
+
+    /// Determines the default mode of a file
+    pub fn mode(&self, kind: FileType) -> u16 {
+        if kind == FileType::Directory {
+            self.dirmode
+        } else {
+            self.filemode
+        }
     }
 }
 

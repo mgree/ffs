@@ -41,6 +41,7 @@ const TTL: Duration = Duration::from_secs(300);
 pub struct Inode {
     pub parent: u64,
     pub inum: u64,
+    pub mode: u16,
     pub entry: Entry,
 }
 
@@ -80,16 +81,14 @@ impl FS {
         }
     }
 
-    fn fresh_inode(&mut self, parent: u64, entry: Entry) -> u64 {
+    fn fresh_inode(&mut self, parent: u64, entry: Entry, mode: u32) -> u64 {
         self.dirty.set(true);
 
         let inum = self.inodes.len() as u64;
+        let mode = (mode & 0o777) as u16;
 
-        self.inodes.push(Some(Inode {
-            parent,
-            inum,
-            entry,
-        }));
+        self.inodes
+            .push(Some(Inode::with_mode(parent, inum, entry, mode)));
 
         inum
     }
@@ -124,21 +123,11 @@ impl FS {
         }
     }
 
-    fn mode(&self, kind: FileType) -> u16 {
-        if kind == FileType::Directory {
-            self.config.dirmode
-        } else {
-            self.config.filemode
-        }
-    }
-
     /// Gets the `FileAttr` of a given `Inode`. Much of this is computed each
     /// time: the size, the kind, permissions, and number of hard links.
     pub fn attr(&self, inode: &Inode) -> FileAttr {
         let size = inode.entry.size();
         let kind = inode.entry.kind();
-
-        let perm = self.mode(kind);
 
         let nlink: u32 = match &inode.entry {
             Entry::Directory(_, files) => {
@@ -163,7 +152,7 @@ impl FS {
             kind,
             uid: self.config.uid,
             gid: self.config.gid,
-            perm,
+            perm: inode.mode,
             rdev: 0,
             flags: 0, // weird macOS thing
         }
@@ -200,6 +189,22 @@ impl FS {
         self.config.output_format.save(self);
         self.dirty.set(false);
         self.synced.set(true);
+    }
+}
+
+impl Inode {
+    pub fn new(parent: u64, inum: u64, entry: Entry, config: &Config) -> Self {
+        let mode = config.mode(entry.kind());
+        Inode::with_mode(parent, inum, entry, mode)
+    }
+
+    pub fn with_mode(parent: u64, inum: u64, entry: Entry, mode: u16) -> Self {
+        Inode {
+            parent,
+            inum,
+            mode,
+            entry,
+        }
     }
 }
 
@@ -350,6 +355,59 @@ impl Filesystem for FS {
         };
 
         reply.attr(&TTL, &self.attr(file));
+    }
+
+    #[instrument(level = "debug", skip(self, req, reply))]
+    fn setattr(
+        &mut self,
+        req: &Request<'_>,
+        ino: u64,
+        mode: Option<u32>,
+        _uid: Option<u32>,
+        _gid: Option<u32>,
+        _size: Option<u64>,
+        _atime: Option<TimeOrNow>,
+        _mtime: Option<TimeOrNow>,
+        _ctime: Option<SystemTime>,
+        _fh: Option<u64>,
+        _crtime: Option<SystemTime>,
+        _chgtime: Option<SystemTime>,
+        _bkuptime: Option<SystemTime>,
+        _flags: Option<u32>,
+        reply: ReplyAttr,
+    ) {
+        info!("called");
+
+        let file = match self.get(ino) {
+            Err(_e) => {
+                reply.error(libc::ENOENT);
+                return;
+            }
+            Ok(inode) => inode,
+        };
+
+        if let Some(mode) = mode {
+            debug!("chmod() called with {:?}, {:o}", ino, mode);
+
+            if mode != mode & 0o777 {
+                info!("truncating mode {:o} to {:o}", mode, mode & 0o777);
+            }
+            let mode = (mode as u16) & 0o777;
+
+            let mut attrs = self.attr(file);
+            if req.uid() != 0 && req.uid() != attrs.uid {
+                reply.error(libc::EPERM);
+                return;
+            }
+
+            attrs.perm = mode;
+            reply.attr(&Duration::new(0, 0), &attrs);
+
+            self.get_mut(ino).unwrap().mode = mode;
+            return;
+        }
+
+        reply.error(libc::ENOSYS);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
@@ -514,7 +572,7 @@ impl Filesystem for FS {
         };
 
         // allocate the inode (sets dirty bit)
-        let inum = self.fresh_inode(parent, entry);
+        let inum = self.fresh_inode(parent, entry, mode);
 
         // update the parent
         // NB we can't get_mut the parent earlier due to borrowing restrictions
@@ -544,10 +602,6 @@ impl Filesystem for FS {
     ) {
         info!("called");
 
-        let mode = mode & 0o777; // high bits are sometimes set, e.g., 0o40755. no idea.
-        if mode != self.config.dirmode as u32 {
-            warn!("Given mode {:o}, using {}", mode, self.config.dirmode);
-        }
         if !self.check_access(req) {
             reply.error(libc::EACCES);
             return;
@@ -587,7 +641,7 @@ impl Filesystem for FS {
         let kind = FileType::Directory;
 
         // allocate the inode (sets dirty bit)
-        let inum = self.fresh_inode(parent, entry);
+        let inum = self.fresh_inode(parent, entry, mode);
 
         // update the parent
         // NB we can't get_mut the parent earlier due to borrowing restrictions
@@ -1045,30 +1099,6 @@ impl Filesystem for FS {
     // Unimplemented/default-implementation calls
     #[instrument(level = "debug", skip(self, _req))]
     fn forget(&mut self, _req: &Request<'_>, _ino: u64, _nlookup: u64) {}
-
-    #[instrument(level = "debug", skip(self, _req, reply))]
-    fn setattr(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _mode: Option<u32>,
-        _uid: Option<u32>,
-        _gid: Option<u32>,
-        _size: Option<u64>,
-        _atime: Option<TimeOrNow>,
-        _mtime: Option<TimeOrNow>,
-        _ctime: Option<SystemTime>,
-        _fh: Option<u64>,
-        _crtime: Option<SystemTime>,
-        _chgtime: Option<SystemTime>,
-        _bkuptime: Option<SystemTime>,
-        _flags: Option<u32>,
-        reply: ReplyAttr,
-    ) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn readlink(&mut self, _req: &Request<'_>, _ino: u64, reply: ReplyData) {

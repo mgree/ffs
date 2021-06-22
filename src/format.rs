@@ -282,11 +282,7 @@ where
             }
         };
 
-        inodes[inum as usize] = Some(Inode {
-            parent,
-            inum,
-            entry,
-        });
+        inodes[inum as usize] = Some(Inode::new(parent, inum, entry, config));
     }
     assert_eq!(inodes.len() as u64, next_id);
 }
