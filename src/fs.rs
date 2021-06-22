@@ -50,6 +50,7 @@ pub struct Inode {
     pub mode: u16,
     /// The actual file contents.
     pub entry: Entry,
+    // TODO 2021-06-21 track timestamp info here, add support in setattr?
 }
 
 /// File contents. Either a `File` containing bytes or a `Directory`, mapping
