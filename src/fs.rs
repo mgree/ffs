@@ -1531,6 +1531,7 @@ impl Filesystem for FS {
 }
 
 /// Returns the group IDs a user is in
+#[cfg(target_os = "macos")]
 fn groups_for(uid: u32) -> Vec<u32> {
     unsafe {
         let passwd = libc::getpwuid(uid);
@@ -1545,5 +1546,22 @@ fn groups_for(uid: u32) -> Vec<u32> {
         let res = libc::getgrouplist(name, basegid, groups.as_mut_ptr(), &mut ngroups);
         assert_eq!(res, 0);
         groups.into_iter().map(|gid| gid as u32).collect()
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn groups_for(uid: u32) -> Vec<u32> {
+    unsafe {
+        let passwd = libc::getpwuid(uid);
+        let name = (*passwd).pw_name;
+        let basegid = (*passwd).pw_gid as i32;
+
+        // get the number of groups
+        let mut ngroups = 0;
+        libc::getgrouplist(name, basegid, std::ptr::null_mut(), &mut ngroups);
+
+        let mut groups = vec![0; ngroups as usize];
+        let res = libc::getgrouplist(name, basegid, groups.as_mut_ptr(), &mut ngroups);
+        assert_eq!(res, 0);
     }
 }
