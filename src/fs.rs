@@ -45,6 +45,10 @@ pub struct Inode {
     pub parent: u64,
     /// Inode number of this node. Will not be 0.
     pub inum: u64,
+    /// User ID of the owner
+    pub uid: u32,
+    /// Group ID of the owner,
+    pub gid: u32,
     /// Mode of this inode. Defaults to values set in `FS.config`, but calls to
     /// `mknod` and `mkdir` and `setattr` (as `chmod`) can change this.
     pub mode: u16,
@@ -107,14 +111,14 @@ impl FS {
         }
     }
 
-    fn fresh_inode(&mut self, parent: u64, entry: Entry, mode: u32) -> u64 {
+    fn fresh_inode(&mut self, parent: u64, entry: Entry, uid: u32, gid: u32, mode: u32) -> u64 {
         self.dirty.set(true);
 
         let inum = self.inodes.len() as u64;
         let mode = (mode & 0o777) as u16;
 
         self.inodes
-            .push(Some(Inode::with_mode(parent, inum, entry, mode)));
+            .push(Some(Inode::with_mode(parent, inum, entry, uid, gid, mode)));
 
         inum
     }
@@ -146,41 +150,6 @@ impl FS {
         match self.inodes.get_mut(idx) {
             Some(Some(inode)) => Ok(inode),
             _ => Err(FSError::InvalidInode(inum)),
-        }
-    }
-
-    /// Gets the `FileAttr` of a given `Inode`. Much of this is computed each
-    /// time: the size, the kind, permissions, and number of hard links.
-    pub fn attr(&self, inode: &Inode) -> FileAttr {
-        let size = inode.entry.size();
-        let kind = inode.entry.kind();
-
-        let nlink: u32 = match &inode.entry {
-            Entry::Directory(_, files) => {
-                2 + files
-                    .iter()
-                    .filter(|(_, de)| de.kind == FileType::Directory)
-                    .count() as u32
-            }
-            Entry::File(_) => 1,
-        };
-
-        FileAttr {
-            ino: inode.inum,
-            atime: inode.atime,
-            crtime: inode.crtime,
-            ctime: inode.ctime,
-            mtime: inode.mtime,
-            nlink,
-            size,
-            blksize: 1,
-            blocks: size,
-            kind,
-            uid: self.config.uid,
-            gid: self.config.gid,
-            perm: inode.mode,
-            rdev: 0,
-            flags: 0, // weird macOS thing
         }
     }
 
@@ -221,21 +190,60 @@ impl FS {
 impl Inode {
     pub fn new(parent: u64, inum: u64, entry: Entry, config: &Config) -> Self {
         let mode = config.mode(entry.kind());
-        Inode::with_mode(parent, inum, entry, mode)
+        let uid = config.uid;
+        let gid = config.gid;
+        Inode::with_mode(parent, inum, entry, uid, gid, mode)
     }
 
-    pub fn with_mode(parent: u64, inum: u64, entry: Entry, mode: u16) -> Self {
+    pub fn with_mode(parent: u64, inum: u64, entry: Entry, uid: u32, gid: u32, mode: u16) -> Self {
         let now = SystemTime::now();
 
         Inode {
             parent,
             inum,
+            uid,
+            gid,
             mode,
             entry,
             atime: now,
             crtime: now,
             ctime: now,
             mtime: now,
+        }
+    }
+
+    /// Gets the `FileAttr` of a given `Inode`. Some of this is computed each
+    /// time: the size, the kind, permissions, and number of hard links.
+    pub fn attr(&self) -> FileAttr {
+        let size = self.entry.size();
+        let kind = self.entry.kind();
+
+        let nlink: u32 = match &self.entry {
+            Entry::Directory(_, files) => {
+                2 + files
+                    .iter()
+                    .filter(|(_, de)| de.kind == FileType::Directory)
+                    .count() as u32
+            }
+            Entry::File(_) => 1,
+        };
+
+        FileAttr {
+            ino: self.inum,
+            atime: self.atime,
+            crtime: self.crtime,
+            ctime: self.ctime,
+            mtime: self.mtime,
+            nlink,
+            size,
+            blksize: 1,
+            blocks: size,
+            kind,
+            uid: self.uid,
+            gid: self.gid,
+            perm: self.mode,
+            rdev: 0,
+            flags: 0, // weird macOS thing
         }
     }
 }
@@ -306,7 +314,7 @@ impl Filesystem for FS {
         match self.get(inode) {
             Ok(inode) => {
                 // cribbed from https://github.com/cberner/fuser/blob/4639a490f4aa7dfe8a342069a761d4cf2bd8f821/examples/simple.rs#L1703-L1736
-                let attr = self.attr(inode);
+                let attr = inode.attr();
                 let mode = attr.perm as i32;
 
                 if req.uid() == 0 {
@@ -366,7 +374,7 @@ impl Filesystem for FS {
                         Ok(inode) => inode,
                     };
 
-                    reply.entry(&TTL, &self.attr(file), 0);
+                    reply.entry(&TTL, &file.attr(), 0);
                 }
             },
             _ => {
@@ -386,13 +394,13 @@ impl Filesystem for FS {
             Ok(inode) => inode,
         };
 
-        reply.attr(&TTL, &self.attr(file));
+        reply.attr(&TTL, &file.attr());
     }
     #[instrument(
         level = "debug",
         skip(
-            self, req, reply, mode, _uid, _gid, size, atime, mtime, _ctime, _fh, _crtime,
-            _chgtime, _bkuptime, _flags
+            self, req, reply, mode, _uid, _gid, size, atime, mtime, _ctime, _fh, _crtime, _chgtime,
+            _bkuptime, _flags
         )
     )]
     fn setattr(
@@ -429,15 +437,16 @@ impl Filesystem for FS {
             let mode = (mode as u16) & 0o777;
 
             match self.get_mut(ino) {
-                Ok(inode) => inode.mode = mode,
+                Ok(inode) => {
+                    inode.mode = mode;
+                    reply.attr(&TTL, &inode.attr());
+                    return;
+                }
                 Err(_) => {
                     reply.error(libc::ENOENT);
                     return;
                 }
             };
-
-            reply.attr(&TTL, &self.attr(self.get(ino).unwrap()));
-            return;
         }
 
         if let Some(size) = size {
@@ -447,6 +456,8 @@ impl Filesystem for FS {
                 Ok(inode) => match &mut inode.entry {
                     Entry::File(contents) => {
                         contents.resize(size as usize, 0);
+                        reply.attr(&TTL, &inode.attr());
+                        return;
                     }
                     Entry::Directory(..) => {
                         reply.error(libc::EISDIR);
@@ -458,9 +469,6 @@ impl Filesystem for FS {
                     return;
                 }
             };
-
-            reply.attr(&TTL, &self.attr(self.get(ino).unwrap()));
-            return;
         }
 
         let now = SystemTime::now();
@@ -471,12 +479,13 @@ impl Filesystem for FS {
                 reply.error(libc::EPERM);
                 return;
             }
-            
             match self.get_mut(ino) {
-                Ok(inode) => inode.atime = match atime {
-                    TimeOrNow::Now => now,
-                    TimeOrNow::SpecificTime(time) => time,
-                },
+                Ok(inode) => {
+                    inode.atime = match atime {
+                        TimeOrNow::Now => now,
+                        TimeOrNow::SpecificTime(time) => time,
+                    }
+                }
                 Err(_) => {
                     reply.error(libc::ENOENT);
                     return;
@@ -493,12 +502,13 @@ impl Filesystem for FS {
                 reply.error(libc::EPERM);
                 return;
             }
-            
             match self.get_mut(ino) {
-                Ok(inode) => inode.mtime = match mtime {
-                    TimeOrNow::Now => now,
-                    TimeOrNow::SpecificTime(time) => time,
-                },
+                Ok(inode) => {
+                    inode.mtime = match mtime {
+                        TimeOrNow::Now => now,
+                        TimeOrNow::SpecificTime(time) => time,
+                    }
+                }
                 Err(_) => {
                     reply.error(libc::ENOENT);
                     return;
@@ -509,7 +519,7 @@ impl Filesystem for FS {
         }
 
         if set_time {
-            reply.attr(&TTL, &self.attr(self.get(ino).unwrap()));
+            reply.attr(&TTL, &self.get(ino).unwrap().attr());
         } else {
             reply.error(libc::ENOSYS);
         }
@@ -677,7 +687,7 @@ impl Filesystem for FS {
         };
 
         // allocate the inode (sets dirty bit)
-        let inum = self.fresh_inode(parent, entry, mode);
+        let inum = self.fresh_inode(parent, entry, req.uid(), req.gid(), mode);
 
         // update the parent
         // NB we can't get_mut the parent earlier due to borrowing restrictions
@@ -687,12 +697,12 @@ impl Filesystem for FS {
                 Entry::File(_) => unreachable!("parent changed to a regular file"),
                 Entry::Directory(_dirtype, files) => {
                     files.insert(filename.into(), DirEntry { kind, inum });
+                    reply.entry(&TTL, &inode.attr(), 0);
                 }
             },
         };
 
         assert!(self.dirty.get());
-        reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
@@ -746,7 +756,7 @@ impl Filesystem for FS {
         let kind = FileType::Directory;
 
         // allocate the inode (sets dirty bit)
-        let inum = self.fresh_inode(parent, entry, mode);
+        let inum = self.fresh_inode(parent, entry, req.uid(), req.gid(), mode);
 
         // update the parent
         // NB we can't get_mut the parent earlier due to borrowing restrictions
@@ -756,12 +766,12 @@ impl Filesystem for FS {
                 Entry::File(_) => unreachable!("parent changed to a regular file"),
                 Entry::Directory(_dirtype, files) => {
                     files.insert(filename.into(), DirEntry { kind, inum });
+                    reply.entry(&TTL, &inode.attr(), 0);
                 }
             },
         };
 
         assert!(self.dirty.get());
-        reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
