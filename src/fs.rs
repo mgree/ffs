@@ -466,7 +466,8 @@ impl Filesystem for FS {
         let now = SystemTime::now();
         let mut set_time = false;
         if let Some(atime) = atime {
-            if self.check_access(req) && atime != TimeOrNow::Now {
+            info!("setting atime");
+            if !self.check_access(req) {
                 reply.error(libc::EPERM);
                 return;
             }
@@ -486,7 +487,9 @@ impl Filesystem for FS {
         }
 
         if let Some(mtime) = mtime {
-            if self.check_access(req) && mtime != TimeOrNow::Now {
+            info!("setting mtime");
+
+            if !self.check_access(req) {
                 reply.error(libc::EPERM);
                 return;
             }
