@@ -11,15 +11,12 @@ cd tests
 
 LOG=$(mktemp -d)
 
-RUST_LOG="ffs=debug"
-export RUST_LOG
-
 # spawn 'em all in parallel
 for test in *.sh
 do
     tname="$(basename ${test%*.sh})"
     printf "========== STARTING TEST: $tname\n"
-    (./${test} >$LOG/$tname.out 2>$LOG/$tname.nerr; echo $?>$LOG/$tname.ec) &
+    (RUST_LOG="ffs=debug" ./${test} >$LOG/$tname.out 2>$LOG/$tname.nerr; echo $?>$LOG/$tname.ec) &
     : $((TOTAL += 1))
 
     # don't slam 'em

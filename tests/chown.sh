@@ -15,7 +15,7 @@ fail() {
 MNT=$(mktemp -d)
 ERR=$(mktemp)
 
-ffs --no-output "$MNT" ../json/object.json &
+ffs -d --no-output "$MNT" ../json/object.json &
 PID=$!
 sleep 2
 chown :nobody "$MNT"/name 2>$ERR >&2 && fail "chgrp1: $(cat $ERR)"
