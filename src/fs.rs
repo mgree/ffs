@@ -62,7 +62,6 @@ pub struct Inode {
     pub crtime: SystemTime,
     /// The actual file contents.
     pub entry: Entry,
-    // TODO 2021-06-21 track timestamp info here, add support in setattr?
 }
 
 /// File contents. Either a `File` containing bytes or a `Directory`, mapping
@@ -399,7 +398,7 @@ impl Filesystem for FS {
     #[instrument(
         level = "debug",
         skip(
-            self, req, reply, mode, _uid, _gid, size, atime, mtime, _ctime, _fh, _crtime, _chgtime,
+            self, req, reply, mode, uid, gid, size, atime, mtime, _ctime, _fh, _crtime, _chgtime,
             _bkuptime, _flags
         )
     )]
@@ -408,8 +407,8 @@ impl Filesystem for FS {
         req: &Request<'_>,
         ino: u64,
         mode: Option<u32>,
-        _uid: Option<u32>,
-        _gid: Option<u32>,
+        uid: Option<u32>,
+        gid: Option<u32>,
         size: Option<u64>,
         atime: Option<TimeOrNow>,
         mtime: Option<TimeOrNow>,
@@ -447,6 +446,57 @@ impl Filesystem for FS {
                     return;
                 }
             };
+        }
+
+        // cribbing from https://github.com/cberner/fuser/blob/13557921548930afd6b70e109521044fea98c23b/examples/simple.rs#L594-L639
+        if uid.is_some() || gid.is_some() {
+            info!("chown called with uid {:?} guid {:?}", uid, gid);
+
+            // gotta be a member of the target group!
+            if let Some(gid) = gid {
+                if req.uid() != 0 && !groups_for(req.uid()).contains(&gid) {
+                    reply.error(libc::EPERM);
+                    return;
+                }
+            }
+
+
+            let inode = match self.get_mut(ino) {
+                Ok(inode) => inode,
+                Err(_) => {
+                    reply.error(libc::ENOENT);
+                    return;
+                }
+            };
+
+            // non-root owner can only do noop uid changes
+            if let Some(uid) = uid {
+                if req.uid() != 0 && !(uid == inode.uid && req.uid() == inode.uid) {
+                    reply.error(libc::EPERM);
+                    return;
+                }
+            }
+
+            // only owner may change the group
+            if gid.is_some() && req.uid() != 0 && req.uid() != inode.uid {
+                reply.error(libc::EPERM);
+                return;
+            }
+
+            // NB if we allowed SETUID/SETGID bits, we might need to clear them here
+
+            if let Some(uid) = uid {
+                inode.uid = uid;
+            }
+
+            if let Some(gid) = gid {
+                inode.gid = gid;
+            }
+
+            inode.ctime = SystemTime::now();
+            reply.attr(&TTL, &inode.attr());
+            return;
+
         }
 
         if let Some(size) = size {
@@ -697,11 +747,11 @@ impl Filesystem for FS {
                 Entry::File(_) => unreachable!("parent changed to a regular file"),
                 Entry::Directory(_dirtype, files) => {
                     files.insert(filename.into(), DirEntry { kind, inum });
-                    reply.entry(&TTL, &inode.attr(), 0);
                 }
             },
         };
 
+        reply.entry(&TTL, &self.get(inum).unwrap().attr(), 0);
         assert!(self.dirty.get());
     }
 
@@ -766,11 +816,11 @@ impl Filesystem for FS {
                 Entry::File(_) => unreachable!("parent changed to a regular file"),
                 Entry::Directory(_dirtype, files) => {
                     files.insert(filename.into(), DirEntry { kind, inum });
-                    reply.entry(&TTL, &inode.attr(), 0);
                 }
             },
         };
 
+        reply.entry(&TTL, &self.get(inum).unwrap().attr(), 0);
         assert!(self.dirty.get());
     }
 
@@ -1477,5 +1527,23 @@ impl Filesystem for FS {
         info!("called");
 
         reply.error(libc::ENOSYS);
+    }
+}
+
+/// Returns the group IDs a user is in
+fn groups_for(uid: u32) -> Vec<u32> {
+    unsafe {
+        let passwd = libc::getpwuid(uid);
+        let name = (*passwd).pw_name;
+        let basegid = (*passwd).pw_gid as i32;
+
+        // get the number of groups
+        let mut ngroups = 0;
+        libc::getgrouplist(name, basegid, std::ptr::null_mut(), &mut ngroups);
+
+        let mut groups = vec![0; ngroups as usize];
+        let res = libc::getgrouplist(name, basegid, groups.as_mut_ptr(), &mut ngroups);
+        assert_eq!(res, 0);
+        groups.into_iter().map(|gid| gid as u32).collect()
     }
 }
