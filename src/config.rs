@@ -7,7 +7,6 @@ use super::format::Format;
 pub struct Config {
     pub input_format: Format,
     pub output_format: Format,
-    pub timestamp: std::time::SystemTime,
     pub uid: u32,
     pub gid: u32,
     pub filemode: u16,
@@ -60,7 +59,6 @@ impl Default for Config {
         Config {
             input_format: Format::Json,
             output_format: Format::Json,
-            timestamp: std::time::SystemTime::now(),
             uid: 501,
             gid: 501,
             filemode: 0o644,

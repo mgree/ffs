@@ -48,6 +48,14 @@ pub struct Inode {
     /// Mode of this inode. Defaults to values set in `FS.config`, but calls to
     /// `mknod` and `mkdir` and `setattr` (as `chmod`) can change this.
     pub mode: u16,
+    /// Time of last access
+    pub atime: SystemTime,
+    /// Time of last modification
+    pub mtime: SystemTime,
+    /// Time of last change
+    pub ctime: SystemTime,
+    /// Time of creation (macOS only)
+    pub crtime: SystemTime,
     /// The actual file contents.
     pub entry: Entry,
     // TODO 2021-06-21 track timestamp info here, add support in setattr?
@@ -159,10 +167,10 @@ impl FS {
 
         FileAttr {
             ino: inode.inum,
-            atime: self.config.timestamp,
-            crtime: self.config.timestamp,
-            ctime: self.config.timestamp,
-            mtime: self.config.timestamp,
+            atime: inode.atime,
+            crtime: inode.crtime,
+            ctime: inode.ctime,
+            mtime: inode.mtime,
             nlink,
             size,
             blksize: 1,
@@ -217,11 +225,17 @@ impl Inode {
     }
 
     pub fn with_mode(parent: u64, inum: u64, entry: Entry, mode: u16) -> Self {
+        let now = SystemTime::now();
+
         Inode {
             parent,
             inum,
             mode,
             entry,
+            atime: now,
+            crtime: now,
+            ctime: now,
+            mtime: now,
         }
     }
 }
@@ -374,11 +388,10 @@ impl Filesystem for FS {
 
         reply.attr(&TTL, &self.attr(file));
     }
-    
     #[instrument(
         level = "debug",
         skip(
-            self, req, reply, mode, _uid, _gid, size, _atime, _mtime, _ctime, _fh, _crtime,
+            self, req, reply, mode, _uid, _gid, size, atime, mtime, _ctime, _fh, _crtime,
             _chgtime, _bkuptime, _flags
         )
     )]
@@ -390,8 +403,8 @@ impl Filesystem for FS {
         _uid: Option<u32>,
         _gid: Option<u32>,
         size: Option<u64>,
-        _atime: Option<TimeOrNow>,
-        _mtime: Option<TimeOrNow>,
+        atime: Option<TimeOrNow>,
+        mtime: Option<TimeOrNow>,
         _ctime: Option<SystemTime>,
         _fh: Option<u64>,
         _crtime: Option<SystemTime>,
@@ -450,7 +463,53 @@ impl Filesystem for FS {
             return;
         }
 
-        reply.error(libc::ENOSYS);
+        let now = SystemTime::now();
+        let mut set_time = false;
+        if let Some(atime) = atime {
+            if self.check_access(req) && atime != TimeOrNow::Now {
+                reply.error(libc::EPERM);
+                return;
+            }
+            
+            match self.get_mut(ino) {
+                Ok(inode) => inode.atime = match atime {
+                    TimeOrNow::Now => now,
+                    TimeOrNow::SpecificTime(time) => time,
+                },
+                Err(_) => {
+                    reply.error(libc::ENOENT);
+                    return;
+                }
+            }
+
+            set_time = true;
+        }
+
+        if let Some(mtime) = mtime {
+            if self.check_access(req) && mtime != TimeOrNow::Now {
+                reply.error(libc::EPERM);
+                return;
+            }
+            
+            match self.get_mut(ino) {
+                Ok(inode) => inode.mtime = match mtime {
+                    TimeOrNow::Now => now,
+                    TimeOrNow::SpecificTime(time) => time,
+                },
+                Err(_) => {
+                    reply.error(libc::ENOENT);
+                    return;
+                }
+            }
+
+            set_time = true;
+        }
+
+        if set_time {
+            reply.attr(&TTL, &self.attr(self.get(ino).unwrap()));
+        } else {
+            reply.error(libc::ENOSYS);
+        }
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
