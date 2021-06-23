@@ -13,7 +13,7 @@ use fuser::{
 #[cfg(target_os = "macos")]
 use fuser::ReplyXTimes;
 
-use tracing::{debug, info, instrument, warn};
+use tracing::{debug, info, instrument, trace, warn};
 
 use super::config::{Config, Output};
 
@@ -165,7 +165,7 @@ impl FS {
     #[instrument(level = "debug", skip(self), fields(synced = self.dirty.get(), dirty = self.dirty.get()))]
     pub fn sync(&self, last_sync: bool) {
         info!("called");
-        debug!("{:?}", self.inodes);
+        trace!("{:?}", self.inodes);
 
         if self.synced.get() && !self.dirty.get() {
             info!("skipping sync; already synced and not dirty");
@@ -454,12 +454,12 @@ impl Filesystem for FS {
 
             // gotta be a member of the target group!
             if let Some(gid) = gid {
-                if req.uid() != 0 && !groups_for(req.uid()).contains(&gid) {
+                let groups = groups_for(req.uid());
+                if req.uid() != 0 && !groups.contains(&gid) {
                     reply.error(libc::EPERM);
                     return;
                 }
             }
-
 
             let inode = match self.get_mut(ino) {
                 Ok(inode) => inode,
@@ -484,7 +484,6 @@ impl Filesystem for FS {
             }
 
             // NB if we allowed SETUID/SETGID bits, we might need to clear them here
-
             if let Some(uid) = uid {
                 inode.uid = uid;
             }
@@ -496,7 +495,6 @@ impl Filesystem for FS {
             inode.ctime = SystemTime::now();
             reply.attr(&TTL, &inode.attr());
             return;
-
         }
 
         if let Some(size) = size {
@@ -1542,10 +1540,30 @@ fn groups_for(uid: u32) -> Vec<u32> {
         let mut ngroups = 0;
         libc::getgrouplist(name, basegid, std::ptr::null_mut(), &mut ngroups);
 
-        let mut groups = vec![0; ngroups as usize];
-        let res = libc::getgrouplist(name, basegid, groups.as_mut_ptr(), &mut ngroups);
-        assert_eq!(res, 0);
-        groups.into_iter().map(|gid| gid as u32).collect()
+        if ngroups == 0 {
+            // BUG 2021-06-23 weird behavior on macos... :/
+            warn!("macOS getgrouplist bug is present");
+            ngroups = 50;
+        }
+
+        let mut groups = vec![-1; ngroups as usize];
+        loop {
+            libc::getgrouplist(name, basegid, groups.as_mut_ptr(), &mut ngroups);
+
+            // if the last entry wasn't set, we're good
+            if groups[groups.len() - 1] == -1 {
+                break;
+            }
+
+            // otherwise, there are more groups. oof, keep going.
+            ngroups *= 2;
+            groups.resize(ngroups as usize, 0);
+        }
+        groups
+            .into_iter()
+            .filter(|gid| gid != &-1)
+            .map(|gid| gid as u32)
+            .collect()
     }
 }
 
@@ -1559,7 +1577,6 @@ fn groups_for(uid: u32) -> Vec<u32> {
         // get the number of groups
         let mut ngroups = 0;
         libc::getgrouplist(name, basegid, std::ptr::null_mut(), &mut ngroups);
-
         let mut groups = vec![0; ngroups as usize];
         let res = libc::getgrouplist(name, basegid, groups.as_mut_ptr(), &mut ngroups);
         assert_eq!(res, 0);
