@@ -11,6 +11,9 @@ cd tests
 
 LOG=$(mktemp -d)
 
+RUST_LOG="ffs=debug"
+export RUST_LOG
+
 # spawn 'em all in parallel
 for test in *.sh
 do
