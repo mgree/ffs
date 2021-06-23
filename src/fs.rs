@@ -13,7 +13,7 @@ use fuser::{
 #[cfg(target_os = "macos")]
 use fuser::ReplyXTimes;
 
-use tracing::{debug, info, instrument, trace, warn};
+use tracing::{info, instrument, trace, warn};
 
 use super::config::{Config, Output};
 

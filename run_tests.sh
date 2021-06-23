@@ -46,5 +46,13 @@ do
 done
 
 printf "$((TOTAL - FAILED))/$((TOTAL)) tests passed\n"
+
+echo "CHOWN macos:"
+printf "<<<<<<<<<< STDOUT\n"
+cat $LOG/chown.out
+printf "<<<<<<<<<< STDERR\n"
+cat $LOG/chown.err
+
+
 rm -r $LOG
 [ $FAILED -eq 0 ] || exit 1
