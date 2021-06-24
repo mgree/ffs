@@ -34,11 +34,6 @@ fn main() {
                 .short("d")
         )
         .arg(
-            Arg::with_name("AUTOUNMOUNT")
-                .help("Automatically unmount the filesystem when the mounting process exits")
-                .long("autounmount"),
-        )
-        .arg(
             Arg::with_name("UID")
                 .help("Sets the user id of the generated filesystem (defaults to current effective user id)")
                 .short("u")
@@ -90,7 +85,7 @@ fn main() {
         )
         .arg(
             Arg::with_name("NOOUTPUT")
-                .help("Disables output")
+                .help("Disables output of filesystem (normally on stdout)")
                 .long("no-output")
                 .overrides_with("OUTPUT")
         )
@@ -397,10 +392,10 @@ fn main() {
     // DONE PARSING
     ////////////////////////////////////////////////////////////////////////////
 
-    let mut options = vec![MountOption::FSName(format!("{}", config.input))];
-    if args.is_present("AUTOUNMOUNT") {
-        options.push(MountOption::AutoUnmount);
-    }
+    let mut options = vec![
+        MountOption::AutoUnmount,
+        MountOption::FSName(format!("{}", config.input)),
+    ];
     if config.read_only {
         options.push(MountOption::RO);
     }
