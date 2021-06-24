@@ -1544,7 +1544,6 @@ fn groups_for(uid: u32) -> Vec<u32> {
 
         if ngroups == 0 {
             // BUG 2021-06-23 weird behavior on macos... :/
-            warn!("macOS getgrouplist bug is present");
             ngroups = 50;
         }
 
