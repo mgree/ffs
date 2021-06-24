@@ -1,4 +1,4 @@
-name: Release
+name: Development Build Pre-Release
 
 on:
   push:
@@ -8,13 +8,12 @@ on:
 jobs:
   pre-release:
     name: "Pre-release"
-
     strategy:
       fail-fast: false
-        matrix:
-          os:
-            - macos-latest
-            - ubuntu-latest
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
                 
     runs-on: ${{ matrix.os }}
 
