@@ -13,7 +13,7 @@ use fuser::{
 #[cfg(target_os = "macos")]
 use fuser::ReplyXTimes;
 
-use tracing::{debug, info, instrument, warn};
+use tracing::{info, instrument, trace, warn};
 
 use super::config::{Config, Output};
 
@@ -39,11 +39,39 @@ const TTL: Duration = Duration::from_secs(300);
 /// An inode, the core structure in the filesystem.
 #[derive(Debug)]
 pub struct Inode {
+    /// Inode number of the parent of the current inode.
+    ///
+    /// For the root, it will be `FUSE_ROOT_ID`, i.e., itself.
     pub parent: u64,
+    /// Inode number of this node. Will not be 0.
     pub inum: u64,
+    /// User ID of the owner
+    pub uid: u32,
+    /// Group ID of the owner,
+    pub gid: u32,
+    /// Mode of this inode. Defaults to values set in `FS.config`, but calls to
+    /// `mknod` and `mkdir` and `setattr` (as `chmod`) can change this.
+    pub mode: u16,
+    /// Time of last access
+    pub atime: SystemTime,
+    /// Time of last modification
+    pub mtime: SystemTime,
+    /// Time of last change
+    pub ctime: SystemTime,
+    /// Time of creation (macOS only)
+    pub crtime: SystemTime,
+    /// The actual file contents.
     pub entry: Entry,
 }
 
+/// File contents. Either a `File` containing bytes or a `Directory`, mapping
+/// names to entries (see `DirEntry`)
+///
+/// Directories come in two kinds (per `DirType`): `DirType::Named` directories
+/// are conventional mappings of names to entries, but `DirType::List`
+/// directories only use name in the filesystem, and most of those names will be
+/// generated (see `format::fs_from_value`). When writing a `DirType::List`
+/// directory back out, only the sort order of the name matters.
 #[derive(Debug)]
 pub enum Entry {
     // TODO 2021-06-14 need a 'written' flag to determine whether or not to
@@ -52,6 +80,8 @@ pub enum Entry {
     Directory(DirType, HashMap<String, DirEntry>),
 }
 
+/// Directory entries. We record the kind and inode (for faster
+/// `Filesystem::readdir`).
 #[derive(Debug)]
 pub struct DirEntry {
     pub kind: FileType,
@@ -80,28 +110,26 @@ impl FS {
         }
     }
 
-    fn fresh_inode(&mut self, parent: u64, entry: Entry) -> u64 {
+    fn fresh_inode(&mut self, parent: u64, entry: Entry, uid: u32, gid: u32, mode: u32) -> u64 {
         self.dirty.set(true);
 
         let inum = self.inodes.len() as u64;
+        let mode = (mode & 0o777) as u16;
 
-        self.inodes.push(Some(Inode {
-            parent,
-            inum,
-            entry,
-        }));
+        self.inodes
+            .push(Some(Inode::with_mode(parent, inum, entry, uid, gid, mode)));
 
         inum
     }
 
     fn check_access(&self, req: &Request) -> bool {
-        req.uid() == self.config.uid
+        req.uid() == 0 || req.uid() == self.config.uid
     }
 
     pub fn get(&self, inum: u64) -> Result<&Inode, FSError> {
         let idx = inum as usize;
 
-        if idx >= self.inodes.len() {
+        if idx >= self.inodes.len() || idx == 0 {
             return Err(FSError::NoSuchInode(inum));
         }
 
@@ -124,51 +152,6 @@ impl FS {
         }
     }
 
-    fn mode(&self, kind: FileType) -> u16 {
-        if kind == FileType::Directory {
-            self.config.dirmode
-        } else {
-            self.config.filemode
-        }
-    }
-
-    /// Gets the `FileAttr` of a given `Inode`. Much of this is computed each
-    /// time: the size, the kind, permissions, and number of hard links.
-    pub fn attr(&self, inode: &Inode) -> FileAttr {
-        let size = inode.entry.size();
-        let kind = inode.entry.kind();
-
-        let perm = self.mode(kind);
-
-        let nlink: u32 = match &inode.entry {
-            Entry::Directory(_, files) => {
-                2 + files
-                    .iter()
-                    .filter(|(_, de)| de.kind == FileType::Directory)
-                    .count() as u32
-            }
-            Entry::File(_) => 1,
-        };
-
-        FileAttr {
-            ino: inode.inum,
-            atime: self.config.timestamp,
-            crtime: self.config.timestamp,
-            ctime: self.config.timestamp,
-            mtime: self.config.timestamp,
-            nlink,
-            size,
-            blksize: 1,
-            blocks: size,
-            kind,
-            uid: self.config.uid,
-            gid: self.config.gid,
-            perm,
-            rdev: 0,
-            flags: 0, // weird macOS thing
-        }
-    }
-
     /// Tries to synchronize the in-memory `FS` with its on-disk representation.
     ///
     /// Depending on output conventions and the state of the `FS`, nothing may
@@ -182,7 +165,7 @@ impl FS {
     #[instrument(level = "debug", skip(self), fields(synced = self.dirty.get(), dirty = self.dirty.get()))]
     pub fn sync(&self, last_sync: bool) {
         info!("called");
-        debug!("{:?}", self.inodes);
+        trace!("{:?}", self.inodes);
 
         if self.synced.get() && !self.dirty.get() {
             info!("skipping sync; already synced and not dirty");
@@ -200,6 +183,67 @@ impl FS {
         self.config.output_format.save(self);
         self.dirty.set(false);
         self.synced.set(true);
+    }
+}
+
+impl Inode {
+    pub fn new(parent: u64, inum: u64, entry: Entry, config: &Config) -> Self {
+        let mode = config.mode(entry.kind());
+        let uid = config.uid;
+        let gid = config.gid;
+        Inode::with_mode(parent, inum, entry, uid, gid, mode)
+    }
+
+    pub fn with_mode(parent: u64, inum: u64, entry: Entry, uid: u32, gid: u32, mode: u16) -> Self {
+        let now = SystemTime::now();
+
+        Inode {
+            parent,
+            inum,
+            uid,
+            gid,
+            mode,
+            entry,
+            atime: now,
+            crtime: now,
+            ctime: now,
+            mtime: now,
+        }
+    }
+
+    /// Gets the `FileAttr` of a given `Inode`. Some of this is computed each
+    /// time: the size, the kind, permissions, and number of hard links.
+    pub fn attr(&self) -> FileAttr {
+        let size = self.entry.size();
+        let kind = self.entry.kind();
+
+        let nlink: u32 = match &self.entry {
+            Entry::Directory(_, files) => {
+                2 + files
+                    .iter()
+                    .filter(|(_, de)| de.kind == FileType::Directory)
+                    .count() as u32
+            }
+            Entry::File(_) => 1,
+        };
+
+        FileAttr {
+            ino: self.inum,
+            atime: self.atime,
+            crtime: self.crtime,
+            ctime: self.ctime,
+            mtime: self.mtime,
+            nlink,
+            size,
+            blksize: 1,
+            blocks: size,
+            kind,
+            uid: self.uid,
+            gid: self.gid,
+            perm: self.mode,
+            rdev: 0,
+            flags: 0, // weird macOS thing
+        }
     }
 }
 
@@ -269,7 +313,7 @@ impl Filesystem for FS {
         match self.get(inode) {
             Ok(inode) => {
                 // cribbed from https://github.com/cberner/fuser/blob/4639a490f4aa7dfe8a342069a761d4cf2bd8f821/examples/simple.rs#L1703-L1736
-                let attr = self.attr(inode);
+                let attr = inode.attr();
                 let mode = attr.perm as i32;
 
                 if req.uid() == 0 {
@@ -329,7 +373,7 @@ impl Filesystem for FS {
                         Ok(inode) => inode,
                     };
 
-                    reply.entry(&TTL, &self.attr(file), 0);
+                    reply.entry(&TTL, &file.attr(), 0);
                 }
             },
             _ => {
@@ -349,7 +393,186 @@ impl Filesystem for FS {
             Ok(inode) => inode,
         };
 
-        reply.attr(&TTL, &self.attr(file));
+        reply.attr(&TTL, &file.attr());
+    }
+    #[instrument(
+        level = "debug",
+        skip(
+            self, req, reply, mode, uid, gid, size, atime, mtime, _ctime, _fh, _crtime, _chgtime,
+            _bkuptime, _flags
+        )
+    )]
+    fn setattr(
+        &mut self,
+        req: &Request<'_>,
+        ino: u64,
+        mode: Option<u32>,
+        uid: Option<u32>,
+        gid: Option<u32>,
+        size: Option<u64>,
+        atime: Option<TimeOrNow>,
+        mtime: Option<TimeOrNow>,
+        _ctime: Option<SystemTime>,
+        _fh: Option<u64>,
+        _crtime: Option<SystemTime>,
+        _chgtime: Option<SystemTime>,
+        _bkuptime: Option<SystemTime>,
+        _flags: Option<u32>,
+        reply: ReplyAttr,
+    ) {
+        info!("called");
+
+        if !self.check_access(req) {
+            reply.error(libc::EPERM);
+            return;
+        }
+
+        if let Some(mode) = mode {
+            info!("chmod to {:o}", mode);
+
+            if mode != mode & 0o777 {
+                info!("truncating mode {:o} to {:o}", mode, mode & 0o777);
+            }
+            let mode = (mode as u16) & 0o777;
+
+            match self.get_mut(ino) {
+                Ok(inode) => {
+                    inode.mode = mode;
+                    reply.attr(&TTL, &inode.attr());
+                    return;
+                }
+                Err(_) => {
+                    reply.error(libc::ENOENT);
+                    return;
+                }
+            };
+        }
+
+        // cribbing from https://github.com/cberner/fuser/blob/13557921548930afd6b70e109521044fea98c23b/examples/simple.rs#L594-L639
+        if uid.is_some() || gid.is_some() {
+            info!("chown called with uid {:?} guid {:?}", uid, gid);
+
+            // gotta be a member of the target group!
+            if let Some(gid) = gid {
+                let groups = groups_for(req.uid());
+                if req.uid() != 0 && !groups.contains(&gid) {
+                    reply.error(libc::EPERM);
+                    return;
+                }
+            }
+
+            let inode = match self.get_mut(ino) {
+                Ok(inode) => inode,
+                Err(_) => {
+                    reply.error(libc::ENOENT);
+                    return;
+                }
+            };
+
+            // non-root owner can only do noop uid changes
+            if let Some(uid) = uid {
+                if req.uid() != 0 && !(uid == inode.uid && req.uid() == inode.uid) {
+                    reply.error(libc::EPERM);
+                    return;
+                }
+            }
+
+            // only owner may change the group
+            if gid.is_some() && req.uid() != 0 && req.uid() != inode.uid {
+                reply.error(libc::EPERM);
+                return;
+            }
+
+            // NB if we allowed SETUID/SETGID bits, we might need to clear them here
+            if let Some(uid) = uid {
+                inode.uid = uid;
+            }
+
+            if let Some(gid) = gid {
+                inode.gid = gid;
+            }
+
+            inode.ctime = SystemTime::now();
+            reply.attr(&TTL, &inode.attr());
+            return;
+        }
+
+        if let Some(size) = size {
+            info!("truncate() to {}", size);
+
+            match self.get_mut(ino) {
+                Ok(inode) => match &mut inode.entry {
+                    Entry::File(contents) => {
+                        contents.resize(size as usize, 0);
+                        reply.attr(&TTL, &inode.attr());
+                    }
+                    Entry::Directory(..) => {
+                        reply.error(libc::EISDIR);
+                        return;
+                    }
+                },
+                Err(_) => {
+                    reply.error(libc::ENOENT);
+                    return;
+                }
+            };
+
+            self.dirty.set(true);
+            return;
+        }
+
+        let now = SystemTime::now();
+        let mut set_time = false;
+        if let Some(atime) = atime {
+            info!("setting atime");
+            if !self.check_access(req) {
+                reply.error(libc::EPERM);
+                return;
+            }
+            match self.get_mut(ino) {
+                Ok(inode) => {
+                    inode.atime = match atime {
+                        TimeOrNow::Now => now,
+                        TimeOrNow::SpecificTime(time) => time,
+                    }
+                }
+                Err(_) => {
+                    reply.error(libc::ENOENT);
+                    return;
+                }
+            }
+
+            set_time = true;
+        }
+
+        if let Some(mtime) = mtime {
+            info!("setting mtime");
+
+            if !self.check_access(req) {
+                reply.error(libc::EPERM);
+                return;
+            }
+            match self.get_mut(ino) {
+                Ok(inode) => {
+                    inode.mtime = match mtime {
+                        TimeOrNow::Now => now,
+                        TimeOrNow::SpecificTime(time) => time,
+                    }
+                }
+                Err(_) => {
+                    reply.error(libc::ENOENT);
+                    return;
+                }
+            }
+
+            set_time = true;
+        }
+
+        if set_time {
+            reply.attr(&TTL, &self.get(ino).unwrap().attr());
+        } else {
+            reply.error(libc::ENOSYS);
+        }
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
@@ -514,7 +737,7 @@ impl Filesystem for FS {
         };
 
         // allocate the inode (sets dirty bit)
-        let inum = self.fresh_inode(parent, entry);
+        let inum = self.fresh_inode(parent, entry, req.uid(), req.gid(), mode);
 
         // update the parent
         // NB we can't get_mut the parent earlier due to borrowing restrictions
@@ -528,8 +751,8 @@ impl Filesystem for FS {
             },
         };
 
+        reply.entry(&TTL, &self.get(inum).unwrap().attr(), 0);
         assert!(self.dirty.get());
-        reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
@@ -544,10 +767,6 @@ impl Filesystem for FS {
     ) {
         info!("called");
 
-        let mode = mode & 0o777; // high bits are sometimes set, e.g., 0o40755. no idea.
-        if mode != self.config.dirmode as u32 {
-            warn!("Given mode {:o}, using {}", mode, self.config.dirmode);
-        }
         if !self.check_access(req) {
             reply.error(libc::EACCES);
             return;
@@ -587,7 +806,7 @@ impl Filesystem for FS {
         let kind = FileType::Directory;
 
         // allocate the inode (sets dirty bit)
-        let inum = self.fresh_inode(parent, entry);
+        let inum = self.fresh_inode(parent, entry, req.uid(), req.gid(), mode);
 
         // update the parent
         // NB we can't get_mut the parent earlier due to borrowing restrictions
@@ -601,8 +820,8 @@ impl Filesystem for FS {
             },
         };
 
+        reply.entry(&TTL, &self.get(inum).unwrap().attr(), 0);
         assert!(self.dirty.get());
-        reply.entry(&TTL, &self.attr(self.get(inum).unwrap()), 0);
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
@@ -1047,30 +1266,6 @@ impl Filesystem for FS {
     fn forget(&mut self, _req: &Request<'_>, _ino: u64, _nlookup: u64) {}
 
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn setattr(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _mode: Option<u32>,
-        _uid: Option<u32>,
-        _gid: Option<u32>,
-        _size: Option<u64>,
-        _atime: Option<TimeOrNow>,
-        _mtime: Option<TimeOrNow>,
-        _ctime: Option<SystemTime>,
-        _fh: Option<u64>,
-        _crtime: Option<SystemTime>,
-        _chgtime: Option<SystemTime>,
-        _bkuptime: Option<SystemTime>,
-        _flags: Option<u32>,
-        reply: ReplyAttr,
-    ) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
-
-    #[instrument(level = "debug", skip(self, _req, reply))]
     fn readlink(&mut self, _req: &Request<'_>, _ino: u64, reply: ReplyData) {
         info!("called");
 
@@ -1332,5 +1527,60 @@ impl Filesystem for FS {
         info!("called");
 
         reply.error(libc::ENOSYS);
+    }
+}
+
+/// Returns the group IDs a user is in
+#[cfg(target_os = "macos")]
+fn groups_for(uid: u32) -> Vec<u32> {
+    unsafe {
+        let passwd = libc::getpwuid(uid);
+        let name = (*passwd).pw_name;
+        let basegid = (*passwd).pw_gid as i32;
+
+        // get the number of groups
+        let mut ngroups = 0;
+        libc::getgrouplist(name, basegid, std::ptr::null_mut(), &mut ngroups);
+
+        if ngroups == 0 {
+            // BUG 2021-06-23 weird behavior on macos... :/
+            ngroups = 50;
+        }
+
+        let mut groups = vec![-1; ngroups as usize];
+        loop {
+            libc::getgrouplist(name, basegid, groups.as_mut_ptr(), &mut ngroups);
+
+            // if the last entry wasn't set, we're good
+            if groups[groups.len() - 1] == -1 {
+                break;
+            }
+
+            // otherwise, there are more groups. oof, keep going.
+            ngroups *= 2;
+            groups.resize(ngroups as usize, 0);
+        }
+        groups
+            .into_iter()
+            .filter(|gid| gid != &-1)
+            .map(|gid| gid as u32)
+            .collect()
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn groups_for(uid: u32) -> Vec<u32> {
+    unsafe {
+        let passwd = libc::getpwuid(uid);
+        let name = (*passwd).pw_name;
+        let basegid = (*passwd).pw_gid;
+
+        // get the number of groups
+        let mut ngroups = 0;
+        libc::getgrouplist(name, basegid, std::ptr::null_mut(), &mut ngroups);
+        let mut groups = vec![0; ngroups as usize];
+        let res = libc::getgrouplist(name, basegid, groups.as_mut_ptr(), &mut ngroups);
+        assert_eq!(res, ngroups);
+        groups
     }
 }
