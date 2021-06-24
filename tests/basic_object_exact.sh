@@ -22,7 +22,7 @@ printf "10"                >"${EXP}/fingernails"
 printf "true"              >"${EXP}/human"
 printf ""                  >"${EXP}/problems"
 
-ffs -m "$MNT" ../json/object_null.json &
+ffs --exact -m "$MNT" ../json/object_null.json &
 PID=$!
 sleep 2
 cd "$MNT"

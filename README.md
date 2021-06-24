@@ -15,61 +15,31 @@ know.
 Run `ffs [mountpoint] [file]` to mount a file at a given mountpoint.
 
 ```shell-session
-$ ffs mnt json_eg1.json  &
-[1] 80762
-$ tree mnt
-mnt
-└── glossary
-    ├── GlossDiv
-    │   ├── GlossList
-    │   │   └── GlossEntry
-    │   │       ├── Abbrev
-    │   │       ├── Acronym
-    │   │       ├── GlossDef
-    │   │       │   ├── GlossSeeAlso
-    │   │       │   │   ├── 0
-    │   │       │   │   └── 1
-    │   │       │   └── para
-    │   │       ├── GlossSee
-    │   │       ├── GlossTerm
-    │   │       ├── ID
-    │   │       └── SortAs
-    │   └── title
-    └── title
+$ cat object.json 
+{ "name": "Michael Greenberg", "eyes": 2, "fingernails": 10, "human": true }
+$ ffs -o object_edited.json object.json &
+[1] 60182
+$ tree object
+object
+├── eyes
+├── fingernails
+├── human
+└── name
 
-6 directories, 11 files
-$ cat mnt/glossary/GlossDiv/GlossList/GlossEntry/Abbrev
-ISO 8879:1986$ cat mnt/glossary/GlossDiv/GlossList/GlossEntry/Acronym 
-SGML$ cat mnt/glossary/title 
-example glossary$ cat json_eg1.json 
-{
-    "glossary": {
-        "title": "example glossary",
-		"GlossDiv": {
-            "title": "S",
-			"GlossList": {
-                "GlossEntry": {
-                    "ID": "SGML",
-					"SortAs": "SGML",
-					"GlossTerm": "Standard Generalized Markup Language",
-					"Acronym": "SGML",
-					"Abbrev": "ISO 8879:1986",
-					"GlossDef": {
-                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
-						"GlossSeeAlso": ["GML", "XML"]
-                    },
-					"GlossSee": "markup"
-                }
-            }
-        }
-    }
-}
-$ ps | grep ffs
-80762 ttys001    0:00.03 ffs mnt json_eg1.json
-80843 ttys001    0:00.00 grep ffs
-$ umount mnt
-[1]+  Done                    ffs mnt json_eg1.json
-$
+0 directories, 4 files
+$ echo Mikey Indiana >object/name
+$ echo 1 >object/nose
+$ mkdir object/pockets
+$ cd object/pockets/
+$ echo keys >pants
+$ echo pen >shirt
+$ cd ..
+$ cd ..
+$ umount object
+$ 
+[1]+  Done                    ffs -o object_edited.json object.json
+$ cat object_edited.json 
+{"eyes":2,"fingernails":10,"human":true,"name":"Mikey Indiana","nose":1,"pockets":{"pants":"keys","shirt":"pen"}}
 ```
 
 # External dependencies

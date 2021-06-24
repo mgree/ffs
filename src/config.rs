@@ -81,7 +81,7 @@ impl Default for Config {
             gid: 501,
             filemode: 0o644,
             dirmode: 0o755,
-            add_newlines: false,
+            add_newlines: true,
             pad_element_names: true,
             base64: base64::STANDARD,
             try_decode_base64: false,

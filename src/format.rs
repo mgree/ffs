@@ -299,6 +299,7 @@ where
                 if fs.config.add_newlines && contents.ends_with('\n') {
                     contents.truncate(contents.len() - 1);
                 }
+                // TODO 2021-06-24 trim?
                 V::from_string(contents, &fs.config)
             }
             Err(_) => V::from_bytes(contents, &fs.config),

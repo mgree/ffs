@@ -22,7 +22,7 @@ printf "10\n"                >"${EXP}/fingernails"
 printf "true\n"              >"${EXP}/human"
 printf ""                    >"${EXP}/problems"
 
-ffs --newline -m "$MNT" ../json/object_null.json &
+ffs -m "$MNT" ../json/object_null.json &
 PID=$!
 sleep 2
 cd "$MNT"
