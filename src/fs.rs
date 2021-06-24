@@ -505,7 +505,6 @@ impl Filesystem for FS {
                     Entry::File(contents) => {
                         contents.resize(size as usize, 0);
                         reply.attr(&TTL, &inode.attr());
-                        return;
                     }
                     Entry::Directory(..) => {
                         reply.error(libc::EISDIR);
@@ -517,6 +516,9 @@ impl Filesystem for FS {
                     return;
                 }
             };
+
+            self.dirty.set(true);
+            return;
         }
 
         let now = SystemTime::now();
