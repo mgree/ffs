@@ -17,7 +17,7 @@ MNT=$(mktemp -d)
 TGT=$(mktemp)
 TGT2=$(mktemp)
 
-ffs "$MNT" ../json/object.json >"$TGT" &
+ffs -m "$MNT" ../json/object.json >"$TGT" &
 PID=$!
 sleep 2
 mkdir "$MNT"/pockets
@@ -38,7 +38,7 @@ kill -0 $PID >/dev/null 2>&1 && fail process1
 [ -s "$TGT" ] || fail output2
 cat "$TGT"
 stat "$TGT"
-ffs --no-output "$MNT" "$TGT" >"$TGT2" &
+ffs --no-output -m "$MNT" "$TGT" >"$TGT2" &
 PID=$!
 sleep 2
 

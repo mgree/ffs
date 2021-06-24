@@ -13,7 +13,7 @@ fail() {
 
 MNT=$(mktemp -d)
 
-ffs --uid $(id -u root) --gid $(id -g root) "$MNT" ../json/object.json &
+ffs --uid $(id -u root) --gid $(id -g root) -m "$MNT" ../json/object.json &
 PID=$!
 sleep 2
 ls -l "$MNT" | grep root >/dev/null 2>&1 || fail user

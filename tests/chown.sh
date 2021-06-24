@@ -15,14 +15,11 @@ fail() {
 MNT=$(mktemp -d)
 ERR=$(mktemp)
 
-RUST_LOG="ffs=debug" ffs -d --no-output "$MNT" ../json/object.json &
+ffs -d --no-output -m "$MNT" ../json/object.json &
 PID=$!
 sleep 2
 chown :nobody "$MNT"/name 2>$ERR >&2 && fail "chgrp1: $(cat $ERR)"
 [ -s "$ERR" ] || fail "chgrp1 error: $(cat $ERR)"
-groups
-ls -l "$MNT"/name
-echo $(groups | cut -d' ' -f 1)
 chown :$(groups | cut -d' ' -f 1) "$MNT"/name 2>$ERR >&2 || fail "chgrp2: $(cat $ERR)"
 [ -s "$ERR" ] && fail "chgrp2 error: $(cat $ERR)"
 chown $(whoami) "$MNT"/name 2>$ERR >&2 || fail chown

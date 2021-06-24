@@ -19,7 +19,7 @@ TGT=$(mktemp)
 TGT2=$(mktemp)
 ERR=$(mktemp)
 
-ffs "$MNT" ../json/object.json >"$TGT" &
+ffs -m "$MNT" ../json/object.json >"$TGT" &
 PID=$!
 sleep 2
 echo 'Mikey Indiana' >"$MNT"/name 2>"$ERR"
@@ -32,7 +32,7 @@ kill -0 $PID >/dev/null 2>&1 && fail process1
 [ -f "$TGT" ] || fail output1
 [ -s "$TGT" ] || fail output2
 grep -e Indiana "$TGT" >/dev/null 2>&1 || fail grep
-ffs --no-output --source json "$MNT" "$TGT" >"$TGT2" &
+ffs --no-output --source json -m "$MNT" "$TGT" >"$TGT2" &
 PID=$!
 sleep 2
 

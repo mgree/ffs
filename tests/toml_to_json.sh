@@ -15,7 +15,7 @@ fail() {
 MNT=$(mktemp -d)
 TGT=$(mktemp)
 
-ffs --source toml --target json -o "$TGT" "$MNT" ../toml/single.toml &
+ffs --source toml --target json -o "$TGT" -m "$MNT" ../toml/single.toml &
 PID=$!
 sleep 2
 umount "$MNT" || fail unmount1    

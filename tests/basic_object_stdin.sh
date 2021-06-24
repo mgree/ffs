@@ -13,7 +13,7 @@ fail() {
 
 MNT=$(mktemp -d)
 
-cat ../json/object.json | ffs "$MNT" &
+cat ../json/object.json | ffs -m "$MNT" &
 PID=$!
 sleep 2
 cd "$MNT"
