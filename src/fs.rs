@@ -1580,7 +1580,7 @@ fn groups_for(uid: u32) -> Vec<u32> {
         libc::getgrouplist(name, basegid, std::ptr::null_mut(), &mut ngroups);
         let mut groups = vec![0; ngroups as usize];
         let res = libc::getgrouplist(name, basegid, groups.as_mut_ptr(), &mut ngroups);
-        assert_eq!(res, 0);
+        assert_eq!(res, ngroups);
         groups
     }
 }
