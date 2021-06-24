@@ -60,10 +60,11 @@ resulting output will be written back to `file`.
 
 # Getting ffs
 
-You can get ffs from the [ffs GitHub
-repo](https://github.com/mgree/ffs). On Linux you need
-[FUSE](https://github.com/libfuse/libfuse); on macOS, you need
-[macFUSE](https://osxfuse.github.io/).
+See the [release page](https://github.com/mgree/ffs/releases).
+
+You can also build ffs from [source](https://github.com/mgree/ffs). On
+Linux you need [FUSE](https://github.com/libfuse/libfuse); on macOS,
+you need [macFUSE](https://osxfuse.github.io/).
 
 # Related tools
 
