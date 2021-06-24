@@ -3,19 +3,22 @@ title: "ffs: the file fileystem"
 author: "[Michael Greenberg](http://mgree.github.io)"
 ---
 
-# ffs: the file filesystem
-
 The Unix shell is a powerful tool, and the Unix ecosystem provides an
 incredible array of tools for working with strings. But the shell
 really only knows how to work with one data *structure*: the
 filesystem. Modern systems use all kinds of
 [*semi-structured*](https://en.m.wikipedia.org/wiki/Semi-structured_data)
 data, like JSON or YAML. These semi-structured formats are essentially
-trees, and string processing is a bad match---editing JSON with `sed`
-is not a very good idea!
+trees, and string processing is a bad match---editing JSON with sed is
+not a very good idea!
 
-ffs lets you mount semi-structured data as a filesystem, letting you
-work with modern formats using your familiar shell tools.
+ffs---short for the **f**ile **f**ile**s**ystem---lets you mount
+semi-structured data as a filesystem, letting you work with modern
+formats using your familiar shell tools.
+
+Currently, ffs supports [JSON](https://www.json.org/),
+[YAML](https://yaml.org/), and [TOML](https://toml.io/en/), with more
+to come.
 
 # Examples
 
@@ -64,8 +67,8 @@ repo](https://github.com/mgree/ffs). On Linux you need
 
 # Related tools
 
-Tools like [`jq`](https://stedolan.github.io/jq/) and
-[`gron`](https://github.com/tomnomnom/gron) are meant to help you work
+Tools like [jq](https://stedolan.github.io/jq/) and
+[gron](https://github.com/tomnomnom/gron) are meant to help you work
 with JSON on the command line. They're great tools!
 
 Why might ffs be the right choice for you?
@@ -79,6 +82,8 @@ Why might ffs be the right choice for you?
 Why might ffs *not* be the right choice for you?
 
   - You use Windows. (Sorry. 😥)
+  
+  - You can't use FUSE.
   
   - You only need to search, not edit.
   
