@@ -12,7 +12,8 @@ know.
 
 # Example
 
-Run `ffs [mountpoint] [file]` to mount a file at a given mountpoint.
+Run `ffs [file]` to mount `file.blah` at the mountpoint `file`. The
+final, updated version of the file will be outputted on stdout.
 
 ```shell-session
 $ cat object.json 
@@ -41,6 +42,11 @@ $
 $ cat object_edited.json 
 {"eyes":2,"fingernails":10,"human":true,"name":"Mikey Indiana","nose":1,"pockets":{"pants":"keys","shirt":"pen"}}
 ```
+
+You can specify an explicit mountpoint by running `ffs -m MOUNT file`;
+you can specify an output file with `-o OUTPUT`. You can edit a file
+in place by running `ffs -i file`---when the volume is unmounted, the
+resulting output will be written back to `file`.
 
 # External dependencies
 
