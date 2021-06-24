@@ -28,14 +28,14 @@ MNT=$(mktemp -d)
 RUST_LOG="ffs=debug" ffs -d "$MNT" ../json/object.json &
 PID=$!
 sleep 2
-chown :nobody "$MNT"/name 2>$ERR >&2 && fail "chgrp1: $(cat $ERR)"
+chown -v :nobody "$MNT"/name 2>$ERR >&2 && fail "chgrp1: $(cat $ERR)"
 [ -s "$ERR" ] || fail "chgrp1 error: $(cat $ERR)"
 groups
 ls -l "$MNT"/name
 echo $(groups | cut -d' ' -f 1)
-chown :$(groups | cut -d' ' -f 1) "$MNT"/name 2>$ERR >&2 || fail "chgrp2: $(cat $ERR)"
+chown -v :$(groups | cut -d' ' -f 1) "$MNT"/name 2>$ERR >&2 || fail "chgrp2: $(cat $ERR)"
 [ -s "$ERR" ] && fail "chgrp2 error: $(cat $ERR)"
-chown $(whoami) "$MNT"/name 2>$ERR >&2 || fail chown
+chown -v $(whoami) "$MNT"/name 2>$ERR >&2 || fail chown
 [ -s "$ERR" ] && fail "chown error: $(cat $ERR)"
 umount "$MNT" || fail unmount1    
 sleep 1
