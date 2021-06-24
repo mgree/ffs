@@ -62,9 +62,9 @@ fn main() {
                 .default_value("755")
         )
         .arg(
-            Arg::with_name("NEWLINE")
-                .help("Add a newline to the end of values that don't already have them")
-                .long("newline")
+            Arg::with_name("EXACT")
+                .help("Don't add newlines to the end of values that don't already have them (or strip them when loading)")
+                .long("exact")
         )
         .arg(
             Arg::with_name("UNPADDED")
@@ -145,7 +145,7 @@ fn main() {
             .init();
     }
 
-    config.add_newlines = args.is_present("NEWLINE");
+    config.add_newlines = !args.is_present("EXACT");
     config.pad_element_names = !args.is_present("UNPADDED");
     config.read_only = args.is_present("READONLY");
     config.filemode = match u16::from_str_radix(args.value_of("FILEMODE").unwrap(), 8) {
