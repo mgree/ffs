@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - "master"
+
+jobs:
+  pre-release:
+    name: "Pre-release"
+
+    strategy:
+      fail-fast: false
+        matrix:
+          os:
+            - macos-latest
+            - ubuntu-latest
+                
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Install FUSE
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get install fuse libfuse-dev pkg-config
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            brew install macfuse pkg-config
+          else
+            echo Unsupported OS '$RUNNER_OS'
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build ffs in release mode, run unit tests
+        run: |
+          cargo build --verbose --release
+          cargo test
+        
+      - name: Run integration tests
+        run: ./run_tests.sh
+
+      - name: Deploy release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development build"
+          files: |
+            target/release/ffs
