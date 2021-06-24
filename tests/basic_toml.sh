@@ -13,7 +13,7 @@ fail() {
 
 MNT=$(mktemp -d)
 
-ffs "$MNT" ../toml/eg.toml &
+ffs -m "$MNT" ../toml/eg.toml &
 PID=$!
 sleep 2
 case $(ls "$MNT") in

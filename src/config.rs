@@ -16,7 +16,25 @@ pub struct Config {
     pub base64: base64::Config,
     pub try_decode_base64: bool,
     pub read_only: bool,
+    pub input: Input,
     pub output: Output,
+    pub mount: Option<PathBuf>,
+    pub cleanup_mount: bool,
+}
+
+#[derive(Debug)]
+pub enum Input {
+    Stdin,
+    File(PathBuf),
+}
+
+impl std::fmt::Display for Input {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self {
+            Input::Stdin => write!(f, "<stdin>"),
+            Input::File(file) => write!(f, "{}", file.display()),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -68,7 +86,10 @@ impl Default for Config {
             base64: base64::STANDARD,
             try_decode_base64: false,
             read_only: false,
+            input: Input::Stdin,
             output: Output::Stdout,
+            mount: None,
+            cleanup_mount: false,
         }
     }
 }

@@ -1,5 +1,4 @@
-use std::path::Path;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use clap::{App, Arg};
 
@@ -11,7 +10,7 @@ mod config;
 mod format;
 mod fs;
 
-use config::{Config, Output};
+use config::{Config, Input, Output};
 use format::Format;
 
 use fuser::MountOption;
@@ -121,15 +120,16 @@ fn main() {
         )
         .arg(
             Arg::with_name("MOUNT")
-                .help("Sets the mountpoint")
-                .required(true)
-                .index(1),
+                .help("Sets the mountpoint; will be inferred when using a file, but must be specified when running on stdin")
+                .long("mount")
+                .short("m")
+                .takes_value(true)
         )
         .arg(
             Arg::with_name("INPUT")
                 .help("Sets the input file (defaults to '-', meaning STDIN)")
                 .default_value("-")
-                .index(2),
+                .index(1),
         )
         .get_matches();
 
@@ -193,13 +193,6 @@ fn main() {
         };
     }
 
-    // TODO 2021-06-08 infer and create mountpoint from filename as possible
-    let mount_point = Path::new(args.value_of("MOUNT").expect("mount point"));
-    if !mount_point.exists() {
-        error!("Mount point {} does not exist.", mount_point.display());
-        std::process::exit(1);
-    }
-
     match args.value_of("UID") {
         Some(uid_string) => match uid_string.parse() {
             Ok(uid) => config.uid = uid,
@@ -229,21 +222,86 @@ fn main() {
         None => config.gid = unsafe { libc::getegid() },
     }
 
-    let input_source = args.value_of("INPUT").expect("input source");
+    config.input = match args.value_of("INPUT") {
+        Some(input_source) => {
+            if input_source == "-" {
+                Input::Stdin
+            } else {
+                let input_source = PathBuf::from(input_source);
+                if !input_source.exists() {
+                    error!("Input file {} does not exist.", input_source.display());
+                    std::process::exit(1);
+                }
+                Input::File(input_source)
+            }
+        }
+        None => Input::Stdin,
+    };
     config.output = if let Some(output) = args.value_of("OUTPUT") {
         Output::File(PathBuf::from(output))
     } else if args.is_present("INPLACE") {
-        if input_source == "-" {
-            warn!("In-place output `-i` with STDIN input makes no sense; outputting on STDOUT.");
-            Output::Stdout
-        } else {
-            Output::File(PathBuf::from(input_source))
+        match &config.input {
+            Input::Stdin => {
+                warn!(
+                    "In-place output `-i` with STDIN input makes no sense; outputting on STDOUT."
+                );
+                Output::Stdout
+            }
+            Input::File(input_source) => Output::File(input_source.clone()),
         }
     } else if args.is_present("NOOUTPUT") || args.is_present("QUIET") {
         Output::Quiet
     } else {
         Output::Stdout
     };
+
+    // infer and create mountpoint from filename as possible
+    config.mount = match args.value_of("MOUNT") {
+        Some(mount_point) => {
+            let mount_point = PathBuf::from(mount_point);
+            if !mount_point.exists() {
+                error!("Mount point {} does not exist.", mount_point.display());
+                std::process::exit(1);
+            }
+
+            config.cleanup_mount = false;
+            Some(mount_point)
+        }
+        None => {
+            match &config.input {
+                Input::Stdin => {
+                    error!("You must specify a mount point when reading from stdin.");
+                    std::process::exit(1);
+                }
+                Input::File(file) => {
+                    // If the input is from a file foo.EXT, then try to make a directory foo.
+                    let mount_dir = file.with_extension("");
+
+                    // If that file already exists, give up and tell the user about --mount.
+                    if mount_dir.exists() {
+                        error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.", 
+                            mount = mount_dir.display(), file = file.display());
+                        std::process::exit(1);
+                    }
+
+                    // If the mountpoint can't be created, give up and tell the user about --mount.
+                    if let Err(e) = std::fs::create_dir(&mount_dir) {
+                        error!(
+                            "Couldn't create mountpoint '{}': {}. Use `--mount MOUNT` to specify a mountpoint.",
+                            mount_dir.display(),
+                            e
+                        );
+                        std::process::exit(1);
+                    }
+
+                    // We did it!
+                    config.cleanup_mount = true;
+                    Some(mount_dir)
+                }
+            }
+        }
+    };
+    assert!(config.mount.is_some());
 
     // try to autodetect the input format.
     //
@@ -268,18 +326,23 @@ fn main() {
                 }
             };
 
-            match Path::new(input_source)
-                .extension() // will fail for STDIN, no worries
-                .map(|s| s.to_str().expect("utf8 filename").to_lowercase())
-            {
-                Some(s) => match s.parse::<Format>() {
+            match &config.input {
+                Input::Stdin => Format::Json,
+                Input::File(input_source) => match input_source
+                    .extension()
+                    .and_then(|s| s.to_str())
+                    .ok_or(format::ParseFormatError::NoFormatProvided)
+                    .and_then(|s| s.parse::<Format>())
+                {
                     Ok(format) => format,
                     Err(_) => {
-                        warn!("Unrecognized format {}, defaulting to JSON.", s);
+                        warn!(
+                            "Unrecognized format {}, defaulting to JSON.",
+                            input_source.display()
+                        );
                         Format::Json
                     }
                 },
-                None => Format::Json,
             }
         }
     };
@@ -330,7 +393,11 @@ fn main() {
         }
     };
 
-    let mut options = vec![MountOption::FSName(input_source.into())];
+    ////////////////////////////////////////////////////////////////////////////
+    // DONE PARSING
+    ////////////////////////////////////////////////////////////////////////////
+
+    let mut options = vec![MountOption::FSName(format!("{}", config.input))];
     if args.is_present("AUTOUNMOUNT") {
         options.push(MountOption::AutoUnmount);
     }
@@ -338,19 +405,45 @@ fn main() {
         options.push(MountOption::RO);
     }
 
-    let input_format = config.input_format;
-    let reader: Box<dyn std::io::Read> = if input_source == "-" {
-        Box::new(std::io::stdin())
-    } else {
-        let file = std::fs::File::open(input_source).unwrap_or_else(|e| {
-            error!("Unable to open {} for JSON input: {}", input_source, e);
+    assert!(config.mount.is_some());
+    let mount = match &config.mount {
+        Some(mount) => mount.clone(),
+        None => {
+            error!(
+                "No mount point specified; aborting. Use `--mount MOUNT` to specify a mountpoint."
+            );
             std::process::exit(1);
-        });
-        Box::new(file)
+        }
+    };
+    let cleanup_mount = config.cleanup_mount;
+    let input_format = config.input_format;
+    let reader: Box<dyn std::io::Read> = match &config.input {
+        Input::Stdin => Box::new(std::io::stdin()),
+        Input::File(file) => {
+            let fmt = config.input_format;
+            let file = std::fs::File::open(&file).unwrap_or_else(|e| {
+                error!("Unable to open {} for {} input: {}", file.display(), fmt, e);
+                std::process::exit(1);
+            });
+            Box::new(file)
+        }
     };
     let fs = input_format.load(reader, config);
 
-    info!("mounting on {:?} with options {:?}", mount_point, options);
-    fuser::mount2(fs, mount_point, &options).unwrap();
+    info!("mounting on {:?} with options {:?}", mount, options);
+    fuser::mount2(fs, &mount, &options).unwrap();
     info!("unmounted");
+
+    if cleanup_mount {
+        if mount.exists() {
+            if let Err(e) = std::fs::remove_dir(&mount) {
+                warn!("Unable to clean up mountpoint '{}': {}", mount.display(), e);
+            }
+        } else {
+            warn!(
+                "Mountpoint '{}' disappeared before ffs could cleanup.",
+                mount.display()
+            );
+        }
+    }
 }

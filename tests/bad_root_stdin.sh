@@ -15,7 +15,7 @@ MNT=$(mktemp -d)
 OUT=$(mktemp)
 MSG=$(mktemp)
 
-echo \"just a string\" | ffs "$MNT" >"$OUT" 2>"$MSG" &
+echo \"just a string\" | ffs -m "$MNT" >"$OUT" 2>"$MSG" &
 PID=$!
 sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process

@@ -18,7 +18,7 @@ TGT=$(mktemp)
 
 cp ../toml/single.toml "$SRC"
 
-ffs --source toml --target json -o "$TGT" "$MNT" "$SRC" &
+ffs --source toml --target json -o "$TGT" -m "$MNT" "$SRC" &
 PID=$!
 sleep 2
 umount "$MNT" || fail unmount1    

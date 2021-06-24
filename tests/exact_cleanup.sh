@@ -25,7 +25,7 @@ printf "true"              >"${EXP}/human"
 printf "hi\n"              >"${EXP}/greeting"
 printf "bye"               >"${EXP}/farewell"
 
-ffs -o "$JSON" "$MNT" ../json/object.json &
+ffs -o "$JSON" -m "$MNT" ../json/object.json &
 PID=$!
 sleep 2
 echo hi >"$MNT"/greeting
@@ -35,7 +35,7 @@ sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process
 
 # remount w/o --newline, confirm that they're not there (except for greeting)
-ffs "$MNT" "$JSON" &
+ffs -m "$MNT" "$JSON" &
 sleep 2
 case $(ls "$MNT") in
     (eyes*farewell*fingernails*greeting*human*name) ;;

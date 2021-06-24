@@ -20,7 +20,7 @@ TOML="$TOML".toml
 
 cp ../toml/eg.toml "$TOML"
 
-ffs -i "$MNT" "$TOML" &
+ffs -i -m "$MNT" "$TOML" &
 PID=$!
 sleep 2
 case $(ls "$MNT") in
@@ -35,7 +35,7 @@ umount "$MNT" || fail unmount1
 sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process1
 
-ffs --readonly --no-output "$MNT" "$TOML" &
+ffs --readonly --no-output -m "$MNT" "$TOML" &
 PID=$!
 sleep 2
 [ "$(cat $MNT/clients/hosts/0)" = "alpha" ] || fail hosts0

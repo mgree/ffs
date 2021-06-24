@@ -15,7 +15,7 @@ MNT=$(mktemp -d)
 OUT=$(mktemp)
 MSG=$(mktemp)
 
-ffs "$MNT" ../json/null.json >"$OUT" 2>"$MSG" &
+ffs -m "$MNT" ../json/null.json >"$OUT" 2>"$MSG" &
 PID=$!
 sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process

@@ -15,7 +15,7 @@ MNT=$(mktemp -d)
 
 umask 022
 
-ffs --mode 666 "$MNT" ../json/object.json &
+ffs --mode 666 -m "$MNT" ../json/object.json &
 PID=$!
 sleep 2
 cd "$MNT"
@@ -28,7 +28,7 @@ sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process1
 
 umask 077
-ffs --mode 666 --dirmode 700 "$MNT" ../json/object.json &
+ffs --mode 666 --dirmode 700 -m "$MNT" ../json/object.json &
 PID=$!
 sleep 2
 cd "$MNT"

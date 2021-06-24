@@ -25,7 +25,7 @@ fi
 
 MNT=$(mktemp -d)
 
-ffs "$MNT" ../json/nlink.json &
+ffs -m "$MNT" ../json/nlink.json &
 PID=$!
 sleep 2
 cd "$MNT"

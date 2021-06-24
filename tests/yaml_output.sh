@@ -20,7 +20,7 @@ YAML="$YAML".yaml
 
 cp ../yaml/invoice.yaml "$YAML"
 
-ffs -i "$MNT" "$YAML" &
+ffs -i -m "$MNT" "$YAML" &
 PID=$!
 sleep 2
 case $(ls "$MNT") in
@@ -35,7 +35,7 @@ umount "$MNT" || fail unmount1
 sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process1
 
-ffs --readonly --no-output "$MNT" "$YAML" &
+ffs --readonly --no-output -m "$MNT" "$YAML" &
 PID=$!
 sleep 2
 [ "$(cat $MNT/product/0/description)" = "Basketball" ] || fail desc1

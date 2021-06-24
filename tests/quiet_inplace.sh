@@ -16,7 +16,7 @@ JSON=$(mktemp)
 
 cp ../json/object.json "$JSON"
 
-ffs -qi "$MNT" "$JSON" &
+ffs -qi -m "$MNT" "$JSON" &
 PID=$!
 sleep 2
 echo hi >"$MNT"/greeting
@@ -27,7 +27,7 @@ kill -0 $PID >/dev/null 2>&1 && fail process1
 
 diff ../json/object.json "$JSON" >/dev/null && fail same
 
-ffs --readonly "$MNT" "$JSON" &
+ffs --readonly -m "$MNT" "$JSON" &
 PID=$!
 sleep 2
 [ "$(cat $MNT/greeting)" = "hi" ] || fail updated
