@@ -7,37 +7,6 @@ FAILED=0
 ERRORS=""
 cd tests
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        umount "$MNT"
-        rmdir "$MNT"
-        rm "$ERR"
-    fi
-    exit 1
-}
-
-ERR=$(mktemp)
-MNT=$(mktemp -d)
-RUST_LOG="ffs=debug" ffs -d "$MNT" ../json/object.json &
-PID=$!
-sleep 2
-chown -v :nobody "$MNT"/name 2>$ERR >&2 && fail "chgrp1: $(cat $ERR)"
-[ -s "$ERR" ] || fail "chgrp1 error: $(cat $ERR)"
-groups
-ls -l "$MNT"/name
-echo $(groups | cut -d' ' -f 1)
-chown -v :$(groups | cut -d' ' -f 1) "$MNT"/name 2>$ERR >&2 || echo "chgrp2: $(cat $ERR)"
-chown -v $(whoami) "$MNT"/name 2>$ERR >&2 || echo "chown: $(cat $ERR)"
-umount "$MNT" || fail unmount1    
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process1
-rmdir "$MNT"
-rm "$ERR"
-
-
 LOG=$(mktemp -d)
 
 # spawn 'em all in parallel
