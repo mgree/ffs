@@ -64,11 +64,16 @@ resulting output will be written back to `file`.
 
 # Getting ffs
 
-See the [release page](https://github.com/mgree/ffs/releases).
+On Linux you need [FUSE](https://github.com/libfuse/libfuse); on
+macOS, you need [macFUSE](https://osxfuse.github.io/). You can then
+download a single executable. These are the latest builds:
 
-You can also build ffs from [source](https://github.com/mgree/ffs). On
-Linux you need [FUSE](https://github.com/libfuse/libfuse); on macOS,
-you need [macFUSE](https://osxfuse.github.io/).
+ - [Linux]({{ site.github.linux_url }})
+ - [macOS]({{ site.github.macos_url }})
+
+See the [release page](https://github.com/mgree/ffs/releases) for more
+information. You can also build ffs from
+[source](https://github.com/mgree/ffs).
 
 # Related tools
 
