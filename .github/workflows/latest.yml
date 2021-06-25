@@ -40,23 +40,12 @@ jobs:
       - name: Run integration tests
         run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
 
-      - name: Rename for platform
-        run: |
-            if [ "$RUNNER_OS" = "Linux" ]; then
-              mv target/release/ffs target/release/ffs-linux
-            elif [ "$RUNNER_OS" = "macOS" ]; then
-              mv target/release/ffs target/release/ffs-macos
-            else
-              echo Unsupported OS \'$RUNNER_OS\'
-              exit 1
-            fi
-
       - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          automatic_release_tag: "latest-${{ env.RUNNER_OS }}"
           prerelease: true
-          title: "Development build"
+          title: "Development build (${{ env.RUNNER_OS }})"
           files: |
-            target/release/ffs*
+            target/release/ffs
