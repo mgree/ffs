@@ -25,7 +25,7 @@ jobs:
           elif [ "$RUNNER_OS" = "macOS" ]; then
             brew install macfuse pkg-config
           else
-            echo Unsupported OS '$RUNNER_OS'
+            echo Unsupported OS \'$RUNNER_OS\'
             exit 1
           fi
 
@@ -40,6 +40,17 @@ jobs:
       - name: Run integration tests
         run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
 
+      - name: Rename for platform
+        run: |
+            if [ "$RUNNER_OS" = "Linux" ]; then
+              mv target/release/ffs target/release/ffs-linux
+            elif [ "$RUNNER_OS" = "macOS" ]; then
+              mv target/release/ffs target/release/ffs-macos
+            else
+              echo Unsupported OS \'$RUNNER_OS\'
+              exit 1
+            fi
+
       - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -48,4 +59,4 @@ jobs:
           prerelease: true
           title: "Development build"
           files: |
-            target/release/ffs
+            target/release/ffs*
