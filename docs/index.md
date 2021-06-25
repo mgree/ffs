@@ -54,8 +54,9 @@ $ cat object_edited.json
 {"eyes":2,"fingernails":10,"human":true,"name":"Mikey Indiana","nose":1,"pockets":{"pants":"keys","shirt":"pen"}}
 ```
 
-Notice a few things: the `nose` key parsed out the number; the
-`pockets` directory got turned into an object.
+Notice a few things: the `nose` key of the resulting object has a
+number as its value, not a string; the `pockets` directory got turned
+into an object.
 
 You can specify an explicit mountpoint by running `ffs -m MOUNT file`;
 you can specify an output file with `-o OUTPUT`. You can edit a file
