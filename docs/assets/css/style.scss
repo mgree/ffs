@@ -1,0 +1,12 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+#download-macos span {
+ background:transparent url(../images/macos-icon.png) 12px 50% no-repeat
+}
+
+#download-linux span {
+ background:transparent url(../images/linux-icon.png) 12px 50% no-repeat
+}
