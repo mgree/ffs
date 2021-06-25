@@ -1,6 +1,11 @@
 #!/bin/sh
 
-PATH="$(pwd)/target/debug:$PATH"
+if ! which ffs >/dev/null 2>&1
+then
+    DEBUG="$(pwd)/target/debug"
+    [ -x "$DEBUG/ffs" ] || { echo Couldn\'t find ffs on "$PATH" or in "$DEBUG". ; exit 1 ; }
+    PATH="$DEBUG:$PATH"
+fi
 
 TOTAL=0
 FAILED=0

@@ -36,5 +36,5 @@ jobs:
           cargo test
         
       - name: Integration tests
-        run: ./run_tests.sh
+        run: PATH="$(pwd)/target/debug:$PATH" ./run_tests.sh
       

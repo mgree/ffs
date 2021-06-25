@@ -1,5 +1,6 @@
 ---
 title: "ffs: the file fileystem"
+description: "mount semi-structured data (like JSON) as a Unix filesystem"
 author: "[Michael Greenberg](http://mgree.github.io)"
 ---
 

@@ -38,7 +38,7 @@ jobs:
           cargo test
         
       - name: Run integration tests
-        run: ./run_tests.sh
+        run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
 
       - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
