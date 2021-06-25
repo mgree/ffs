@@ -44,8 +44,8 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest-${{ env.RUNNER_OS }}"
+          automatic_release_tag: "${{ matrix.os }}"
           prerelease: true
-          title: "Development build (${{ env.RUNNER_OS }})"
+          title: "Development build (${{ matrix.os }})"
           files: |
             target/release/ffs
