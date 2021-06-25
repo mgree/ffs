@@ -3,7 +3,7 @@ name: Latest Development Build Pre-Release
 on:
   push:
     branches:
-      - "master"
+      - "main"
 
 jobs:
   pre-release:
