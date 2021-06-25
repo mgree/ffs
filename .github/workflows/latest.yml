@@ -1,4 +1,4 @@
-name: Development Build Pre-Release
+name: Latest Development Build Pre-Release
 
 on:
   push:
@@ -40,7 +40,7 @@ jobs:
       - name: Run integration tests
         run: ./run_tests.sh
 
-      - name: Deploy release
+      - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
