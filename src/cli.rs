@@ -46,14 +46,14 @@ pub fn app() -> App<'static, 'static> {
         )
         .arg(
             Arg::with_name("FILEMODE")
-                .help("Sets the default mode of files (parsed as octal; defaults to 644; if unspecified, directories will have this mode with execute bits set when read bits are set)")
+                .help("Sets the default mode of files (parsed as octal)")
                 .long("mode")
                 .takes_value(true)
                 .default_value("644")
         )
         .arg(
             Arg::with_name("DIRMODE")
-                .help("Sets the default mode of directories (parsed as octal; defaults to 755; )")
+                .help("Sets the default mode of directories (parsed as octal; if unspecified, directories will have FILEMODE with execute bits set when read bits are set)")
                 .long("dirmode")
                 .takes_value(true)
                 .default_value("755")
@@ -119,7 +119,7 @@ pub fn app() -> App<'static, 'static> {
         )
         .arg(
             Arg::with_name("INPUT")
-                .help("Sets the input file (defaults to '-', meaning STDIN)")
+                .help("Sets the input file ('-' means STDIN)")
                 .default_value("-")
                 .index(1),
         )
