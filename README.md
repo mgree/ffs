@@ -1,5 +1,6 @@
 # ffs: the file filesystem
 [![Main workflow](https://github.com/mgree/ffs/actions/workflows/build.yml/badge.svg)](https://github.com/mgree/ffs/actions/workflows/build.yml)
+[![Crates.io](https://img.shields.io/crates/v/ffs.svg)](https://crates.io/crates/ffs)
 
 ffs, the **f**ile **f**ile**s**sytem, let's you mount semi-structured
 data as a fileystem---a tree structure you already know how to work with!
