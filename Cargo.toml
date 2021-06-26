@@ -11,6 +11,18 @@ keywords = ["data", "fuse", "json", "shell", "yaml"]
 categories = ["command-line-utilities", "encoding", "filesystem"]
 edition = "2018"
 
+exclude = [
+    ".github/*",
+    ".gitignore",
+    "binary/*",
+    "docs/*",
+    "json/*",
+    "run_tests.sh",
+    "tests/*",
+    "toml/*",
+    "yaml/*",
+]
+
 [dependencies]
 base64 = "0.13.0"
 clap = "2.0"
