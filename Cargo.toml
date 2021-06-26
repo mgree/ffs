@@ -5,7 +5,7 @@ authors = ["Michael Greenberg <michael.greenberg@stevens.edu>"]
 license = "GPL-3.0"
 description = "ffs---the File FileSystem---lets you mount semi-structured data (like JSON) as a filesystem, letting you work with modern formats using your familiar shell tools."
 readme = "README.md"
-website = "https://mgree.github.io/ffs"
+homepage = "https://mgree.github.io/ffs"
 repository = "https://github.com/mgree/ffs"
 keywords = ["data", "fuse", "json", "shell", "yaml"]
 categories = ["command-line-utilities", "encoding", "filesystem"]
@@ -16,6 +16,7 @@ exclude = [
     ".gitignore",
     "binary/*",
     "docs/*",
+    "man/*",
     "json/*",
     "run_tests.sh",
     "tests/*",
