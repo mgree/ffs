@@ -1,10 +1,12 @@
 [package]
 name = "ffs"
 version = "0.1.0"
-authors = ["Michael Greenberg <michael.greenberg@pomona.edu>"]
+authors = ["Michael Greenberg <michael.greenberg@stevens.edu>"]
+license = "GPL-3.0"
+description = "ffs---the _f_ile _f_ile_s_ystem---lets you mount semi-structured data (like JSON) as a filesystem, letting you work with modern formats using your familiar shell tools."
+website = "https://mgree.github.io/ffs"
+repository = "https://github.com/mgree/ffs"
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 base64 = "0.13.0"
