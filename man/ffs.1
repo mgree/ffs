@@ -7,12 +7,27 @@
 ffs - the file filesystem
 .SH SYNOPSIS
 .PP
-ffs [\f[I]FLAGS\f[R]/\f[I]OPTIONS\f[R]] [\f[I]INPUT\f[R]]
+ffs [\f[I]FLAGS\f[R]] [\f[I]OPTIONS\f[R]] [\f[I]INPUT\f[R]]
+.PD 0
+.P
+.PD
+ffs \f[I]--completions\f[R] \f[I]SHELL\f[R]
+.PD 0
+.P
+.PD
+ffs [\f[I]-h\f[R]|\f[I]--help\f[R]]
+.PD 0
+.P
+.PD
+ffs [\f[I]-V\f[R]|\f[I]--version\f[R]]
 .SH DESCRIPTION
 .PP
-ffs---short for the file filesystem---lets you mount semi-structured
-data as a filesystem, allowing you to work with modern formats using
-familiar shell tools.
+\f[I]ffs\f[R]---the \f[I]f\f[R]ile \f[I]f\f[R]ile\f[I]s\f[R]ystem---lets
+you mount semi-structured data as a filesystem, allowing you to work
+with modern formats using familiar shell tools.
+.PP
+\f[I]ffs\f[R] uses filesystems in userspace (FUSE); you must have these
+installed on your system to use \f[I]ffs\f[R].
 .SS Flags
 .TP
 -d, --debug
@@ -139,6 +154,13 @@ When filenames are present, extensions will be used to infer the format
 being used.
 You can specify the source and target formats explicitly with
 \f[I]--source\f[R] and \f[I]--target\f[R], respectively.
+.SH SEE ALSO
+.PP
+fuse(4), fusermount(3), mount(8), umount(8)
+.PP
+To learn more about FUSE (Filesystem in Userspace), check out libfuse
+(Linux) <https://github.com/libfuse/libfuse> and macFUSE (macOS)
+<https://osxfuse.github.io/>.
 .SH BUGS
 .PP
 See <https://github.com/mgree/ffs/issues>.

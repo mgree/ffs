@@ -7,13 +7,20 @@ ffs - the file filesystem
 
 # SYNOPSIS
 
-| ffs \[*FLAGS*/*OPTIONS*\] \[*INPUT*\]
+| ffs \[*FLAGS*\] \[*OPTIONS*\] \[*INPUT*\]
+| ffs *--completions* *SHELL*
+| ffs \[*-h*|*--help*\]
+| ffs \[*-V*|*--version*\]
+
 
 # DESCRIPTION
 
-ffs---short for the file filesystem---lets you mount semi-structured
+*ffs*---the *f*ile *f*ile*s*ystem---lets you mount semi-structured
 data as a filesystem, allowing you to work with modern formats using
 familiar shell tools.
+
+*ffs* uses filesystems in userspace (FUSE); you must have these
+installed on your system to use *ffs*.
 
 ## Flags
 
@@ -155,6 +162,16 @@ umount input_data
 When filenames are present, extensions will be used to infer the
 format being used. You can specify the source and target formats
 explicitly with *--source* and *--target*, respectively.
+
+# SEE ALSO
+
+fuse(4), fusermount(3), mount(8), umount(8)
+
+To learn more about FUSE (Filesystem in Userspace), check out libfuse
+(Linux)
+[https://github.com/libfuse/libfuse](https://github.com/libfuse/libfuse)
+and macFUSE (macOS)
+[https://osxfuse.github.io/](https://osxfuse.github.io/).
 
 # BUGS
 
