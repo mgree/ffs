@@ -11,14 +11,15 @@ use super::fs::{DirEntry, DirType, Entry, Inode, FS};
 
 use ::toml as serde_toml;
 
+/// The possible formats.
+/// 
+/// When extending, don't forget to also extend `cli::POSSIBLE_FORMATS`.
 #[derive(Copy, Clone, Debug)]
 pub enum Format {
     Json,
     Toml,
     Yaml,
 }
-
-pub const POSSIBLE_FORMATS: &[&str] = &["json", "toml", "yaml"];
 
 impl std::fmt::Display for Format {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {

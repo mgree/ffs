@@ -1,12 +1,22 @@
 use clap::{App, Arg};
 
-use super::format;
+/// The possible formats.
+///
+/// These are defined here so that completion-generation in `build.rs` doesn't need to depend on anything but this file.
+pub const POSSIBLE_FORMATS: &[&str] = &["json", "toml", "yaml"];
 
 pub fn app() -> App<'static, 'static> {
     App::new("ffs")
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
         .about("file fileystem")
+        .arg(
+            Arg::with_name("SHELL")
+                .help("Generate shell completions and exit")
+                .long("completions")
+                .takes_value(true)
+                .possible_values(&["bash", "fish", "zsh"])
+        )
         .arg(
             Arg::with_name("QUIET")
                 .help("Quiet mode (turns off all errors and warnings, enables `--no-output`)")
@@ -90,7 +100,7 @@ pub fn app() -> App<'static, 'static> {
                 .long("source")
                 .short("s")
                 .takes_value(true)
-                .possible_values(format::POSSIBLE_FORMATS)
+                .possible_values(POSSIBLE_FORMATS)
         )
         .arg(
             Arg::with_name("TARGET_FORMAT")
@@ -98,7 +108,7 @@ pub fn app() -> App<'static, 'static> {
                 .long("target")
                 .short("t")
                 .takes_value(true)
-                .possible_values(format::POSSIBLE_FORMATS)
+                .possible_values(POSSIBLE_FORMATS)
         )
         .arg(
             Arg::with_name("MOUNT")

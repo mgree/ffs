@@ -19,6 +19,26 @@ fn main() {
 
     let mut config = Config::default();
 
+    ////////////////////////////////////////////////////////////////////////////
+    // START PARSING
+    ////////////////////////////////////////////////////////////////////////////
+
+    if let Some(shell) = args.value_of("SHELL") {
+        let shell = if shell == "bash" {
+            clap::Shell::Bash
+        } else if shell == "fish" {
+            clap::Shell::Fish
+        } else if shell == "zsh" {
+            clap::Shell::Zsh
+        } else {
+            eprintln!("Can't generate completions for '{}'.", shell);
+            std::process::exit(1);
+        };
+
+        cli::app().gen_completions_to("ffs", shell, &mut std::io::stdout());
+        std::process::exit(0);
+    }
+
     if !args.is_present("QUIET") {
         let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
             if args.is_present("DEBUG") {
@@ -231,7 +251,7 @@ fn main() {
         }
     };
 
-    // try to autodetect the input format.
+    // try to autodetect the output format.
     //
     // first see if it's specified and parses okay.
     //
