@@ -23,6 +23,8 @@ to come.
 
 # Examples
 
+![Demo of in-place editing, starting from an empty JSON object to building up a compound one; transcript is below](assets/images/inplace_demo)]
+
 Run `ffs [file]` to mount `file.blah` at the mountpoint `file`. The
 final, updated version of the file will be outputted on stdout.
 
@@ -60,8 +62,31 @@ into an object.
 
 You can specify an explicit mountpoint by running `ffs -m MOUNT file`;
 you can specify an output file with `-o OUTPUT`. You can edit a file
-in place by running `ffs -i file`---when the volume is unmounted, the
-resulting output will be written back to `file`.
+in place by running `ffs -i file` (as in the gif above)---when the
+volume is unmounted, the resulting output will be written back to
+`file`. Here's the transcript:
+
+```shell-session
+~/ffs/demo $ echo '{}' >demo.json
+~/ffs/demo $ ffs -i demo.json &
+[1] 56827
+~/ffs/demo $ cd demo
+~/ffs/demo/demo $ echo 47 >favorite_number
+~/ffs/demo/demo $ mkdir likes
+~/ffs/demo/demo $ echo true >likes/dogs
+~/ffs/demo/demo $ echo false >likes/cats
+~/ffs/demo/demo $ touch mistakes
+~/ffs/demo/demo $ echo Michael Greenberg >name
+~/ffs/demo/demo $ echo https://mgree.github.io >website
+~/ffs/demo/demo $ cd ..
+~/ffs/demo $ umount demo
+~/ffs/demo $ 
+[1]+  Done                    ffs -i demo.json
+~/ffs/demo $ cat demo.json 
+{"favorite_number":47,"likes":{"cats":false,"dogs":true},"mistakes":null,"name":"Michael Greenberg","website":"https://mgree.github.io"}~/ffs/demo $ 
+~/ffs/demo $
+```
+
 
 # Getting ffs
 
