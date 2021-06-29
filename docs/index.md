@@ -23,7 +23,7 @@ to come.
 
 # Examples
 
-![Demo of in-place editing, starting from an empty JSON object to building up a compound one; transcript is below](assets/images/inplace_demo)]
+![Demo of in-place editing, starting from an empty JSON object to building up a compound one; transcript is below](assets/images/inplace_demo.gif)
 
 Run `ffs [file]` to mount `file.blah` at the mountpoint `file`. The
 final, updated version of the file will be outputted on stdout.
