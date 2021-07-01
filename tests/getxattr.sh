@@ -12,6 +12,7 @@ fail() {
 }
 
 if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
+    which getfattr || fail getfattr
     getattr() {
         attr=$1
         shift
@@ -42,7 +43,7 @@ case $(ls "$MNT") in
     (*) fail ls;;
 esac
 
-[ "$(typeof $MNT)"             = "named"   ] || fail root
+[ "$(typeof $MNT)"             = "named"   ] || { echo root didn\'t work; typeof $MNT; }
 [ "$(typeof $MNT/name)"        = "string"  ] || fail name
 [ "$(typeof $MNT/eyes)"        = "float"   ] || fail eyes
 [ "$(typeof $MNT/fingernails)" = "float"   ] || fail fingernails
