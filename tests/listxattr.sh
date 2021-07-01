@@ -37,6 +37,8 @@ case $(ls "$MNT") in
     (*) fail ls;;
 esac
 
+which getfattr || fail getfattr
+listattr "$MNT"
 listattr_ok "$MNT" || fail root
 listattr_ok "$MNT"/name || fail name
 listattr_ok "$MNT"/eyes || fail eyes
