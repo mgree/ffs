@@ -12,6 +12,8 @@ fail() {
 }
 
 if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
+    which getfattr || fail getfattr
+
     listattr() {
         getfattr --match=- "$@"
     }
@@ -37,7 +39,6 @@ case $(ls "$MNT") in
     (*) fail ls;;
 esac
 
-which getfattr || fail getfattr
 listattr "$MNT"
 listattr_ok "$MNT" || fail root
 listattr_ok "$MNT"/name || fail name
