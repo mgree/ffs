@@ -33,12 +33,7 @@ MNT=$(mktemp -d)
 ffs -m "$MNT" ../json/object.json &
 PID=$!
 sleep 2
-case $(ls "$MNT") in
-    (eyes*fingernails*human*name) ;;
-    (*) fail ls;;
-esac
 
-listattr "$MNT"
 listattr_ok "$MNT" || fail root
 listattr_ok "$MNT"/name || fail name
 listattr_ok "$MNT"/eyes || fail eyes

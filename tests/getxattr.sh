@@ -37,12 +37,8 @@ MNT=$(mktemp -d)
 ffs -m "$MNT" ../json/object.json &
 PID=$!
 sleep 2
-case $(ls "$MNT") in
-    (eyes*fingernails*human*name) ;;
-    (*) fail ls;;
-esac
 
-[ "$(typeof $MNT)"             = "named"   ] || { echo root didn\'t work; typeof $MNT; }
+[ "$(typeof $MNT)"             = "named"   ] || fail root
 [ "$(typeof $MNT/name)"        = "string"  ] || fail name
 [ "$(typeof $MNT/eyes)"        = "float"   ] || fail eyes
 [ "$(typeof $MNT/fingernails)" = "float"   ] || fail fingernails
