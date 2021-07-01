@@ -15,7 +15,8 @@ if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
     getattr() {
         attr=$1
         shift
-        getfattr --name="$attr" "$@"
+        echo getfattr -n "$attr" "$@"        
+        getfattr -n "$attr" "$@"
     }
 elif [ "$RUNNER_OS" = "macOS" ] || [ "$(uname)" = "Darwin" ]; then
     getattr() {
@@ -27,6 +28,10 @@ else
     fail os
 fi
 
+typeof() {
+    getattr user.type "$@"
+}
+
 MNT=$(mktemp -d)
 
 ffs -m "$MNT" ../json/object.json &
@@ -37,11 +42,11 @@ case $(ls "$MNT") in
     (*) fail ls;;
 esac
 
-[ "$(getattr user.type $MNT)"             = "named"   ] || fail root
-[ "$(getattr user.type $MNT/name)"        = "string"  ] || fail name
-[ "$(getattr user.type $MNT/eyes)"        = "float"   ] || fail eyes
-[ "$(getattr user.type $MNT/fingernails)" = "float"   ] || fail fingernails
-[ "$(getattr user.type $MNT/human)"       = "boolean" ] || fail human
+[ "$(typeof $MNT)"             = "named"   ] || fail root
+[ "$(typeof $MNT/name)"        = "string"  ] || fail name
+[ "$(typeof $MNT/eyes)"        = "float"   ] || fail eyes
+[ "$(typeof $MNT/fingernails)" = "float"   ] || fail fingernails
+[ "$(typeof $MNT/human)"       = "boolean" ] || fail human
 
 umount "$MNT" || fail unmount
 sleep 1
