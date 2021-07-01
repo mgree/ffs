@@ -12,7 +12,7 @@ fail() {
 }
 
 if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
-    which getattr || fail getattr
+    which getfattr || fail getfattr
     listattr() {
         getfattr --match=- "$@"
     }
