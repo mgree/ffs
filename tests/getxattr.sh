@@ -12,12 +12,11 @@ fail() {
 }
 
 if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
-    which attr || fail attr
+    which getfattr || fail getfattr
     getattr() {
         attr=$1
         shift
-        echo attr -q -g "$attr" "$@"
-        attr -q -g "$attr" "$@"
+        getfattr -n "$attr" --only-values "$@"
     }
 elif [ "$RUNNER_OS" = "macOS" ] || [ "$(uname)" = "Darwin" ]; then
     getattr() {
