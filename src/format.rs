@@ -12,13 +12,25 @@ use super::fs::{DirEntry, DirType, Entry, Inode, FS};
 use ::toml as serde_toml;
 
 /// The possible formats.
-/// 
+///
 /// When extending, don't forget to also extend `cli::POSSIBLE_FORMATS`.
 #[derive(Copy, Clone, Debug)]
 pub enum Format {
     Json,
     Toml,
     Yaml,
+}
+
+/// Types classifying string data.
+#[derive(Copy, Clone, Debug)]
+pub enum Typ {
+    Null,
+    Boolean,
+    Integer,
+    Float,
+    Datetime,
+    String,
+    Bytes,
 }
 
 impl std::fmt::Display for Format {
@@ -30,6 +42,24 @@ impl std::fmt::Display for Format {
                 Format::Json => "json",
                 Format::Toml => "toml",
                 Format::Yaml => "yaml",
+            }
+        )
+    }
+}
+
+impl std::fmt::Display for Typ {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(
+            f,
+            "{}",
+            match self {
+                Typ::Null => "null",
+                Typ::Boolean => "boolean",
+                Typ::Bytes => "bytes",
+                Typ::Datetime => "datetime",
+                Typ::Float => "float",
+                Typ::Integer => "integer",
+                Typ::String => "string",
             }
         )
     }
@@ -55,6 +85,32 @@ impl FromStr for Format {
             Ok(Format::Yaml)
         } else {
             Err(ParseFormatError::NoSuchFormat(s))
+        }
+    }
+}
+
+impl FromStr for Typ {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, ()> {
+        let s = s.trim().to_lowercase();
+
+        if s == "null" {
+            Ok(Typ::Null)
+        } else if s == "boolean" || s == "bool" {
+            Ok(Typ::Boolean)
+        } else if s == "bytes" {
+            Ok(Typ::Bytes)
+        } else if s == "datetime" || s == "date" || s == "time" {
+            Ok(Typ::Datetime)
+        } else if s == "float" || s == "double" || s == "real" {
+            Ok(Typ::Float)
+        } else if s == "integer" || s == "int" {
+            Ok(Typ::Integer)
+        } else if s == "string" {
+            Ok(Typ::String)
+        } else {
+            Err(())
         }
     }
 }
@@ -146,7 +202,7 @@ impl Format {
 }
 
 enum Node<V> {
-    String(String),
+    String(Typ, String),
     Bytes(Vec<u8>),
 
     List(Vec<V>),
@@ -218,8 +274,8 @@ where
         let (parent, inum, v) = worklist.pop().unwrap();
 
         let entry = match v.node(config) {
-            Node::Bytes(b) => Entry::File(b),
-            Node::String(s) => Entry::File(s.into_bytes()),
+            Node::Bytes(b) => Entry::File(Typ::Bytes, b),
+            Node::String(t, s) => Entry::File(t, s.into_bytes()),
             Node::List(vs) => {
                 let mut children = HashMap::new();
                 children.reserve(vs.len());
@@ -295,16 +351,19 @@ where
     V: Nodelike,
 {
     match &fs.get(inum).unwrap().entry {
-        Entry::File(contents) => match String::from_utf8(contents.clone()) {
-            Ok(mut contents) => {
-                if fs.config.add_newlines && contents.ends_with('\n') {
-                    contents.truncate(contents.len() - 1);
+        Entry::File(_t, contents) => {
+            // TODO 2021-07-01 use _t to try to force the type
+            match String::from_utf8(contents.clone()) {
+                Ok(mut contents) => {
+                    if fs.config.add_newlines && contents.ends_with('\n') {
+                        contents.truncate(contents.len() - 1);
+                    }
+                    // TODO 2021-06-24 trim?
+                    V::from_string(contents, &fs.config)
                 }
-                // TODO 2021-06-24 trim?
-                V::from_string(contents, &fs.config)
+                Err(_) => V::from_bytes(contents, &fs.config),
             }
-            Err(_) => V::from_bytes(contents, &fs.config),
-        },
+        }
         Entry::Directory(DirType::List, files) => {
             let mut entries = Vec::with_capacity(files.len());
 
@@ -356,9 +415,9 @@ mod json {
             let nl = if config.add_newlines { "\n" } else { "" };
 
             match self {
-                Value::Null => Node::Bytes("".into()), // always empty
-                Value::Bool(b) => Node::Bytes(format!("{}{}", b, nl).into_bytes()),
-                Value::Number(n) => Node::Bytes(format!("{}{}", n, nl).into_bytes()),
+                Value::Null => Node::String(Typ::Null, "".into()), // always empty
+                Value::Bool(b) => Node::String(Typ::Boolean, format!("{}{}", b, nl)),
+                Value::Number(n) => Node::String(Typ::Float, format!("{}{}", n, nl)),
                 Value::String(s) => {
                     if config.try_decode_base64 {
                         if let Ok(bytes) = base64::decode_config(&s, config.base64) {
@@ -366,7 +425,7 @@ mod json {
                         }
                     }
 
-                    Node::String(if s.ends_with('\n') { s } else { s + nl })
+                    Node::String(Typ::String, if s.ends_with('\n') { s } else { s + nl })
                 }
                 Value::Array(vs) => Node::List(vs),
                 Value::Object(fvs) => Node::Map(fvs.into_iter().collect()),
@@ -454,10 +513,10 @@ mod toml {
             let nl = if config.add_newlines { "\n" } else { "" };
 
             match self {
-                Value::Boolean(b) => Node::Bytes(format!("{}{}", b, nl).into_bytes()),
-                Value::Datetime(s) => Node::String(s.to_string()),
-                Value::Float(n) => Node::Bytes(format!("{}{}", n, nl).into_bytes()),
-                Value::Integer(n) => Node::Bytes(format!("{}{}", n, nl).into_bytes()),
+                Value::Boolean(b) => Node::String(Typ::Boolean, format!("{}{}", b, nl)),
+                Value::Datetime(s) => Node::String(Typ::Datetime, s.to_string()),
+                Value::Float(n) => Node::String(Typ::Float, format!("{}{}", n, nl)),
+                Value::Integer(n) => Node::String(Typ::Integer, format!("{}{}", n, nl)),
                 Value::String(s) => {
                     if config.try_decode_base64 {
                         if let Ok(bytes) = base64::decode_config(&s, config.base64) {
@@ -465,7 +524,7 @@ mod toml {
                         }
                     }
 
-                    Node::String(if s.ends_with('\n') { s } else { s + nl })
+                    Node::String(Typ::String, if s.ends_with('\n') { s } else { s + nl })
                 }
                 Value::Array(vs) => Node::List(vs),
                 Value::Table(fvs) => Node::Map(fvs.into_iter().collect()),
@@ -605,10 +664,10 @@ mod yaml {
             let nl = if config.add_newlines { "\n" } else { "" };
 
             match self.0 {
-                Yaml::Null => Node::String("".into()),
-                Yaml::Boolean(b) => Node::Bytes(format!("{}{}", b, nl).into_bytes()),
-                Yaml::Real(s) => Node::String(s + nl),
-                Yaml::Integer(n) => Node::Bytes(format!("{}{}", n, nl).into_bytes()),
+                Yaml::Null => Node::String(Typ::Null, "".into()),
+                Yaml::Boolean(b) => Node::String(Typ::Boolean, format!("{}{}", b, nl)),
+                Yaml::Real(s) => Node::String(Typ::Float, s + nl),
+                Yaml::Integer(n) => Node::String(Typ::Integer, format!("{}{}", n, nl)),
                 Yaml::String(s) => {
                     if config.try_decode_base64 {
                         if let Ok(bytes) = base64::decode_config(&s, config.base64) {
@@ -616,7 +675,7 @@ mod yaml {
                         }
                     }
 
-                    Node::String(if s.ends_with('\n') { s } else { s + nl })
+                    Node::String(Typ::String, if s.ends_with('\n') { s } else { s + nl })
                 }
                 Yaml::Array(vs) => Node::List(vs.into_iter().map(Value).collect()),
                 Yaml::Hash(fvs) => Node::Map(

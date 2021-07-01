@@ -2,6 +2,7 @@ use std::cell::Cell;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::Path;
+use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 
 use fuser::{
@@ -16,6 +17,7 @@ use fuser::ReplyXTimes;
 use tracing::{info, instrument, trace, warn};
 
 use super::config::{Config, Output};
+use super::format::Typ;
 
 /// A filesystem `FS` is just a vector of nullable inodes, where the index is
 /// the inode number.
@@ -76,7 +78,7 @@ pub struct Inode {
 pub enum Entry {
     // TODO 2021-06-14 need a 'written' flag to determine whether or not to
     // strip newlines during writeback
-    File(Vec<u8>),
+    File(Typ, Vec<u8>),
     Directory(DirType, HashMap<String, DirEntry>),
 }
 
@@ -224,7 +226,7 @@ impl Inode {
                     .filter(|(_, de)| de.kind == FileType::Directory)
                     .count() as u32
             }
-            Entry::File(_) => 1,
+            Entry::File(..) => 1,
         };
 
         FileAttr {
@@ -260,7 +262,7 @@ impl Entry {
     ///     filenames
     pub fn size(&self) -> u64 {
         match self {
-            Entry::File(s) => s.len() as u64,
+            Entry::File(_t, s) => s.len() as u64,
             Entry::Directory(DirType::Named, files) => {
                 files.iter().map(|(name, _inum)| name.len() as u64).sum()
             }
@@ -271,8 +273,65 @@ impl Entry {
     /// Determines the `FileType` of an `Entry`
     pub fn kind(&self) -> FileType {
         match self {
-            Entry::File(_) => FileType::RegularFile,
+            Entry::File(..) => FileType::RegularFile,
             Entry::Directory(..) => FileType::Directory,
+        }
+    }
+
+    pub fn typ(&self) -> String {
+        match self {
+            Entry::File(t, _) => t.to_string(),
+            Entry::Directory(t, _) => t.to_string(),
+        }
+    }
+
+    /// Tries to set the type from a given string, returning `false` on an
+    /// error.
+    pub fn try_set_typ(&mut self, s: &str) -> bool {
+        match self {
+            Entry::File(typ, _) => match str::parse(s) {
+                Ok(new_typ) => {
+                    *typ = new_typ;
+                    true
+                }
+                Err(..) => false,
+            },
+            Entry::Directory(typ, _) => match str::parse(s) {
+                Ok(new_typ) => {
+                    *typ = new_typ;
+                    true
+                }
+                Err(..) => false,
+            },
+        }
+    }
+}
+
+impl std::fmt::Display for DirType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(
+            f,
+            "{}",
+            match self {
+                DirType::List => "list",
+                DirType::Named => "named",
+            }
+        )
+    }
+}
+
+impl FromStr for DirType {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, ()> {
+        let s = s.trim().to_lowercase();
+
+        if s == "list" || s == "array" {
+            Ok(DirType::List)
+        } else if s == "named" || s == "object" || s == "map" || s == "hash" {
+            Ok(DirType::Named)
+        } else {
+            Err(())
         }
     }
 }
@@ -395,6 +454,7 @@ impl Filesystem for FS {
 
         reply.attr(&TTL, &file.attr());
     }
+
     #[instrument(
         level = "debug",
         skip(
@@ -502,7 +562,7 @@ impl Filesystem for FS {
 
             match self.get_mut(ino) {
                 Ok(inode) => match &mut inode.entry {
-                    Entry::File(contents) => {
+                    Entry::File(_t, contents) => {
                         contents.resize(size as usize, 0);
                         reply.attr(&TTL, &inode.attr());
                     }
@@ -576,6 +636,149 @@ impl Filesystem for FS {
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
+    fn getxattr(
+        &mut self,
+        _req: &Request<'_>,
+        ino: u64,
+        name: &OsStr,
+        size: u32,
+        reply: ReplyXattr,
+    ) {
+        info!("called");
+
+        if !self.config.allow_xattr {
+            info!("disabled");
+            reply.error(libc::ENOSYS);
+            return;
+        }
+
+        let file = match self.get(ino) {
+            Err(_e) => {
+                reply.error(libc::EFAULT);
+                return;
+            }
+            Ok(inode) => inode,
+        };
+
+        if name == "user.type" {
+            let user_type = file.entry.typ().into_bytes();
+            let actual_size = user_type.len() as u32;
+
+            if size == 0 {
+                reply.size(actual_size);
+                return;
+            } else if size < actual_size {
+                reply.error(libc::ERANGE);
+                return;
+            } else {
+                reply.data(&user_type);
+                return;
+            }
+        }
+
+        reply.error(libc::ENOATTR);
+    }
+
+    #[instrument(level = "debug", skip(self, req, reply, value, _flags, _position))]
+    fn setxattr(
+        &mut self,
+        req: &Request<'_>,
+        ino: u64,
+        name: &OsStr,
+        value: &[u8],
+        _flags: i32,
+        _position: u32,
+        reply: ReplyEmpty,
+    ) {
+        info!("called");
+
+        if !self.config.allow_xattr {
+            reply.error(libc::ENOSYS);
+            return;
+        }
+
+        if !self.check_access(req) {
+            reply.error(libc::EPERM);
+            return;
+        }
+
+        let file = match self.get_mut(ino) {
+            Err(_e) => {
+                reply.error(libc::EFAULT);
+                return;
+            }
+            Ok(inode) => inode,
+        };
+
+        if name == "user.type" {
+            match std::str::from_utf8(value) {
+                Err(_) => {
+                    reply.error(libc::EINVAL);
+                }
+                Ok(s) => {
+                    if file.entry.try_set_typ(s) {
+                        reply.ok()
+                    } else {
+                        reply.error(libc::EINVAL)
+                    }
+                }
+            }
+        } else {
+            reply.error(libc::EINVAL);
+        }
+    }
+
+    #[instrument(level = "debug", skip(self, _req, reply))]
+    fn listxattr(&mut self, _req: &Request<'_>, ino: u64, size: u32, reply: ReplyXattr) {
+        info!("called");
+
+        if !self.config.allow_xattr {
+            reply.error(libc::ENOSYS);
+            return;
+        }
+
+        if self.get(ino).is_err() {
+            reply.error(libc::EFAULT);
+            return;
+        }
+
+        let mut attrs: Vec<u8> = "user.type".into();
+        attrs.push(0);
+        let actual_size = attrs.len() as u32;
+
+        if size == 0 {
+            reply.size(actual_size)
+        } else if size < actual_size {
+            reply.error(libc::ERANGE);
+        } else {
+            reply.data(&attrs);
+        }
+    }
+
+    #[instrument(level = "debug", skip(self, _req, reply))]
+    fn removexattr(&mut self, _req: &Request<'_>, ino: u64, name: &OsStr, reply: ReplyEmpty) {
+        info!("called");
+
+        // 50 ways to leave your lover: this call never succeeds
+
+        if !self.config.allow_xattr {
+            reply.error(libc::ENOSYS);
+            return;
+        }
+
+        if self.get(ino).is_err() {
+            reply.error(libc::EFAULT);
+            return;
+        }
+
+        if name == "user.type" {
+            reply.error(libc::EACCES);
+        } else {
+            reply.error(libc::ENOATTR);
+        }
+    }
+
+    #[instrument(level = "debug", skip(self, _req, reply))]
     fn read(
         &mut self,
         _req: &Request,
@@ -597,7 +800,7 @@ impl Filesystem for FS {
         };
 
         match &file.entry {
-            Entry::File(s) => reply.data(&s[offset as usize..]),
+            Entry::File(_t, s) => reply.data(&s[offset as usize..]),
             _ => reply.error(libc::ENOENT),
         }
     }
@@ -622,7 +825,7 @@ impl Filesystem for FS {
         };
 
         match &inode.entry {
-            Entry::File(_) => reply.error(libc::ENOTDIR),
+            Entry::File(..) => reply.error(libc::ENOTDIR),
             Entry::Directory(_kind, files) => {
                 let dot_entries = vec![
                     (ino, FileType::Directory, "."),
@@ -712,7 +915,7 @@ impl Filesystem for FS {
                 return;
             }
             Ok(inode) => match &inode.entry {
-                Entry::File(_) => {
+                Entry::File(..) => {
                     reply.error(libc::ENOTDIR);
                     return;
                 }
@@ -727,7 +930,7 @@ impl Filesystem for FS {
 
         // create the inode entry
         let (entry, kind) = if file_type == libc::S_IFREG as u32 {
-            (Entry::File(Vec::new()), FileType::RegularFile)
+            (Entry::File(Typ::String, Vec::new()), FileType::RegularFile)
         } else {
             assert_eq!(file_type, libc::S_IFDIR as u32);
             (
@@ -744,7 +947,7 @@ impl Filesystem for FS {
         match self.get_mut(parent) {
             Err(_e) => unreachable!("error finding parent again"),
             Ok(inode) => match &mut inode.entry {
-                Entry::File(_) => unreachable!("parent changed to a regular file"),
+                Entry::File(..) => unreachable!("parent changed to a regular file"),
                 Entry::Directory(_dirtype, files) => {
                     files.insert(filename.into(), DirEntry { kind, inum });
                 }
@@ -788,7 +991,7 @@ impl Filesystem for FS {
                 return;
             }
             Ok(inode) => match &inode.entry {
-                Entry::File(_) => {
+                Entry::File(..) => {
                     reply.error(libc::ENOTDIR);
                     return;
                 }
@@ -813,7 +1016,7 @@ impl Filesystem for FS {
         match self.get_mut(parent) {
             Err(_e) => unreachable!("error finding parent again"),
             Ok(inode) => match &mut inode.entry {
-                Entry::File(_) => unreachable!("parent changed to a regular file"),
+                Entry::File(..) => unreachable!("parent changed to a regular file"),
                 Entry::Directory(_dirtype, files) => {
                     files.insert(filename.into(), DirEntry { kind, inum });
                 }
@@ -858,7 +1061,7 @@ impl Filesystem for FS {
 
         // load contents
         let contents = match &mut file.entry {
-            Entry::File(contents) => contents,
+            Entry::File(_t, contents) => contents,
             Entry::Directory(_, _) => {
                 reply.error(libc::EISDIR);
                 return;
@@ -909,7 +1112,7 @@ impl Filesystem for FS {
                 ..
             }) => files,
             Ok(Inode {
-                entry: Entry::File(_),
+                entry: Entry::File(..),
                 ..
             }) => {
                 reply.error(libc::ENOTDIR);
@@ -966,7 +1169,7 @@ impl Filesystem for FS {
                 ..
             }) => files,
             Ok(Inode {
-                entry: Entry::File(_),
+                entry: Entry::File(..),
                 ..
             }) => {
                 reply.error(libc::ENOTDIR);
@@ -1184,7 +1387,7 @@ impl Filesystem for FS {
         // load the contents
         let contents = match self.get_mut(ino) {
             Ok(Inode {
-                entry: Entry::File(contents),
+                entry: Entry::File(_t, contents),
                 ..
             }) => contents,
             Ok(Inode {
@@ -1381,50 +1584,6 @@ impl Filesystem for FS {
         _datasync: bool,
         reply: ReplyEmpty,
     ) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
-
-    #[instrument(level = "debug", skip(self, _req, reply))]
-    fn setxattr(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _name: &OsStr,
-        _value: &[u8],
-        _flags: i32,
-        _position: u32,
-        reply: ReplyEmpty,
-    ) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
-
-    #[instrument(level = "debug", skip(self, _req, reply))]
-    fn getxattr(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _name: &OsStr,
-        _size: u32,
-        reply: ReplyXattr,
-    ) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
-
-    #[instrument(level = "debug", skip(self, _req, reply))]
-    fn listxattr(&mut self, _req: &Request<'_>, _ino: u64, _size: u32, reply: ReplyXattr) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
-
-    #[instrument(level = "debug", skip(self, _req, reply))]
-    fn removexattr(&mut self, _req: &Request<'_>, _ino: u64, _name: &OsStr, reply: ReplyEmpty) {
         info!("called");
 
         reply.error(libc::ENOSYS);
