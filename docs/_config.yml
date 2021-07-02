@@ -1,6 +1,8 @@
 theme: jekyll-theme-tactile
+repository: mgree/ffs
 github:
   public: true
   macos_url: https://github.com/mgree/ffs/releases/download/macos-latest/ffs
   linux_url: https://github.com/mgree/ffs/releases/download/ubuntu-latest/ffs
-  
+exclude:
+  - Gemfile

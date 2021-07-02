@@ -9,8 +9,8 @@ ffs - the file filesystem
 
 | ffs \[*FLAGS*\] \[*OPTIONS*\] \[*INPUT*\]
 | ffs *--completions* *SHELL*
-| ffs \[*-h*|*--help*\]
-| ffs \[*-V*|*--version*\]
+| ffs \[*-h*\|*--help*\]
+| ffs \[*-V*\|*--version*\]
 
 
 # DESCRIPTION
@@ -211,13 +211,13 @@ specify a mountpoint with *-m*.  If you have a mountpoint/directory
 *mnt*, you can download information on GitHub commits, work with them,
 and save the modified output to *commits.json* by running:
 
-```
+```shell
 curl https://api.github.com/repos/mgree/ffs/commits | ffs -m mnt -o commits.json 
 ```
 
 If you had already downloaded the file to *commits.json*, you could simply run:
 
-```
+```shell
 ffs -i commits.json
 # do edits in commits directory
 umount commits
@@ -226,7 +226,7 @@ umount commits
 
 To mount a JSON file and write back out a YAML file, you could run:
 
-```
+```shell
 ffs -o output_data.yaml input_data.json
 # do edits in the input_data directory ffs created
 umount input_data
@@ -240,7 +240,7 @@ You can use extended attributes to change a list directory to a named
 one (or vice versa); this example uses macOS, with Linux alternatives
 in comments.
 
-```
+```ShellSession
 $ ffs -i list.json &
 [1] 41361
 $ cat list.json
