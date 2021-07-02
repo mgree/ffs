@@ -57,8 +57,8 @@ Don\[aq]t pad the numeric names of list elements with zeroes; will not
 sort properly
 .TP
 --no-xattr
-Don\[aq]t use extended attributes to track metadata (see
-\f[C]man xattr\f[R])
+Don\[aq]t use extended attributes to track metadata (see \f[I]man
+xattr\f[R])
 .TP
 --keep-macos-xattr
 Include ._* extended attribute/resource fork files on macOS.
@@ -114,28 +114,28 @@ formats (currently, JSON, TOML, and YAML); \f[I]ffs\f[R] maps values in
 these formats to filesystems.
 Here are the different types and how they\[aq]re mapped to a filesystem:
 .TP
-Boolean
+boolean
 Mapped to a \f[B]file\f[R].
 Either \f[I]true\f[R] or \f[I]false\f[R].
 .TP
-Bytes
+bytes
 Mapped to a \f[B]file\f[R].
 When serializing back to format, it will be encoded in base64.
 .TP
-Datetime
+datetime
 Mapped to a \f[B]file\f[R].
 Some portion of an RFC
 3339 (https://datatracker.ietf.org/doc/html/rfc3339) date/time.
 .TP
-Integer
+integer
 Mapped to a \f[B]file\f[R].
 No larger than 64 bits.
 .TP
-Float
+float
 Mapped to a \f[B]file\f[R].
 No larger than 64 bits.
 .TP
-List
+list
 Mapped to a \f[B]directory\f[R].
 List directories will have numerically named elements, starting from 0.
 Filenames will be padded with zeros to ensure proper sorting; use
@@ -146,17 +146,17 @@ When list directories are serialized back to a format, filenames are
 ignored and the sorted order of the files (in the current locale) will
 be used to determine the list order.
 .TP
-Named
+named
 Mapped to a \f[B]directory\f[R].
 Named directories (also known as maps, objects, hashes, or dictionaries)
 will use field names as the file/directory names for their contents.
 Some renaming may occur if fields have special characters in them.
 .TP
-Null
+null
 Mapped to a \f[B]file\f[R].
 The file will be empty.
 .TP
-String
+string
 Mapped to a \f[B]file\f[R].
 The file will be encoded in UTF-8 holding the string.
 .PP
@@ -164,9 +164,11 @@ By default every file will have a newline appended to its contents; this
 newline will be removed when the filesystem is dumped back to a file.
 To disable these newlines, use \f[I]--exact\f[R].
 .PP
-You can inspect and alter the types of files and directories using
-extended attributes (use \f[C]xattr\f[R] on macOS and
-\f[C]attr\f[R]/\f[C]getfattr\f[R]/\f[C]setfattr\f[R] on Linux).
+You can inspect and alter the types of files and directories using the
+extended attribute \f[I]user.type\f[R] (use \f[I]xattr\f[R] on macOS and
+\f[I]attr\f[R]/\f[I]getfattr\f[R]/\f[I]setfattr\f[R] on Linux).
+The names given here are the valid values for the \f[I]user.type\f[R]
+attribute.
 .SH ENVIRONMENT
 .TP
 RUST_LOG
@@ -254,7 +256,8 @@ $ cat list.json
 .fi
 .SH SEE ALSO
 .PP
-fuse(4), fusermount(3), mount(8), umount(8)
+attr(1), fuse(4), fusermount(3), getfattr(1), mount(8), setfattr(1),
+umount(8), xattr(1)
 .PP
 To learn more about FUSE (Filesystem in Userspace), check out libfuse
 (Linux) <https://github.com/libfuse/libfuse> and macFUSE (macOS)

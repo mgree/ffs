@@ -59,7 +59,7 @@ installed on your system to use *ffs*.
 
 --no-xattr
 
-: Don't use extended attributes to track metadata (see `man xattr`)
+: Don't use extended attributes to track metadata (see *man xattr*)
 
 --keep-macos-xattr
 
@@ -134,28 +134,28 @@ formats (currently, JSON, TOML, and YAML); *ffs* maps values in these
 formats to filesystems. Here are the different types and how they're
 mapped to a filesystem:
 
-Boolean
+boolean
 
 : Mapped to a **file**. Either *true* or *false*.
 
-Bytes
+bytes
 
 : Mapped to a **file**. When serializing back to format, it will be encoded in base64.
 
-Datetime
+datetime
 
 : Mapped to a **file**. Some portion of an [RFC
   3339](https://datatracker.ietf.org/doc/html/rfc3339) date/time.
 
-Integer
+integer
 
 : Mapped to a **file**. No larger than 64 bits.
 
-Float
+float
 
 : Mapped to a **file**. No larger than 64 bits.
 
-List
+list
 
 : Mapped to a **directory**. List directories will have numerically
   named elements, starting from 0. Filenames will be padded with zeros
@@ -165,18 +165,18 @@ List
   filenames are ignored and the sorted order of the files (in the
   current locale) will be used to determine the list order.
 
-Named
+named
 
 : Mapped to a **directory**. Named directories (also known as maps,
   objects, hashes, or dictionaries) will use field names as the
   file/directory names for their contents. Some renaming may occur if
   fields have special characters in them.
 
-Null
+null
 
 : Mapped to a **file**. The file will be empty.
 
-String
+string
 
 : Mapped to a **file**. The file will be encoded in UTF-8 holding the
   string.
@@ -185,9 +185,10 @@ By default every file will have a newline appended to its contents;
 this newline will be removed when the filesystem is dumped back to a
 file. To disable these newlines, use *--exact*.
 
-You can inspect and alter the types of files and directories using
-extended attributes (use `xattr` on macOS and
-`attr`/`getfattr`/`setfattr` on Linux).
+You can inspect and alter the types of files and directories using the
+extended attribute *user.type* (use *xattr* on macOS and
+*attr*/*getfattr*/*setfattr* on Linux). The names given here are the
+valid values for the *user.type* attribute.
 
 # ENVIRONMENT
 
@@ -265,7 +266,7 @@ $ cat list.json
 
 # SEE ALSO
 
-fuse(4), fusermount(3), mount(8), umount(8)
+attr(1), fuse(4), fusermount(3), getfattr(1), mount(8), setfattr(1), umount(8), xattr(1)
 
 To learn more about FUSE (Filesystem in Userspace), check out libfuse
 (Linux)
