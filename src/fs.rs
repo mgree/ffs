@@ -87,6 +87,11 @@ pub enum Entry {
 #[derive(Debug)]
 pub struct DirEntry {
     pub kind: FileType,
+    /// When loading from certain map types, names might get munged.
+    /// We store the original name here so we can restore it appropriately.
+    ///
+    /// If the file is renamed, we'll drop the original name.
+    pub original_name: Option<String>,
     pub inum: u64,
 }
 
@@ -328,7 +333,13 @@ impl FromStr for DirType {
 
         if s == "list" || s == "array" {
             Ok(DirType::List)
-        } else if s == "named" || s == "object" || s == "map" || s == "hash" || s == "dict" || s == "dictionary" {
+        } else if s == "named"
+            || s == "object"
+            || s == "map"
+            || s == "hash"
+            || s == "dict"
+            || s == "dictionary"
+        {
             Ok(DirType::Named)
         } else {
             Err(())
@@ -838,9 +849,9 @@ impl Filesystem for FS {
                     (inode.parent, FileType::Directory, ".."),
                 ];
 
-                let entries = files
-                    .iter()
-                    .map(|(filename, DirEntry { inum, kind })| (*inum, *kind, filename.as_str()));
+                let entries = files.iter().map(|(filename, DirEntry { inum, kind, .. })| {
+                    (*inum, *kind, filename.as_str())
+                });
 
                 for (i, entry) in dot_entries
                     .into_iter()
@@ -955,7 +966,14 @@ impl Filesystem for FS {
             Ok(inode) => match &mut inode.entry {
                 Entry::File(..) => unreachable!("parent changed to a regular file"),
                 Entry::Directory(_dirtype, files) => {
-                    files.insert(filename.into(), DirEntry { kind, inum });
+                    files.insert(
+                        filename.into(),
+                        DirEntry {
+                            kind,
+                            original_name: None,
+                            inum,
+                        },
+                    );
                 }
             },
         };
@@ -1024,7 +1042,14 @@ impl Filesystem for FS {
             Ok(inode) => match &mut inode.entry {
                 Entry::File(..) => unreachable!("parent changed to a regular file"),
                 Entry::Directory(_dirtype, files) => {
-                    files.insert(filename.into(), DirEntry { kind, inum });
+                    files.insert(
+                        filename.into(),
+                        DirEntry {
+                            kind,
+                            original_name: None,
+                            inum,
+                        },
+                    );
                 }
             },
         };
@@ -1188,6 +1213,7 @@ impl Filesystem for FS {
             Some(DirEntry {
                 kind: FileType::Directory,
                 inum,
+                ..
             }) => inum,
             Some(_) => {
                 reply.error(libc::ENOTDIR);
@@ -1272,12 +1298,17 @@ impl Filesystem for FS {
         };
 
         // make sure src exists
-        let (src_kind, src_inum) = match self.get(parent) {
+        let (src_kind, src_original, src_inum) = match self.get(parent) {
             Ok(Inode {
                 entry: Entry::Directory(_kind, files),
                 ..
             }) => match files.get(src) {
-                Some(DirEntry { kind, inum }) => (*kind, *inum),
+                Some(DirEntry {
+                    kind,
+                    original_name,
+                    inum,
+                    ..
+                }) => (*kind, original_name.clone(), *inum),
                 None => {
                     reply.error(libc::ENOENT);
                     return;
@@ -1294,7 +1325,7 @@ impl Filesystem for FS {
                 entry: Entry::Directory(_kind, files),
                 ..
             }) => match files.get(tgt) {
-                Some(DirEntry { kind, inum }) => {
+                Some(DirEntry { kind, inum, .. }) => {
                     if src_kind != *kind {
                         reply.error(libc::ENOTDIR);
                         return;
@@ -1342,6 +1373,10 @@ impl Filesystem for FS {
                 tgt.into(),
                 DirEntry {
                     kind: src_kind,
+                    // if the filename is the same, we'll keep the source
+                    // original filename (if it exists; otherwise we overwrite
+                    // it)
+                    original_name: if src == tgt { src_original } else { None },
                     inum: src_inum,
                 },
             ),

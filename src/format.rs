@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::str::FromStr;
 
-use tracing::{debug, error, warn, info, instrument};
+use tracing::{debug, error, info, instrument, warn};
 
 use fuser::FileType;
 
@@ -298,8 +298,9 @@ where
                     children.insert(
                         name,
                         DirEntry {
-                            inum: next_id,
                             kind: child.kind(),
+                            original_name: None,
+                            inum: next_id,
                         },
                     );
                     worklist.push((inum, next_id, child));
@@ -320,18 +321,22 @@ where
                         nfield.push('_');
                     }
 
-                    if original != nfield {
+                    let original_name = if original != nfield {
                         info!(
                             "renamed {} to {} (inode {} with parent {})",
                             original, nfield, next_id, parent
                         );
-                    }
+                        Some(original)
+                    } else {
+                        None
+                    };
 
                     children.insert(
                         nfield,
                         DirEntry {
-                            inum: next_id,
                             kind: child.kind(),
+                            original_name,
+                            inum: next_id,
                         },
                     );
 
@@ -388,14 +393,24 @@ where
         Entry::Directory(DirType::Named, files) => {
             let mut entries = HashMap::with_capacity(files.len());
 
-            for (name, DirEntry { inum, .. }) in files.iter() {
+            for (
+                name,
+                DirEntry {
+                    inum,
+                    original_name,
+                    ..
+                },
+            ) in files.iter()
+            {
                 if fs.config.ignored_file(name) {
                     warn!("skipping ignored file '{}'", name);
                     continue;
                 }
 
                 let v = value_from_fs(fs, *inum);
-                entries.insert(name.into(), v);
+
+                let name = original_name.as_ref().unwrap_or(name).into();
+                entries.insert(name, v);
             }
 
             V::from_named_dir(entries, &fs.config)
