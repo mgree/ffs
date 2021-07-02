@@ -759,6 +759,9 @@ impl Filesystem for FS {
             return;
         }
 
+        // TODO 2021-07-02
+        // - we could add user.original_name here when present
+        // - we could use a clearer name (e.g., `user.ffs.type`)
         let mut attrs: Vec<u8> = "user.type".into();
         attrs.push(0);
         let actual_size = attrs.len() as u32;
