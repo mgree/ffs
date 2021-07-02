@@ -373,7 +373,12 @@ where
 
             let mut files = files.iter().collect::<Vec<_>>();
             files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
-            for (_name, DirEntry { inum, .. }) in files.iter() {
+            for (name, DirEntry { inum, .. }) in files.iter() {
+                if fs.config.ignored_file(name) {
+                    warn!("skipping ignored file '{}'", name);
+                    continue;
+                }
+
                 let v = value_from_fs(fs, *inum);
                 entries.push(v);
             }

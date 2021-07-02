@@ -344,9 +344,9 @@ impl Drop for FS {
     }
 }
 
+// ENOATTR is deprecated on Linux, so we should use ENODATA
 #[cfg(target_os = "linux")]
 const ENOATTR: i32 = libc::ENODATA;
-
 #[cfg(target_os = "macos")]
 const ENOATTR: i32 = libc::ENOATTR;
 
