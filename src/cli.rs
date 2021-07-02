@@ -65,7 +65,7 @@ pub fn app() -> App<'static, 'static> {
         )
         .arg(
             Arg::with_name("NOXATTR")
-                .help("Don't extended attributes to track metadata (see `man xattr`)")
+                .help("Don't use extended attributes to track metadata (see `man xattr`)")
                 .long("no-xattr")
         )
         .arg(

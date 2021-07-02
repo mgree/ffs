@@ -28,6 +28,8 @@ with modern formats using familiar shell tools.
 .PP
 \f[I]ffs\f[R] uses filesystems in userspace (FUSE); you must have these
 installed on your system to use \f[I]ffs\f[R].
+.PP
+\f[I]ffs\f[R] expects its input to be encoded in UTF-8.
 .SS Flags
 .TP
 -d, --debug
@@ -53,6 +55,13 @@ Mounted filesystem will be readonly
 --unpadded
 Don\[aq]t pad the numeric names of list elements with zeroes; will not
 sort properly
+.TP
+--no-xattr
+Don\[aq]t use extended attributes to track metadata (see
+\f[C]man xattr\f[R])
+.TP
+--keep-macos-xattr
+Include ._* extended attribute/resource fork files on macOS.
 .TP
 -h, --help
 Prints help information (and exits)
@@ -98,6 +107,66 @@ effective user id)
 .TP
 \f[I]INPUT\f[R]
 Sets the input file (use \[aq]-\[aq] for stdin) [default: -]
+.SS Data model
+.PP
+The data model for \f[I]ffs\f[R] is a superset of that of its supported
+formats (currently, JSON, TOML, and YAML); \f[I]ffs\f[R] maps values in
+these formats to filesystems.
+Here are the different types and how they\[aq]re mapped to a filesystem:
+.TP
+Boolean
+Mapped to a \f[B]file\f[R].
+Either \f[I]true\f[R] or \f[I]false\f[R].
+.TP
+Bytes
+Mapped to a \f[B]file\f[R].
+When serializing back to format, it will be encoded in base64.
+.TP
+Datetime
+Mapped to a \f[B]file\f[R].
+Some portion of an RFC
+3339 (https://datatracker.ietf.org/doc/html/rfc3339) date/time.
+.TP
+Integer
+Mapped to a \f[B]file\f[R].
+No larger than 64 bits.
+.TP
+Float
+Mapped to a \f[B]file\f[R].
+No larger than 64 bits.
+.TP
+List
+Mapped to a \f[B]directory\f[R].
+List directories will have numerically named elements, starting from 0.
+Filenames will be padded with zeros to ensure proper sorting; use
+\f[I]--unpadded\f[R] to disable padding.
+While mounted, you are free to use whatever filenames you like in a list
+directory.
+When list directories are serialized back to a format, filenames are
+ignored and the sorted order of the files (in the current locale) will
+be used to determine the list order.
+.TP
+Named
+Mapped to a \f[B]directory\f[R].
+Named directories (also known as maps, objects, hashes, or dictionaries)
+will use field names as the file/directory names for their contents.
+Some renaming may occur if fields have special characters in them.
+.TP
+Null
+Mapped to a \f[B]file\f[R].
+The file will be empty.
+.TP
+String
+Mapped to a \f[B]file\f[R].
+The file will be encoded in UTF-8 holding the string.
+.PP
+By default every file will have a newline appended to its contents; this
+newline will be removed when the filesystem is dumped back to a file.
+To disable these newlines, use \f[I]--exact\f[R].
+.PP
+You can inspect and alter the types of files and directories using
+extended attributes (use \f[C]xattr\f[R] on macOS and
+\f[C]attr\f[R]/\f[C]getfattr\f[R]/\f[C]setfattr\f[R] on Linux).
 .SH ENVIRONMENT
 .TP
 RUST_LOG
@@ -154,6 +223,35 @@ When filenames are present, extensions will be used to infer the format
 being used.
 You can specify the source and target formats explicitly with
 \f[I]--source\f[R] and \f[I]--target\f[R], respectively.
+.PP
+You can use extended attributes to change a list directory to a named
+one (or vice versa); this example uses macOS, with Linux alternatives in
+comments.
+.IP
+.nf
+\f[C]
+$ ffs -i list.json &
+[1] 41361
+$ cat list.json
+[1,2,\[dq]3\[dq],false]
+$ cd list
+$ mv 0 loneliest_number
+$ mv 1 to_tango
+$ mv 2 three
+$ mv 3 not_true
+$ xattr -l .                    # Linux: getattr --match=- .
+user.type: list
+$ xattr -w user.type named .    # Linux: setattr -n user.type -v named .
+$ ls
+loneliest_number not_true         three            to_tango
+$ cd ..
+$ umount list
+$
+[1]+  Done                    target/debug/ffs -i list.json
+$ cat list.json
+{\[dq]loneliest_number\[dq]:1,\[dq]not_true\[dq]:false,\[dq]three\[dq]:\[dq]3\[dq],\[dq]to_tango\[dq]:2}
+\f[R]
+.fi
 .SH SEE ALSO
 .PP
 fuse(4), fusermount(3), mount(8), umount(8)

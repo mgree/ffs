@@ -328,7 +328,7 @@ impl FromStr for DirType {
 
         if s == "list" || s == "array" {
             Ok(DirType::List)
-        } else if s == "named" || s == "object" || s == "map" || s == "hash" {
+        } else if s == "named" || s == "object" || s == "map" || s == "hash" || s == "dict" || s == "dictionary" {
             Ok(DirType::Named)
         } else {
             Err(())
