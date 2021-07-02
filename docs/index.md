@@ -21,6 +21,8 @@ Currently, ffs supports [JSON](https://www.json.org/),
 [YAML](https://yaml.org/), and [TOML](https://toml.io/en/), with more
 to come.
 
+You can read more about it in [the `ffs` manpage](ffs.1.html).
+
 # Examples
 
 ![Demo of in-place editing, starting from an empty JSON object to building up a compound one; transcript is below](assets/images/inplace_demo.gif)

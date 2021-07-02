@@ -57,6 +57,8 @@ fn main() {
     config.add_newlines = !args.is_present("EXACT");
     config.pad_element_names = !args.is_present("UNPADDED");
     config.read_only = args.is_present("READONLY");
+    config.allow_xattr = !args.is_present("NOXATTR");
+    config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
     config.filemode = match u16::from_str_radix(args.value_of("FILEMODE").unwrap(), 8) {
         Ok(filemode) => filemode,
         Err(e) => {
