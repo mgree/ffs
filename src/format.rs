@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::str::FromStr;
 
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, error, warn, info, instrument};
 
 use fuser::FileType;
 
@@ -384,6 +384,11 @@ where
             let mut entries = HashMap::with_capacity(files.len());
 
             for (name, DirEntry { inum, .. }) in files.iter() {
+                if fs.config.ignored_file(name) {
+                    warn!("skipping ignored file '{}'", name);
+                    continue;
+                }
+
                 let v = value_from_fs(fs, *inum);
                 entries.insert(name.into(), v);
             }

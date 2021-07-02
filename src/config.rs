@@ -16,6 +16,7 @@ pub struct Config {
     pub base64: base64::Config,
     pub try_decode_base64: bool,
     pub allow_xattr: bool,
+    pub keep_macos_xattr_file: bool,
     pub read_only: bool,
     pub input: Input,
     pub output: Output,
@@ -63,6 +64,20 @@ impl Config {
             .replace(" ", "space")
     }
 
+    #[cfg(target_os = "macos")]
+    fn platform_ignored_file(&self, s: &str) -> bool {
+        !self.keep_macos_xattr_file && s.starts_with("._")
+    }
+
+    #[cfg(target_os = "linux")]
+    fn platform_ignored_file(&self, s: &str) -> bool {
+        false
+    }
+
+    pub fn ignored_file(&self, s: &str) -> bool {
+        s == "." || s == ".." || self.platform_ignored_file(s)
+    }
+
     /// Determines the default mode of a file
     pub fn mode(&self, kind: FileType) -> u16 {
         if kind == FileType::Directory {
@@ -87,6 +102,7 @@ impl Default for Config {
             base64: base64::STANDARD,
             try_decode_base64: false,
             allow_xattr: true,
+            keep_macos_xattr_file: false,
             read_only: false,
             input: Input::Stdin,
             output: Output::Stdout,

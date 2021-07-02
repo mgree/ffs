@@ -64,6 +64,16 @@ pub fn app() -> App<'static, 'static> {
                 .long("exact")
         )
         .arg(
+            Arg::with_name("NOXATTR")
+                .help("Don't extended attributes to track metadata (see `man xattr`)")
+                .long("no-xattr")
+        )
+        .arg(
+            Arg::with_name("KEEPMACOSDOT")
+                .help("Include ._* extended attribute/resource fork files on macOS")
+                .long("keep-macos-xattr")
+        )
+        .arg(
             Arg::with_name("UNPADDED")
                 .help("Don't pad the numeric names of list elements with zeroes; will not sort properly")
                 .long("unpadded")
