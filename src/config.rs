@@ -3,6 +3,13 @@ use std::path::PathBuf;
 
 use super::format::Format;
 
+/// Configuration information
+///
+/// See `cli.rs` for information on the actual command-line options; see
+/// `main.rs` for how those connect to this structure.
+///
+/// NB I know this arrangement sucks, but `clap`'s automatic stuff isn't
+/// adequate to express what I want here. Command-line interfaces are hard. 😢
 #[derive(Debug)]
 pub struct Config {
     pub input_format: Format,
@@ -74,6 +81,12 @@ impl Config {
         false
     }
 
+    /// Returns `true` for filenames that should not be serialized back.
+    ///
+    /// By default, this includes `.` and `..` (though neither of these occur in
+    /// `FS` as `Inode`s). On macOS, filenames starting with `._` are ignored,
+    /// as well---these are where macOS will store extended attributes on
+    /// filesystems that don't support them.
     pub fn ignored_file(&self, s: &str) -> bool {
         s == "." || s == ".." || self.platform_ignored_file(s)
     }
