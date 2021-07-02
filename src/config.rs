@@ -70,7 +70,7 @@ impl Config {
     }
 
     #[cfg(target_os = "linux")]
-    fn platform_ignored_file(&self, s: &str) -> bool {
+    fn platform_ignored_file(&self, _s: &str) -> bool {
         false
     }
 

@@ -344,6 +344,12 @@ impl Drop for FS {
     }
 }
 
+#[cfg(target_os = "linux")]
+const ENOATTR: i32 = libc::ENODATA;
+
+#[cfg(target_os = "macos")]
+const ENOATTR: i32 = libc::ENOATTR;
+
 impl Filesystem for FS {
     #[instrument(level = "debug", skip(self, _req), fields(dirty = self.dirty.get()))]
     fn destroy(&mut self, _req: &Request) {
@@ -676,7 +682,7 @@ impl Filesystem for FS {
             }
         }
 
-        reply.error(libc::ENOATTR);
+        reply.error(ENOATTR);
     }
 
     #[instrument(level = "debug", skip(self, req, reply, value, _flags, _position))]
@@ -774,7 +780,7 @@ impl Filesystem for FS {
         if name == "user.type" {
             reply.error(libc::EACCES);
         } else {
-            reply.error(libc::ENOATTR);
+            reply.error(ENOATTR);
         }
     }
 
