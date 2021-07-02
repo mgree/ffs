@@ -22,7 +22,7 @@ pub enum Format {
 }
 
 /// Types classifying string data.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Typ {
     Null,
     Boolean,
@@ -237,7 +237,11 @@ where
     fn from_bytes<T>(v: T, config: &Config) -> Self
     where
         T: AsRef<[u8]>;
-    fn from_string(v: String, config: &Config) -> Self;
+
+    /// Converts from a string.
+    ///
+    /// Should never be called when `typ == Typ::Bytes`.
+    fn from_string(typ: Typ, v: String, config: &Config) -> Self;
     fn from_list_dir(files: Vec<Self>, config: &Config) -> Self;
     fn from_named_dir(files: HashMap<String, Self>, config: &Config) -> Self;
 }
@@ -351,17 +355,17 @@ where
     V: Nodelike,
 {
     match &fs.get(inum).unwrap().entry {
-        Entry::File(_t, contents) => {
+        Entry::File(typ, contents) => {
             // TODO 2021-07-01 use _t to try to force the type
             match String::from_utf8(contents.clone()) {
-                Ok(mut contents) => {
+                Ok(mut contents) if typ != &Typ::Bytes => {
                     if fs.config.add_newlines && contents.ends_with('\n') {
                         contents.truncate(contents.len() - 1);
                     }
                     // TODO 2021-06-24 trim?
-                    V::from_string(contents, &fs.config)
+                    V::from_string(*typ, contents, &fs.config)
                 }
-                Err(_) => V::from_bytes(contents, &fs.config),
+                Ok(_) | Err(_) => V::from_bytes(contents, &fs.config),
             }
         }
         Entry::Directory(DirType::List, files) => {
@@ -432,17 +436,45 @@ mod json {
             }
         }
 
-        fn from_string(contents: String, _config: &Config) -> Self {
-            if contents.is_empty() {
-                Value::Null
-            } else if contents == "true" {
-                Value::Bool(true)
-            } else if contents == "false" {
-                Value::Bool(false)
-            } else if let Ok(n) = serde_json::Number::from_str(&contents) {
-                Value::Number(n)
-            } else {
-                Value::String(contents)
+        fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
+            match typ {
+                Typ::Boolean => {
+                    if contents == "true" {
+                        Value::Bool(true)
+                    } else if contents == "false" {
+                        Value::Bool(false)
+                    } else {
+                        debug!("string '{}' tagged as boolean", contents);
+                        Value::String(contents)
+                    }
+                }
+                Typ::Bytes => panic!("from_string called at typ::bytes"),
+                Typ::Datetime => Value::String(contents),
+                Typ::Float => {
+                    if let Ok(n) = serde_json::Number::from_str(&contents) {
+                        Value::Number(n)
+                    } else {
+                        debug!("string '{}' tagged as float", contents);
+                        Value::String(contents)
+                    }
+                }
+                Typ::Integer => {
+                    if let Ok(n) = serde_json::Number::from_str(&contents) {
+                        Value::Number(n)
+                    } else {
+                        debug!("string '{}' tagged as float", contents);
+                        Value::String(contents)
+                    }
+                }
+                Typ::Null => {
+                    if contents.is_empty() {
+                        Value::Null
+                    } else {
+                        debug!("string '{}' tagged as null", contents);
+                        Value::String(contents)
+                    }
+                }
+                Typ::String => Value::String(contents),
             }
         }
 
@@ -531,17 +563,54 @@ mod toml {
             }
         }
 
-        fn from_string(contents: String, _config: &Config) -> Self {
-            if contents == "true" {
-                Value::Boolean(true)
-            } else if contents == "false" {
-                Value::Boolean(false)
-            } else if let Ok(n) = i64::from_str(&contents) {
-                Value::Integer(n)
-            } else if let Ok(n) = f64::from_str(&contents) {
-                Value::Float(n)
-            } else {
-                Value::String(contents)
+        fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
+            match typ {
+                Typ::Boolean => {
+                    if contents == "true" {
+                        Value::Boolean(true)
+                    } else if contents == "false" {
+                        Value::Boolean(false)
+                    } else {
+                        debug!("string '{}' tagged as boolean", contents);
+                        Value::String(contents)
+                    }
+                }
+                Typ::Bytes => panic!("from_string called at typ::bytes"),
+                Typ::Datetime => match str::parse(&contents) {
+                    Ok(datetime) => Value::Datetime(datetime),
+                    Err(e) => {
+                        debug!(
+                            "string '{}' tagged as datetime, didn't parse: {}",
+                            contents, e
+                        );
+                        Value::String(contents)
+                    }
+                },
+                Typ::Float => {
+                    if let Ok(n) = f64::from_str(&contents) {
+                        Value::Float(n)
+                    } else {
+                        debug!("string '{}' tagged as float", contents);
+                        Value::String(contents)
+                    }
+                }
+                Typ::Integer => {
+                    if let Ok(n) = i64::from_str(&contents) {
+                        Value::Integer(n)
+                    } else {
+                        debug!("string '{}' tagged as float", contents);
+                        Value::String(contents)
+                    }
+                }
+                Typ::Null => {
+                    if contents.is_empty() {
+                        Value::String(contents)
+                    } else {
+                        debug!("string '{}' tagged as null", contents);
+                        Value::String(contents)
+                    }
+                }
+                Typ::String => Value::String(contents),
             }
         }
 
@@ -689,17 +758,45 @@ mod yaml {
             }
         }
 
-        fn from_string(contents: String, _config: &Config) -> Self {
-            if contents == "true" {
-                Value(Yaml::Boolean(true))
-            } else if contents == "false" {
-                Value(Yaml::Boolean(false))
-            } else if let Ok(n) = i64::from_str(&contents) {
-                Value(Yaml::Integer(n))
-            } else if f64::from_str(&contents).is_ok() {
-                Value(Yaml::Real(contents))
-            } else {
-                Value(Yaml::String(contents))
+        fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
+            match typ {
+                Typ::Boolean => {
+                    if contents == "true" {
+                        Value(Yaml::Boolean(true))
+                    } else if contents == "false" {
+                        Value(Yaml::Boolean(false))
+                    } else {
+                        debug!("string '{}' tagged as boolean", contents);
+                        Value(Yaml::String(contents))
+                    }
+                }
+                Typ::Bytes => panic!("from_string called at typ::bytes"),
+                Typ::Datetime => Value(Yaml::String(contents)),
+                Typ::Float => {
+                    if let Ok(_n) = f64::from_str(&contents) {
+                        Value(Yaml::Real(contents))
+                    } else {
+                        debug!("string '{}' tagged as float", contents);
+                        Value(Yaml::String(contents))
+                    }
+                }
+                Typ::Integer => {
+                    if let Ok(n) = i64::from_str(&contents) {
+                        Value(Yaml::Integer(n))
+                    } else {
+                        debug!("string '{}' tagged as float", contents);
+                        Value(Yaml::String(contents))
+                    }
+                }
+                Typ::Null => {
+                    if contents.is_empty() {
+                        Value(Yaml::Null)
+                    } else {
+                        debug!("string '{}' tagged as null", contents);
+                        Value(Yaml::String(contents))
+                    }
+                }
+                Typ::String => Value(Yaml::String(contents)),
             }
         }
 
@@ -717,7 +814,7 @@ mod yaml {
         fn from_named_dir(fvs: HashMap<String, Self>, config: &Config) -> Self {
             Value(Yaml::Hash(
                 fvs.into_iter()
-                    .map(|(k, v)| (Value::from_string(k, config).0, v.0))
+                    .map(|(k, v)| (Value::from_string(Typ::String, k, config).0, v.0))
                     .collect(),
             ))
         }
