@@ -59,6 +59,7 @@ fn main() {
     config.read_only = args.is_present("READONLY");
     config.allow_xattr = !args.is_present("NOXATTR");
     config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
+    config.pretty = args.is_present("PRETTY");
     config.filemode = match u16::from_str_radix(args.value_of("FILEMODE").unwrap(), 8) {
         Ok(filemode) => filemode,
         Err(e) => {
@@ -298,6 +299,13 @@ fn main() {
             }
         }
     };
+
+    if config.pretty && !config.output_format.can_be_pretty() {
+        warn!(
+            "There is no pretty printing routine for {}.",
+            config.output_format
+        )
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // DONE PARSING

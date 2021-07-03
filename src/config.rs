@@ -27,6 +27,7 @@ pub struct Config {
     pub read_only: bool,
     pub input: Input,
     pub output: Output,
+    pub pretty: bool,
     pub mount: Option<PathBuf>,
     pub cleanup_mount: bool,
 }
@@ -119,6 +120,7 @@ impl Default for Config {
             read_only: false,
             input: Input::Stdin,
             output: Output::Stdout,
+            pretty: false,
             mount: None,
             cleanup_mount: false,
         }

@@ -121,6 +121,13 @@ pub fn app() -> App<'static, 'static> {
                 .possible_values(POSSIBLE_FORMATS)
         )
         .arg(
+            Arg::with_name("PRETTY")
+                .help("Pretty-print output (may increase size)")
+                .long("pretty")
+                .conflicts_with("NOOUTPUT")
+                .conflicts_with("QUIET")
+        )
+        .arg(
             Arg::with_name("MOUNT")
                 .help("Sets the mountpoint; will be inferred when using a file, but must be specified when running on stdin")
                 .long("mount")

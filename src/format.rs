@@ -116,6 +116,13 @@ impl FromStr for Typ {
 }
 
 impl Format {
+    pub fn can_be_pretty(&self) -> bool {
+        match self {
+            Format::Json | Format::Toml => true,
+            Format::Yaml => false,
+        }
+    }
+
     /// Generates a filesystem `fs`, reading from `reader` according to a
     /// particular `Config`.
     ///
@@ -178,7 +185,11 @@ impl Format {
                 let v: serde_json::Value = value_from_fs(fs, fuser::FUSE_ROOT_ID);
                 info!("writing");
                 debug!("outputting {}", v);
-                serde_json::to_writer(writer, &v).unwrap();
+                if fs.config.pretty {
+                    serde_json::to_writer_pretty(writer, &v).unwrap();
+                } else {
+                    serde_json::to_writer(writer, &v).unwrap();
+                }
                 info!("done")
             }
             Format::Toml => {
@@ -186,7 +197,11 @@ impl Format {
                 let v: serde_toml::Value = value_from_fs(fs, fuser::FUSE_ROOT_ID);
                 info!("writing");
                 debug!("outputting {}", v);
-                toml::to_writer(writer, &v).unwrap();
+                if fs.config.pretty {
+                    toml::to_writer_pretty(writer, &v).unwrap();
+                } else {
+                    toml::to_writer(writer, &v).unwrap();
+                }
                 info!("done");
             }
             Format::Yaml => {
@@ -543,6 +558,14 @@ mod toml {
         v: &Value,
     ) -> Result<(), Error<serde_toml::ser::Error>> {
         let text = serde_toml::to_string(v).map_err(Error::Toml)?;
+        writer.write_all(text.as_bytes()).map_err(Error::Io)
+    }
+
+    pub fn to_writer_pretty(
+        mut writer: Box<dyn std::io::Write>,
+        v: &Value,
+    ) -> Result<(), Error<serde_toml::ser::Error>> {
+        let text = serde_toml::to_string_pretty(v).map_err(Error::Toml)?;
         writer.write_all(text.as_bytes()).map_err(Error::Io)
     }
 
