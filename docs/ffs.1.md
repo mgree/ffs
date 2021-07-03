@@ -105,7 +105,7 @@ installed on your system to use *ffs*.
 
 --completions *SHELL*
 
-: Generate shell completions and exit [possible values: bash, fish,
+: Generate shell completions (and exits) [possible values: bash, fish,
   zsh]
 
 -s, --source *SOURCE_FORMAT*

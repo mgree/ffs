@@ -12,7 +12,7 @@ pub fn app() -> App<'static, 'static> {
         .about("file fileystem")
         .arg(
             Arg::with_name("SHELL")
-                .help("Generate shell completions and exit")
+                .help("Generate shell completions (and exits)")
                 .long("completions")
                 .takes_value(true)
                 .possible_values(&["bash", "fish", "zsh"])
