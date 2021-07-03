@@ -43,6 +43,10 @@ installed on your system to use *ffs*.
 
 : Disables output of filesystem (normally on stdout)
 
+--pretty
+
+: Pretty-print output (may increase size)
+
 -q, --quiet
 
 : Quiet mode (turns off all errors and warnings, enables
