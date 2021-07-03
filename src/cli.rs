@@ -12,7 +12,7 @@ pub fn app() -> App<'static, 'static> {
         .about("file fileystem")
         .arg(
             Arg::with_name("SHELL")
-                .help("Generate shell completions and exit")
+                .help("Generate shell completions (and exits)")
                 .long("completions")
                 .takes_value(true)
                 .possible_values(&["bash", "fish", "zsh"])
@@ -119,6 +119,13 @@ pub fn app() -> App<'static, 'static> {
                 .short("t")
                 .takes_value(true)
                 .possible_values(POSSIBLE_FORMATS)
+        )
+        .arg(
+            Arg::with_name("PRETTY")
+                .help("Pretty-print output (may increase size)")
+                .long("pretty")
+                .conflicts_with("NOOUTPUT")
+                .conflicts_with("QUIET")
         )
         .arg(
             Arg::with_name("MOUNT")

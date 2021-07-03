@@ -5,6 +5,7 @@
 * Extended attribute `user.type` manages metadata.
 * Ignore macOS extended attribute files `._*`.
 * Restore files whose names are munged.
+* `--pretty` flag for JSON and TOML.
 * Wrote INSTALL.md.
 * Improved manpage.
 
