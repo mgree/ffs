@@ -135,6 +135,15 @@ pub fn app() -> App<'static, 'static> {
                 .takes_value(true)
         )
         .arg(
+            Arg::with_name("NEW")
+                .help("Mounts an empty filesystem, inferring a mountpoint and output format")
+                .long("new")
+                .takes_value(true)
+                .conflicts_with("INPLACE")
+                .conflicts_with("SOURCE_FORMAT")
+                .conflicts_with("OUTPUT")
+        )
+        .arg(
             Arg::with_name("INPUT")
                 .help("Sets the input file ('-' means STDIN)")
                 .default_value("-")

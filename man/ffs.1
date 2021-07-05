@@ -11,6 +11,10 @@ ffs [\f[I]FLAGS\f[R]] [\f[I]OPTIONS\f[R]] [\f[I]INPUT\f[R]]
 .PD 0
 .P
 .PD
+ffs [\f[I]FLAGS\f[R]] [\f[I]OPTIONS\f[R]] --new [\f[I]OUTPUT\f[R]]
+.PD 0
+.P
+.PD
 ffs \f[I]--completions\f[R] \f[I]SHELL\f[R]
 .PD 0
 .P
@@ -92,8 +96,25 @@ specified when running on stdin
 -o, --output \f[I]OUTPUT\f[R]
 Sets the output file for saving changes (defaults to stdout)
 .TP
+--new \f[I]NEW\f[R]
+Mounts an empty filesystem, inferring a mountpoint and output format.
+Running --new \f[I]FILE\f[R].\f[I]EXT\f[R] is morally equivalent to
+running:
+.RS
+.IP
+.nf
+\f[C]
+echo \[aq]{}\[aq] | ffs --source json -o *FILE*.*EXT* --target *EXT* -m *FILE*
+\f[R]
+.fi
+.PP
+where the mountpoint \f[I]FILE\f[R] will be created (and removed) by
+ffs.
+.RE
+.TP
 --completions \f[I]SHELL\f[R]
-Generate shell completions and exit [possible values: bash, fish, zsh]
+Generate shell completions (and exits) [possible values: bash, fish,
+zsh]
 .TP
 -s, --source \f[I]SOURCE_FORMAT\f[R]
 Specify the source format explicitly (by default, automatically inferred
@@ -117,13 +138,19 @@ formats (currently, JSON, TOML, and YAML); \f[I]ffs\f[R] maps values in
 these formats to filesystems.
 Here are the different types and how they\[aq]re mapped to a filesystem:
 .TP
+auto
+Automatically detected.
+The following order is used for UTF-8 encodable data: null, boolean,
+integer, float, datetime, string.
+If data can\[aq]t be encoded in UTF-8, it will always be bytes.
+.TP
 boolean
 Mapped to a \f[B]file\f[R].
 Either \f[I]true\f[R] or \f[I]false\f[R].
 .TP
 bytes
 Mapped to a \f[B]file\f[R].
-When serializing back to format, it will be encoded in base64.
+When saving, bytes are typically encoded in base64.
 .TP
 datetime
 Mapped to a \f[B]file\f[R].
@@ -145,9 +172,9 @@ Filenames will be padded with zeros to ensure proper sorting; use
 \f[I]--unpadded\f[R] to disable padding.
 While mounted, you are free to use whatever filenames you like in a list
 directory.
-When list directories are serialized back to a format, filenames are
-ignored and the sorted order of the files (in the current locale) will
-be used to determine the list order.
+When list directories are saved, filenames are ignored and the sorted
+order of the files (in the current locale) will be used to determine the
+list order.
 .TP
 named
 Mapped to a \f[B]directory\f[R].
@@ -211,6 +238,17 @@ ffs -i commits.json
 # do edits in commits directory
 umount commits
 # changes are written back to commits.json (-i is in-place mode)
+\f[R]
+.fi
+.PP
+If you want to create a new file wholesale, the --new flag is helpful.
+.IP
+.nf
+\f[C]
+ffs --new file.json
+# do edits in file directory
+umount file
+# corresponding json is in file.json
 \f[R]
 .fi
 .PP

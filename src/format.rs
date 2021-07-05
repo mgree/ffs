@@ -6,7 +6,7 @@ use tracing::{debug, error, info, instrument, warn};
 
 use fuser::FileType;
 
-use super::config::{Config, Output};
+use super::config::{Config, Input, Output};
 use super::fs::{DirEntry, DirType, Entry, Inode, FS};
 
 use ::toml as serde_toml;
@@ -24,6 +24,7 @@ pub enum Format {
 /// Types classifying string data.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Typ {
+    Auto,
     Null,
     Boolean,
     Integer,
@@ -53,6 +54,7 @@ impl std::fmt::Display for Typ {
             f,
             "{}",
             match self {
+                Typ::Auto => "auto",
                 Typ::Null => "null",
                 Typ::Boolean => "boolean",
                 Typ::Bytes => "bytes",
@@ -95,7 +97,9 @@ impl FromStr for Typ {
     fn from_str(s: &str) -> Result<Self, ()> {
         let s = s.trim().to_lowercase();
 
-        if s == "null" {
+        if s == "auto" {
+            Ok(Typ::Auto)
+        } else if s == "null" {
             Ok(Typ::Null)
         } else if s == "boolean" || s == "bool" {
             Ok(Typ::Boolean)
@@ -127,9 +131,36 @@ impl Format {
     /// particular `Config`.
     ///
     /// NB there is no check that `self == fs.config.input_format`!
-    #[instrument(level = "info", skip(reader, config))]
-    pub fn load(&self, reader: Box<dyn std::io::Read>, config: Config) -> FS {
+    #[instrument(level = "info", skip(config))]
+    pub fn load(&self, config: Config) -> FS {
         let mut inodes: Vec<Option<Inode>> = Vec::new();
+
+        let reader: Box<dyn std::io::Read> = match &config.input {
+            Input::Stdin => Box::new(std::io::stdin()),
+            Input::File(file) => {
+                let fmt = config.input_format;
+                let file = std::fs::File::open(&file).unwrap_or_else(|e| {
+                    error!("Unable to open {} for {} input: {}", file.display(), fmt, e);
+                    std::process::exit(1);
+                });
+                Box::new(file)
+            }
+            Input::Empty => {
+                // let's just reserve some space for later and get cracking
+                info!("reserving space in empty filesystem");
+                inodes.resize_with(1024, || None);
+
+                // create an empty directory
+                let contents = HashMap::with_capacity(16);
+                inodes[1] = Some(Inode::new(
+                    fuser::FUSE_ROOT_ID,
+                    fuser::FUSE_ROOT_ID,
+                    Entry::Directory(DirType::Named, contents),
+                    &config,
+                ));
+                return FS::new(inodes, config);
+            }
+        };
 
         match self {
             Format::Json => {
@@ -478,6 +509,19 @@ mod json {
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             match typ {
+                Typ::Auto => {
+                    if contents.is_empty() {
+                        Value::Null
+                    } else if contents == "true" {
+                        Value::Bool(true)
+                    } else if contents == "false" {
+                        Value::Bool(false)
+                    } else if let Ok(n) = serde_json::Number::from_str(&contents) {
+                        Value::Number(n)
+                    } else {
+                        Value::String(contents)
+                    }
+                }
                 Typ::Boolean => {
                     if contents == "true" {
                         Value::Bool(true)
@@ -613,6 +657,21 @@ mod toml {
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             match typ {
+                Typ::Auto => {
+                    if contents == "true" {
+                        Value::Boolean(true)
+                    } else if contents == "false" {
+                        Value::Boolean(false)
+                    } else if let Ok(n) = i64::from_str(&contents) {
+                        Value::Integer(n)
+                    } else if let Ok(n) = f64::from_str(&contents) {
+                        Value::Float(n)
+                    } else if let Ok(datetime) = str::parse(&contents) {
+                        Value::Datetime(datetime)
+                    } else {
+                        Value::String(contents)
+                    }
+                }
                 Typ::Boolean => {
                     if contents == "true" {
                         Value::Boolean(true)
@@ -808,6 +867,21 @@ mod yaml {
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             match typ {
+                Typ::Auto => {
+                    if contents.is_empty() {
+                        Value(Yaml::Null)
+                    } else if contents == "true" {
+                        Value(Yaml::Boolean(true))
+                    } else if contents == "false" {
+                        Value(Yaml::Boolean(false))
+                    } else if let Ok(n) = i64::from_str(&contents) {
+                        Value(Yaml::Integer(n))
+                    } else if let Ok(_n) = f64::from_str(&contents) {
+                        Value(Yaml::Real(contents))
+                    } else {
+                        Value(Yaml::String(contents))
+                    }
+                }
                 Typ::Boolean => {
                     if contents == "true" {
                         Value(Yaml::Boolean(true))

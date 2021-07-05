@@ -8,6 +8,7 @@
 * `--pretty` flag for JSON and TOML.
 * Wrote INSTALL.md.
 * Improved manpage.
+* `--new` flag for starting from an empty filesystem.
 
 ## 0.1.0 - 2021-06-26
 
