@@ -36,11 +36,13 @@ pub struct Config {
 pub enum Input {
     Stdin,
     File(PathBuf),
+    Empty,
 }
 
 impl std::fmt::Display for Input {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         match self {
+            Input::Empty => write!(f, "<empty>"),
             Input::Stdin => write!(f, "<stdin>"),
             Input::File(file) => write!(f, "{}", file.display()),
         }

@@ -950,7 +950,7 @@ impl Filesystem for FS {
 
         // create the inode entry
         let (entry, kind) = if file_type == libc::S_IFREG as u32 {
-            (Entry::File(Typ::String, Vec::new()), FileType::RegularFile)
+            (Entry::File(Typ::Auto, Vec::new()), FileType::RegularFile)
         } else {
             assert_eq!(file_type, libc::S_IFDIR as u32);
             (

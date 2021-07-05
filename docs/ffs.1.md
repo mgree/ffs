@@ -8,6 +8,7 @@ ffs - the file filesystem
 # SYNOPSIS
 
 | ffs \[*FLAGS*\] \[*OPTIONS*\] \[*INPUT*\]
+| ffs \[*FLAGS*\] \[*OPTIONS*\] --new \[*OUTPUT*\]
 | ffs *--completions* *SHELL*
 | ffs \[*-h*\|*--help*\]
 | ffs \[*-V*\|*--version*\]
@@ -103,6 +104,14 @@ installed on your system to use *ffs*.
 
 : Sets the output file for saving changes (defaults to stdout)
 
+--new *NEW*
+
+: Mounts an empty filesystem, inferring a mountpoint and output format. Running --new *FILE*.*EXT* is morally equivalent to running:
+```
+echo '{}' | ffs --source json -o *FILE*.*EXT* --target *EXT* -m *FILE*
+```
+where the mountpoint *FILE* will be created (and removed) by ffs.
+
 --completions *SHELL*
 
 : Generate shell completions (and exits) [possible values: bash, fish,
@@ -138,13 +147,20 @@ formats (currently, JSON, TOML, and YAML); *ffs* maps values in these
 formats to filesystems. Here are the different types and how they're
 mapped to a filesystem:
 
+auto
+
+: Automatically detected. The following order is used for UTF-8
+  encodable data: null, boolean, integer, float, datetime, string. If
+  data can't be encoded in UTF-8, it will always be bytes.
+
 boolean
 
 : Mapped to a **file**. Either *true* or *false*.
 
 bytes
 
-: Mapped to a **file**. When serializing back to format, it will be encoded in base64.
+: Mapped to a **file**. When saving, bytes are typically encoded in
+  base64.
 
 datetime
 
@@ -165,9 +181,9 @@ list
   named elements, starting from 0. Filenames will be padded with zeros
   to ensure proper sorting; use *--unpadded* to disable padding. While
   mounted, you are free to use whatever filenames you like in a list
-  directory. When list directories are serialized back to a format,
-  filenames are ignored and the sorted order of the files (in the
-  current locale) will be used to determine the list order.
+  directory. When list directories are saved, filenames are ignored
+  and the sorted order of the files (in the current locale) will be
+  used to determine the list order.
 
 named
 
@@ -227,6 +243,15 @@ ffs -i commits.json
 # do edits in commits directory
 umount commits
 # changes are written back to commits.json (-i is in-place mode)
+```
+
+If you want to create a new file wholesale, the --new flag is helpful.
+
+```shell
+ffs --new file.json
+# do edits in file directory
+umount file
+# corresponding json is in file.json
 ```
 
 To mount a JSON file and write back out a YAML file, you could run:
