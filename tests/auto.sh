@@ -12,7 +12,7 @@ fail() {
 }
 
 MNT=$(mktemp -d)
-FILE="$MNT"/demo.json
+FILE=$(mktemp).json
 
 echo '{}' >"$FILE"
 
@@ -20,10 +20,13 @@ EXP=$(mktemp)
 
 printf '{"favorite_number":47,"likes":{"cats":false,"dogs":true},"mistakes":null,"name":"Michael Greenberg","website":"https://mgree.github.io"}' >"$EXP"
 
-ffs  -m "$MNT" -i "$FILE" &
+ffs -m "$MNT" -i "$FILE" &
 PID=$!
 sleep 2
-[ $(ls $MNT) ] && fail nonempty
+
+ls "$MNT"
+[ $(ls $MNT) ] && fail nonempty1
+[ $(ls $MNT | wc -l) -eq 0 ] || fail nonempty2
 
 echo 47 >"$MNT"/favorite_number
 mkdir "$MNT"/likes
@@ -37,6 +40,7 @@ umount "$MNT" || fail unmount
 sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process
 
+cat "$FILE"
 diff "$FILE" "$EXP" || fail diff
 
 rm "$FILE" "$EXP"
