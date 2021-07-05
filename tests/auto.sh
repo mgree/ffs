@@ -23,7 +23,7 @@ printf '{"favorite_number":47,"likes":{"cats":false,"dogs":true},"mistakes":null
 ffs  -m "$MNT" -i "$FILE" &
 PID=$!
 sleep 2
-[ "$(ls $MNT)" ] && fail nonempty
+[ $(ls $MNT) ] && fail nonempty
 
 echo 47 >"$MNT"/favorite_number
 mkdir "$MNT"/likes
