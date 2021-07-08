@@ -465,6 +465,10 @@ impl Config {
         config
     }
 
+    pub fn valid_name(&self, s: &str) -> bool {
+        s != "." && s != ".." && !s.contains('\0') && !s.contains('/')
+    }
+
     pub fn normalize_name(&self, s: String) -> String {
         if s == "." {
             "_.".into()

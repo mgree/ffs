@@ -363,6 +363,7 @@ where
                     let original = field.clone();
                     let mut nfield = config.normalize_name(field);
 
+                    // TODO 2021-07-08 could be better to check fvs, but it's a vec now... :/
                     while children.contains_key(&nfield) {
                         nfield.push('_');
                     }
@@ -374,6 +375,7 @@ where
                         );
                         Some(original)
                     } else {
+                        assert!(config.valid_name(&original));
                         None
                     };
 
