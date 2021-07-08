@@ -1,9 +1,11 @@
-use fuser::FileType;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 use tracing::{debug, error, warn};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::EnvFilter, fmt};
+
+use fuser::FileType;
 
 use super::format;
 use super::format::Format;
@@ -31,6 +33,7 @@ pub struct Config {
     pub try_decode_base64: bool,
     pub allow_xattr: bool,
     pub keep_macos_xattr_file: bool,
+    pub munge: Munge,
     pub read_only: bool,
     pub input: Input,
     pub output: Output,
@@ -61,6 +64,37 @@ pub enum Output {
     Quiet,
     Stdout,
     File(PathBuf),
+}
+
+#[derive(Debug)]
+pub enum Munge {
+    Rename,
+    Filter,
+}
+
+impl std::fmt::Display for Munge {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self {
+            Munge::Rename => write!(f, "rename"),
+            Munge::Filter => write!(f, "filter"),
+        }
+    }
+}
+
+impl FromStr for Munge {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, ()> {
+        let s = s.trim().to_lowercase();
+
+        if s == "rename" {
+            Ok(Munge::Rename)
+        } else if s == "filter" {
+            Ok(Munge::Filter)
+        } else {
+            Err(())
+        }
+    }
 }
 
 impl Config {
@@ -524,6 +558,7 @@ impl Default for Config {
             try_decode_base64: false,
             allow_xattr: true,
             keep_macos_xattr_file: false,
+            munge: Munge::Rename,
             read_only: false,
             input: Input::Stdin,
             output: Output::Stdout,
