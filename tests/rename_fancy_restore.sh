@@ -22,28 +22,28 @@ ffs -m "$MNT" -o "$OUT" --target json ../json/obj_rename.json &
 PID=$!
 sleep 2
 case $(ls "$MNT") in
-    (dot*dot_*dotdot*dotdot_) ;;
+    (_.*_..*dot*dotdot) ;;
     (*) fail ls;;
 esac
-[ "$(cat $MNT/dot)" = "first" ] || fail dot
-[ "$(cat $MNT/dotdot)" = "second" ] || fail dotdot
-[ "$(cat $MNT/dot_)" = "third" ] || fail dot_
-[ "$(cat $MNT/dotdot_)" = "fourth" ] || fail dotdot_
+[ "$(cat $MNT/_.)" = "first" ] || fail .
+[ "$(cat $MNT/_..)" = "second" ] || fail ..
+[ "$(cat $MNT/dot)" = "third" ] || fail dot
+[ "$(cat $MNT/dotdot)" = "fourth" ] || fail dotdot
 
-echo primo >"$MNT"/dot
-echo secondo >"$MNT"/dotdot
-echo shlishi >"$MNT"/dot_
-echo derp >"$MNT"/dotdot_
+echo primo >"$MNT"/_.
+echo secondo >"$MNT"/_..
+echo shlishi >"$MNT"/dot
+echo derp >"$MNT"/dotdot
 
 mkdir "$MNT"/it
 mkdir "$MNT"/he
 
-mv "$MNT"/dot    "$MNT"/it
-mv "$MNT"/dotdot "$MNT"/it
+mv "$MNT"/_.    "$MNT"/it
+mv "$MNT"/_.. "$MNT"/it
 
-mv "$MNT"/dot_    "$MNT"/he
+mv "$MNT"/dot    "$MNT"/he
 
-mv "$MNT"/dotdot_ "$MNT"/imnewhere
+mv "$MNT"/dotdot "$MNT"/imnewhere
 
 umount "$MNT" || fail unmount
 sleep 1

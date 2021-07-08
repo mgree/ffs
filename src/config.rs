@@ -69,7 +69,6 @@ impl Config {
         let args = cli::app().get_matches();
 
         let mut config = Config::default();
-        
         // generate completions?
         //
         // TODO 2021-07-06 good candidate for a subcommand
@@ -467,20 +466,13 @@ impl Config {
     }
 
     pub fn normalize_name(&self, s: String) -> String {
-        // inspired by https://en.wikipedia.org/wiki/Filename
-        s.replace(".", "dot")
-            .replace("/", "slash")
-            .replace("\\", "backslash")
-            .replace("?", "question")
-            .replace("*", "star")
-            .replace(":", "colon")
-            .replace("\"", "dquote")
-            .replace("<", "lt")
-            .replace(">", "gt")
-            .replace(",", "comma")
-            .replace(";", "semi")
-            .replace("=", "equal")
-            .replace(" ", "space")
+        if s == "." {
+            "_.".into()
+        } else if s == ".." {
+            "_..".into()
+        } else {
+            s.replace("\0", "_NUL_").replace("/", "_SLASH_")
+        }
     }
 
     #[cfg(target_os = "macos")]

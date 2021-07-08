@@ -16,16 +16,14 @@ MNT=$(mktemp -d)
 ffs -m "$MNT" ../json/obj_rename.json &
 PID=$!
 sleep 2
-cd "$MNT"
-case $(ls) in
-    (dot*dot_*dotdot*dotdot_) ;;
+case $(ls "$MNT") in
+    (_.*_..*dot*dotdot) ;;
     (*) fail ls;;
 esac
-[ "$(cat dot)" = "first" ] || fail dot
-[ "$(cat dotdot)" = "second" ] || fail dotdot
-[ "$(cat dot_)" = "third" ] || fail dot_
-[ "$(cat dotdot_)" = "fourth" ] || fail dotdot_
-cd - >/dev/null 2>&1
+[ "$(cat $MNT/_.)" = "first" ] || fail .
+[ "$(cat $MNT/_..)" = "second" ] || fail ..
+[ "$(cat $MNT/dot)" = "third" ] || fail dot
+[ "$(cat $MNT/dotdot)" = "fourth" ] || fail dotdot
 umount "$MNT" || fail unmount
 sleep 1
 
