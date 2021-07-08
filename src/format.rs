@@ -6,7 +6,7 @@ use tracing::{debug, error, info, instrument, warn};
 
 use fuser::FileType;
 
-use super::config::{Config, Input, Output};
+use super::config::{Config, Input, Munge, Output};
 use super::fs::{DirEntry, DirType, Entry, Inode, FS};
 
 use ::toml as serde_toml;
@@ -361,12 +361,27 @@ where
 
                 for (field, child) in fvs.into_iter() {
                     let original = field.clone();
-                    let mut nfield = config.normalize_name(field);
 
-                    // TODO 2021-07-08 could be better to check fvs, but it's a vec now... :/
-                    while children.contains_key(&nfield) {
-                        nfield.push('_');
-                    }
+                    let nfield = if !config.valid_name(&original) {
+                        match config.munge {
+                            Munge::Rename => {
+                                let mut nfield = config.normalize_name(field);
+
+                                // TODO 2021-07-08 could be better to check fvs, but it's a vec now... :/
+                                while children.contains_key(&nfield) {
+                                    nfield.push('_');
+                                }
+
+                                nfield
+                            }
+                            Munge::Filter => {
+                                warn!("skipping '{}'", field);
+                                continue;
+                            }
+                        }
+                    } else {
+                        field
+                    };
 
                     let original_name = if original != nfield {
                         info!(
