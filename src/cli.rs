@@ -1,9 +1,10 @@
 use clap::{App, Arg};
 
 /// The possible formats.
-///
-/// These are defined here so that completion-generation in `build.rs` doesn't need to depend on anything but this file.
 pub const POSSIBLE_FORMATS: &[&str] = &["json", "toml", "yaml"];
+
+/// The possible name munging policies.
+pub const MUNGE_POLICIES: &[&str] = &["filter", "rename"];
 
 pub fn app() -> App<'static, 'static> {
     App::new("ffs")
@@ -72,6 +73,14 @@ pub fn app() -> App<'static, 'static> {
             Arg::with_name("KEEPMACOSDOT")
                 .help("Include ._* extended attribute/resource fork files on macOS")
                 .long("keep-macos-xattr")
+        )
+        .arg(
+            Arg::with_name("MUNGE")
+                .help("Set the name munging policy; applies to '.', '..', and files with NUL and '/' in them")
+                .long("munge")
+                .takes_value(true)
+                .default_value("rename")
+                .possible_values(MUNGE_POLICIES)
         )
         .arg(
             Arg::with_name("UNPADDED")

@@ -314,6 +314,7 @@ where
         std::process::exit(1);
     }
 
+    let mut filtered = 0;
     let mut next_id = fuser::FUSE_ROOT_ID;
     // parent inum, inum, value
     let mut worklist: Vec<(u64, u64, V)> = vec![(next_id, next_id, v)];
@@ -376,6 +377,7 @@ where
                             }
                             Munge::Filter => {
                                 warn!("skipping '{}'", field);
+                                filtered += child.size();
                                 continue;
                             }
                         }
@@ -413,7 +415,8 @@ where
 
         inodes[inum as usize] = Some(Inode::new(parent, inum, entry, config));
     }
-    assert_eq!(inodes.len() as u64, next_id);
+
+    assert_eq!((inodes.len() - filtered) as u64, next_id);
 }
 
 /// Walks `fs` starting at the inode with number `inum`, producing an

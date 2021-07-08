@@ -15,7 +15,7 @@ use super::cli;
 /// Configuration information
 ///
 /// See `cli.rs` for information on the actual command-line options; see
-/// `main.rs` for how those connect to this structure.
+/// `Config::from_args` for how those connect to this structure.
 ///
 /// NB I know this arrangement sucks, but `clap`'s automatic stuff isn't
 /// adequate to express what I want here. Command-line interfaces are hard. 😢
@@ -144,6 +144,18 @@ impl Config {
         config.allow_xattr = !args.is_present("NOXATTR");
         config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
         config.pretty = args.is_present("PRETTY");
+
+        // munging policy
+        config.munge = match args.value_of("MUNGE") {
+            None => Munge::Filter,
+            Some(s) => match str::parse(s) {
+                Ok(munge) => munge,
+                Err(_) => {
+                    warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
+                    Munge::Filter
+                }
+            },
+        };
 
         // perms
         config.filemode = match u16::from_str_radix(args.value_of("FILEMODE").unwrap(), 8) {
