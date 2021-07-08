@@ -104,9 +104,27 @@ installed on your system to use *ffs*.
 
 : Sets the output file for saving changes (defaults to stdout)
 
+--munge *MUNGE*
+
+: Set the name munging policy; applies to '.', '..', and files with
+  NUL and '/' in them [default: rename] [possible values: filter,
+  rename] 
+  
+    - Under *--munge rename* (the default), fields named '.' and '..'
+      will be renamed to '\_.' and '\_..', respectively. Every NUL
+      byte will be replaced with the text '\_NUL\_' and every forward
+      slash will be replaced with the text '\_SLASH\_'. Unless you
+      manually change the name of these renamed files, they will be
+      saved back with their original names, i.e., '\_..' will turn back
+      into a field called '..', and 'and\_SLASH\_or' will be turned back
+      into 'and/or'. New files created with such names will not be
+      converted back.
+    - Under *--munge filter*, fields named '.', '..', or with NUL or
+      '/' in them will simply be dropped (with a warning).
+
 --new *NEW*
 
-: Mounts an empty filesystem, inferring a mountpoint and output format. Running --new *FILE*.*EXT* is morally equivalent to running:
+: Mounts an empty filesystem, inferring a mountpoint and output format. Running *--new* *FILE*.*EXT* is morally equivalent to running:
 ```
 echo '{}' | ffs --source json -o *FILE*.*EXT* --target *EXT* -m *FILE*
 ```
@@ -190,7 +208,7 @@ named
 : Mapped to a **directory**. Named directories (also known as maps,
   objects, hashes, or dictionaries) will use field names as the
   file/directory names for their contents. Some renaming may occur if
-  fields have special characters in them.
+  fields have special characters in them; see *--munge* above.
 
 null
 
@@ -245,7 +263,7 @@ umount commits
 # changes are written back to commits.json (-i is in-place mode)
 ```
 
-If you want to create a new file wholesale, the --new flag is helpful.
+If you want to create a new file wholesale, the *--new* flag is helpful.
 
 ```shell
 ffs --new file.json
