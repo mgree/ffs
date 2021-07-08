@@ -13,15 +13,13 @@ fail() {
 
 MNT=$(mktemp -d)
 
-ffs -m "$MNT" ../json/obj_rename.json &
+ffs -m "$MNT" --munge filter ../json/obj_rename.json &
 PID=$!
 sleep 2
 case $(ls "$MNT") in
-    (_.*_..*dot*dotdot) ;;
+    (dot*dotdot) ;;
     (*) fail ls;;
 esac
-[ "$(cat $MNT/_.)" = "first" ] || fail .
-[ "$(cat $MNT/_..)" = "second" ] || fail ..
 [ "$(cat $MNT/dot)" = "third" ] || fail dot
 [ "$(cat $MNT/dotdot)" = "fourth" ] || fail dotdot
 umount "$MNT" || fail unmount

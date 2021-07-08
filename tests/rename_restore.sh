@@ -22,18 +22,18 @@ ffs -m "$MNT" -o "$OUT" --target json ../json/obj_rename.json &
 PID=$!
 sleep 2
 case $(ls "$MNT") in
-    (dot*dot_*dotdot*dotdot_) ;;
+    (_.*_..*dot*dotdot) ;;
     (*) fail ls;;
 esac
-[ "$(cat $MNT/dot)" = "first" ] || fail dot
-[ "$(cat $MNT/dotdot)" = "second" ] || fail dotdot
-[ "$(cat $MNT/dot_)" = "third" ] || fail dot_
-[ "$(cat $MNT/dotdot_)" = "fourth" ] || fail dotdot_
+[ "$(cat $MNT/_.)" = "first" ] || fail .
+[ "$(cat $MNT/_..)" = "second" ] || fail ..
+[ "$(cat $MNT/dot)" = "third" ] || fail dot
+[ "$(cat $MNT/dotdot)" = "fourth" ] || fail dotdot
 
-echo primo >"$MNT"/dot
-echo secondo >"$MNT"/dotdot
-echo terzo >"$MNT"/dot_
-echo quarto >"$MNT"/dotdot_
+echo primo >"$MNT"/_.
+echo secondo >"$MNT"/_..
+echo terzo >"$MNT"/dot
+echo quarto >"$MNT"/dotdot
 
 umount "$MNT" || fail unmount
 sleep 1

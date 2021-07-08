@@ -1,9 +1,11 @@
-use fuser::FileType;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 use tracing::{debug, error, warn};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::EnvFilter, fmt};
+
+use fuser::FileType;
 
 use super::format;
 use super::format::Format;
@@ -13,7 +15,7 @@ use super::cli;
 /// Configuration information
 ///
 /// See `cli.rs` for information on the actual command-line options; see
-/// `main.rs` for how those connect to this structure.
+/// `Config::from_args` for how those connect to this structure.
 ///
 /// NB I know this arrangement sucks, but `clap`'s automatic stuff isn't
 /// adequate to express what I want here. Command-line interfaces are hard. 😢
@@ -31,6 +33,7 @@ pub struct Config {
     pub try_decode_base64: bool,
     pub allow_xattr: bool,
     pub keep_macos_xattr_file: bool,
+    pub munge: Munge,
     pub read_only: bool,
     pub input: Input,
     pub output: Output,
@@ -63,13 +66,43 @@ pub enum Output {
     File(PathBuf),
 }
 
+#[derive(Debug)]
+pub enum Munge {
+    Rename,
+    Filter,
+}
+
+impl std::fmt::Display for Munge {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self {
+            Munge::Rename => write!(f, "rename"),
+            Munge::Filter => write!(f, "filter"),
+        }
+    }
+}
+
+impl FromStr for Munge {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, ()> {
+        let s = s.trim().to_lowercase();
+
+        if s == "rename" {
+            Ok(Munge::Rename)
+        } else if s == "filter" {
+            Ok(Munge::Filter)
+        } else {
+            Err(())
+        }
+    }
+}
+
 impl Config {
     /// Parses arguments from `std::env::Args`, via `cli::app().get_matches()`
     pub fn from_args() -> Self {
         let args = cli::app().get_matches();
 
         let mut config = Config::default();
-        
         // generate completions?
         //
         // TODO 2021-07-06 good candidate for a subcommand
@@ -111,6 +144,18 @@ impl Config {
         config.allow_xattr = !args.is_present("NOXATTR");
         config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
         config.pretty = args.is_present("PRETTY");
+
+        // munging policy
+        config.munge = match args.value_of("MUNGE") {
+            None => Munge::Filter,
+            Some(s) => match str::parse(s) {
+                Ok(munge) => munge,
+                Err(_) => {
+                    warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
+                    Munge::Filter
+                }
+            },
+        };
 
         // perms
         config.filemode = match u16::from_str_radix(args.value_of("FILEMODE").unwrap(), 8) {
@@ -466,21 +511,18 @@ impl Config {
         config
     }
 
+    pub fn valid_name(&self, s: &str) -> bool {
+        s != "." && s != ".." && !s.contains('\0') && !s.contains('/')
+    }
+
     pub fn normalize_name(&self, s: String) -> String {
-        // inspired by https://en.wikipedia.org/wiki/Filename
-        s.replace(".", "dot")
-            .replace("/", "slash")
-            .replace("\\", "backslash")
-            .replace("?", "question")
-            .replace("*", "star")
-            .replace(":", "colon")
-            .replace("\"", "dquote")
-            .replace("<", "lt")
-            .replace(">", "gt")
-            .replace(",", "comma")
-            .replace(";", "semi")
-            .replace("=", "equal")
-            .replace(" ", "space")
+        if s == "." {
+            "_.".into()
+        } else if s == ".." {
+            "_..".into()
+        } else {
+            s.replace("\0", "_NUL_").replace("/", "_SLASH_")
+        }
     }
 
     #[cfg(target_os = "macos")]
@@ -528,6 +570,7 @@ impl Default for Config {
             try_decode_base64: false,
             allow_xattr: true,
             keep_macos_xattr_file: false,
+            munge: Munge::Rename,
             read_only: false,
             input: Input::Stdin,
             output: Output::Stdout,

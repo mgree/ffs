@@ -6,7 +6,7 @@ use tracing::{debug, error, info, instrument, warn};
 
 use fuser::FileType;
 
-use super::config::{Config, Input, Output};
+use super::config::{Config, Input, Munge, Output};
 use super::fs::{DirEntry, DirType, Entry, Inode, FS};
 
 use ::toml as serde_toml;
@@ -314,6 +314,7 @@ where
         std::process::exit(1);
     }
 
+    let mut filtered = 0;
     let mut next_id = fuser::FUSE_ROOT_ID;
     // parent inum, inum, value
     let mut worklist: Vec<(u64, u64, V)> = vec![(next_id, next_id, v)];
@@ -361,11 +362,28 @@ where
 
                 for (field, child) in fvs.into_iter() {
                     let original = field.clone();
-                    let mut nfield = config.normalize_name(field);
 
-                    while children.contains_key(&nfield) {
-                        nfield.push('_');
-                    }
+                    let nfield = if !config.valid_name(&original) {
+                        match config.munge {
+                            Munge::Rename => {
+                                let mut nfield = config.normalize_name(field);
+
+                                // TODO 2021-07-08 could be better to check fvs, but it's a vec now... :/
+                                while children.contains_key(&nfield) {
+                                    nfield.push('_');
+                                }
+
+                                nfield
+                            }
+                            Munge::Filter => {
+                                warn!("skipping '{}'", field);
+                                filtered += child.size();
+                                continue;
+                            }
+                        }
+                    } else {
+                        field
+                    };
 
                     let original_name = if original != nfield {
                         info!(
@@ -374,6 +392,7 @@ where
                         );
                         Some(original)
                     } else {
+                        assert!(config.valid_name(&original));
                         None
                     };
 
@@ -396,7 +415,8 @@ where
 
         inodes[inum as usize] = Some(Inode::new(parent, inum, entry, config));
     }
-    assert_eq!(inodes.len() as u64, next_id);
+
+    assert_eq!((inodes.len() - filtered) as u64, next_id);
 }
 
 /// Walks `fs` starting at the inode with number `inum`, producing an

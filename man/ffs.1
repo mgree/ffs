@@ -96,10 +96,32 @@ specified when running on stdin
 -o, --output \f[I]OUTPUT\f[R]
 Sets the output file for saving changes (defaults to stdout)
 .TP
+--munge \f[I]MUNGE\f[R]
+Set the name munging policy; applies to \[aq].\[aq], \[aq]..\[aq], and
+files with NUL and \[aq]/\[aq] in them [default: rename] [possible
+values: filter, rename]
+.RS
+.IP \[bu] 2
+Under \f[I]--munge rename\f[R] (the default), fields named \[aq].\[aq]
+and \[aq]..\[aq] will be renamed to \[aq]_.\[aq] and \[aq]_..\[aq],
+respectively.
+Every NUL byte will be replaced with the text \[aq]_NUL_\[aq] and every
+forward slash will be replaced with the text \[aq]_SLASH_\[aq].
+Unless you manually change the name of these renamed files, they will be
+saved back with their original names, i.e., \[aq]_..\[aq] will turn back
+into a field called \[aq]..\[aq], and \[aq]and_SLASH_or\[aq] will be
+turned back into \[aq]and/or\[aq].
+New files created with such names will not be converted back.
+.IP \[bu] 2
+Under \f[I]--munge filter\f[R], fields named \[aq].\[aq], \[aq]..\[aq],
+or with NUL or \[aq]/\[aq] in them will simply be dropped (with a
+warning).
+.RE
+.TP
 --new \f[I]NEW\f[R]
 Mounts an empty filesystem, inferring a mountpoint and output format.
-Running --new \f[I]FILE\f[R].\f[I]EXT\f[R] is morally equivalent to
-running:
+Running \f[I]--new\f[R] \f[I]FILE\f[R].\f[I]EXT\f[R] is morally
+equivalent to running:
 .RS
 .IP
 .nf
@@ -180,7 +202,8 @@ named
 Mapped to a \f[B]directory\f[R].
 Named directories (also known as maps, objects, hashes, or dictionaries)
 will use field names as the file/directory names for their contents.
-Some renaming may occur if fields have special characters in them.
+Some renaming may occur if fields have special characters in them; see
+\f[I]--munge\f[R] above.
 .TP
 null
 Mapped to a \f[B]file\f[R].
@@ -241,7 +264,8 @@ umount commits
 \f[R]
 .fi
 .PP
-If you want to create a new file wholesale, the --new flag is helpful.
+If you want to create a new file wholesale, the \f[I]--new\f[R] flag is
+helpful.
 .IP
 .nf
 \f[C]

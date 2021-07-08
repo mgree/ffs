@@ -3,7 +3,11 @@
 if ! which ffs >/dev/null 2>&1
 then
     DEBUG="$(pwd)/target/debug"
-    [ -x "$DEBUG/ffs" ] || { echo Couldn\'t find ffs on "$PATH" or in "$DEBUG". ; exit 1 ; }
+    [ -x "$DEBUG/ffs" ] || {
+        echo Couldn\'t find ffs on "$PATH" or in "$DEBUG". >&2
+        echo Are you in the root directory of the repo? >&2
+        exit 1
+    }
     PATH="$DEBUG:$PATH"
 fi
 
