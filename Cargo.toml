@@ -1,6 +1,6 @@
 [package]
 name = "ffs"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Michael Greenberg <michael.greenberg@stevens.edu>"]
 license = "GPL-3.0"
 description = "ffs---the File FileSystem---lets you mount semi-structured data (like JSON) as a filesystem, letting you work with modern formats using your familiar shell tools."

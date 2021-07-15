@@ -1,6 +1,8 @@
 # ffs - Changelog
 
-## 0.1.1 - UNRELEASED
+## 0.2.0 - UNRELEASED
+
+## 0.1.1 - 2021-07-15
 
 * Extended attribute `user.type` manages metadata.
 * Ignore macOS extended attribute files `._*`.
