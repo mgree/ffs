@@ -5,22 +5,21 @@ fail() {
     if [ "$MNT" ]
     then
         umount "$MNT"
-        rmdir "$MNT"
-        rm "$OUT" "$EXP"
+        rm -r "$D"
     fi
     exit 1
 }
 
-# really, just for the name
-OUT=$(mktemp)
-rm "$OUT"
-MNT="$OUT"
-OUT="$OUT".json
+D=$(mktemp -d)
+
+MNT=foo
+OUT=foo.json
 
 EXP=$(mktemp)
 
 printf '{"handles":{"github":"mgree","stevens":"mgreenbe","twitter":"mgrnbrg"},"problems":99}' >"$EXP"
 
+cd "$D"
 ffs --new "$OUT" &
 PID=$!
 sleep 2
@@ -40,4 +39,4 @@ kill -0 $PID >/dev/null 2>&1 && fail process
 diff "$OUT" "$EXP" || fail diff
 
 [ -e "$MNT" ] && fail mount
-rm "$OUT" "$EXP"
+rm -r "$D"
