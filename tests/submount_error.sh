@@ -44,11 +44,14 @@ rm single.err
 
 case $(ls) in
     (onlyone*single.json) ;;
-    (*) fail ls3
+    (*) fail ls3;;
 esac
 
-cd ..
-[ "$D" = "$(PWD)" ] || fail baddir
+cd "$D"
+case $(ls) in
+    (single*single.json) ;;
+    (*) fail ls4;;
+esac
 sleep 1
 umount single || fail umount
 sleep 1
