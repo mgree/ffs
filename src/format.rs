@@ -6,7 +6,7 @@ use tracing::{debug, error, info, instrument, warn};
 
 use fuser::FileType;
 
-use super::config::{Config, Input, Munge, Output};
+use super::config::{ERROR_STATUS_FUSE, Config, Input, Munge, Output};
 use super::fs::{DirEntry, DirType, Entry, Inode, FS};
 
 use ::toml as serde_toml;
@@ -141,7 +141,7 @@ impl Format {
                 let fmt = config.input_format;
                 let file = std::fs::File::open(&file).unwrap_or_else(|e| {
                     error!("Unable to open {} for {} input: {}", file.display(), fmt, e);
-                    std::process::exit(1);
+                    std::process::exit(ERROR_STATUS_FUSE);
                 });
                 Box::new(file)
             }
@@ -311,7 +311,7 @@ where
 
     if v.kind() != FileType::Directory {
         error!("The root of the filesystem must be a directory, but '{}' only generates a single file.", v);
-        std::process::exit(1);
+        std::process::exit(ERROR_STATUS_FUSE);
     }
 
     let mut filtered = 0;

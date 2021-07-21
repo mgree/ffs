@@ -233,6 +233,16 @@ probably be \f[I]ffs\f[R] and \f[I]level\f[R] should be one of
 The default is \f[I]ffs=warn\f[R].
 Setting \f[I]-q\f[R] turns off all output; setting \f[I]-d\f[R] sets
 \f[I]ffs=debug\f[R].
+.SH EXIT STATUS
+.TP
+0
+Successfully unmounted.
+.TP
+1
+A FUSE or other filesystem error occurred.
+.TP
+2
+Command-line argument parsing error.
 .SH EXAMPLES
 .PP
 The general workflow is to run \f[I]ffs\f[R], do some work, and then

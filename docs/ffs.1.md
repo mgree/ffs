@@ -238,6 +238,20 @@ RUST_LOG
   *ffs=warn*. Setting *-q* turns off all output; setting *-d* sets
   *ffs=debug*.
 
+# EXIT STATUS
+
+0
+
+: Successfully unmounted.
+
+1
+
+: A FUSE or other filesystem error occurred.
+
+2
+
+: Command-line argument parsing error.
+
 # EXAMPLES
 
 The general workflow is to run *ffs*, do some work, and then unmount
