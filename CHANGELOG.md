@@ -4,6 +4,8 @@
 
 * Handle failed mounts better, with an appropriate message and error
   code.
+* Revise exit codes: 0 means success, 1 means FS error, 2 means CLI
+  error.
 
 ## 0.1.1 - 2021-07-15
 
