@@ -5,13 +5,12 @@ mod config;
 mod format;
 mod fs;
 
-use config::{Config};
+use config::Config;
 
 use fuser::MountOption;
 
 fn main() {
     let config = Config::from_args();
-    
     let mut options = vec![
         MountOption::AutoUnmount,
         MountOption::FSName(format!("{}", config.input)),
@@ -35,8 +34,16 @@ fn main() {
     let fs = input_format.load(config);
 
     info!("mounting on {:?} with options {:?}", mount, options);
-    fuser::mount2(fs, &mount, &options).unwrap();
-    info!("unmounted");
+    let status = match fuser::mount2(fs, &mount, &options) {
+        Ok(()) => {
+            info!("unmounted");
+            0
+        }
+        Err(e) => {
+            error!("I/O error: {}", e);
+            2
+        }
+    };
 
     if cleanup_mount {
         if mount.exists() {
@@ -50,4 +57,6 @@ fn main() {
             );
         }
     }
+
+    std::process::exit(status);
 }
