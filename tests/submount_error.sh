@@ -40,7 +40,7 @@ NESTEDSTATUS=$?
 [ -f single.timeout ] && fail timeout
 [ -s single.err ] || fail error
 rm single.err
-[ $NESTEDSTATUS -eq 2 ] || fail status
+[ $NESTEDSTATUS -eq 1 ] || fail status
 
 case $(ls) in
     (onlyone*single.json) ;;

@@ -12,6 +12,9 @@ use super::format::Format;
 
 use super::cli;
 
+pub const ERROR_STATUS_FUSE: i32 = 1;
+pub const ERROR_STATUS_CLI: i32 = 2;
+
 /// Configuration information
 ///
 /// See `cli.rs` for information on the actual command-line options; see
@@ -100,7 +103,12 @@ impl FromStr for Munge {
 impl Config {
     /// Parses arguments from `std::env::Args`, via `cli::app().get_matches()`
     pub fn from_args() -> Self {
-        let args = cli::app().get_matches();
+        let args = cli::app()
+            .get_matches_safe()
+            .unwrap_or_else(|e| {
+                eprintln!("{}", e.message);
+                std::process::exit(ERROR_STATUS_CLI)
+            });
 
         let mut config = Config::default();
         // generate completions?
@@ -115,7 +123,7 @@ impl Config {
                 clap::Shell::Zsh
             } else {
                 eprintln!("Can't generate completions for '{}'.", shell);
-                std::process::exit(1);
+                std::process::exit(ERROR_STATUS_CLI);
             };
             cli::app().gen_completions_to("ffs", shell, &mut std::io::stdout());
             std::process::exit(0);
@@ -166,7 +174,7 @@ impl Config {
                     args.value_of("FILEMODE").unwrap(),
                     e
                 );
-                std::process::exit(1)
+                std::process::exit(ERROR_STATUS_CLI)
             }
         };
         if args.occurrences_of("FILEMODE") > 0 && args.occurrences_of("DIRMODE") == 0 {
@@ -190,7 +198,7 @@ impl Config {
                         args.value_of("DIRMODE").unwrap(),
                         e
                     );
-                    std::process::exit(1)
+                    std::process::exit(ERROR_STATUS_CLI)
                 }
             };
         }
@@ -234,12 +242,12 @@ impl Config {
 
                 if args.occurrences_of("INPUT") != 0 {
                     error!("It doesn't make sense to set `--new` with a specified input file.");
-                    std::process::exit(1);
+                    std::process::exit(ERROR_STATUS_CLI);
                 }
                 let output = PathBuf::from(target_file);
                 if output.exists() {
                     error!("Output file {} already exists.", output.display());
-                    std::process::exit(1);
+                    std::process::exit(ERROR_STATUS_FUSE);
                 }
                 let format = match args
                     .value_of("TARGET_FORMAT")
@@ -272,7 +280,7 @@ impl Config {
                         "Unrecognized format '{}'; use --target or a known extension to specify a format.",
                         output.display()
                     );
-                                std::process::exit(1);
+                                std::process::exit(ERROR_STATUS_CLI);
                             }
                         }
                     }
@@ -282,19 +290,23 @@ impl Config {
                         let mount_point = PathBuf::from(mount_point);
                         if !mount_point.exists() {
                             error!("Mount point {} does not exist.", mount_point.display());
-                            std::process::exit(1);
+                            std::process::exit(ERROR_STATUS_FUSE);
                         }
                         config.cleanup_mount = false;
                         Some(mount_point)
                     }
                     None => {
                         // If the output is to a file foo.EXT, then try to make a directory foo.
-                        let mount_dir = output.with_extension("");
+                        let stem = output.file_stem().unwrap_or_else(|| {
+                            error!("Couldn't infer the mountpoint from output '{}'. Use `--mount MOUNT` to specify a mountpoint.", output.display());
+                            std::process::exit(ERROR_STATUS_FUSE);
+                        });
+                        let mount_dir = PathBuf::from(stem);
                         // If that file already exists, give up and tell the user about --mount.
                         if mount_dir.exists() {
                             error!("Inferred mountpoint '{mount}' for output file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.", 
                                     mount = mount_dir.display(), file = output.display());
-                            std::process::exit(1);
+                            std::process::exit(ERROR_STATUS_FUSE);
                         }
                         // If the mountpoint can't be created, give up and tell the user about --mount.
                         if let Err(e) = std::fs::create_dir(&mount_dir) {
@@ -302,7 +314,7 @@ impl Config {
                                  mount_dir.display(),
                                     e
                                 );
-                            std::process::exit(1);
+                            std::process::exit(ERROR_STATUS_FUSE);
                         }
                         // We did it!
                         config.cleanup_mount = true;
@@ -327,7 +339,7 @@ impl Config {
                             let input_source = PathBuf::from(input_source);
                             if !input_source.exists() {
                                 error!("Input file {} does not exist.", input_source.display());
-                                std::process::exit(1);
+                                std::process::exit(ERROR_STATUS_FUSE);
                             }
                             Input::File(input_source)
                         }
@@ -366,7 +378,7 @@ impl Config {
                         let mount_point = PathBuf::from(mount_point);
                         if !mount_point.exists() {
                             error!("Mount point {} does not exist.", mount_point.display());
-                            std::process::exit(1);
+                            std::process::exit(ERROR_STATUS_FUSE);
                         }
                         config.cleanup_mount = false;
                         Some(mount_point)
@@ -375,22 +387,28 @@ impl Config {
                         match &config.input {
                             Input::Stdin => {
                                 error!("You must specify a mount point when reading from stdin.");
-                                std::process::exit(1);
+                                std::process::exit(ERROR_STATUS_CLI);
                             }
                             Input::Empty => {
                                 error!(
                                     "You must specify a mount point when reading an empty file."
                                 );
-                                std::process::exit(1);
+                                std::process::exit(ERROR_STATUS_CLI);
                             }
                             Input::File(file) => {
                                 // If the input is from a file foo.EXT, then try to make a directory foo.
-                                let mount_dir = file.with_extension("");
+                                let stem = file.file_stem().unwrap_or_else(|| {
+                                    error!("Couldn't infer the mountpoint from input '{}'. Use `--mount MOUNT` to specify a mountpoint.", file.display());
+                                    std::process::exit(ERROR_STATUS_FUSE);
+                                });
+                                let mount_dir = PathBuf::from(stem);
+                                debug!("inferred mount_dir {}", mount_dir.display());
+
                                 // If that file already exists, give up and tell the user about --mount.
                                 if mount_dir.exists() {
                                     error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.", 
                                     mount = mount_dir.display(), file = file.display());
-                                    std::process::exit(1);
+                                    std::process::exit(ERROR_STATUS_FUSE);
                                 }
                                 // If the mountpoint can't be created, give up and tell the user about --mount.
                                 if let Err(e) = std::fs::create_dir(&mount_dir) {
@@ -399,7 +417,7 @@ impl Config {
                                     mount_dir.display(),
                                     e
                                 );
-                                    std::process::exit(1);
+                                    std::process::exit(ERROR_STATUS_FUSE);
                                 }
                                 // We did it!
                                 config.cleanup_mount = true;

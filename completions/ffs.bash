@@ -20,7 +20,7 @@ _ffs() {
 
     case "${cmd}" in
         ffs)
-            opts=" -q -d -i -h -V -u -g -o -s -t -m  --quiet --debug --exact --unpadded --readonly --no-output --in-place --help --version --completions --uid --gid --mode --dirmode --output --source --target --mount  <INPUT> "
+            opts=" -q -d -i -h -V -u -g -o -s -t -m  --quiet --debug --exact --no-xattr --keep-macos-xattr --unpadded --readonly --no-output --in-place --pretty --help --version --completions --uid --gid --mode --dirmode --munge --output --source --target --mount --new  <INPUT> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -55,6 +55,10 @@ _ffs() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --munge)
+                    COMPREPLY=($(compgen -W "filter rename" -- "${cur}"))
+                    return 0
+                    ;;
                 --output)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -84,6 +88,10 @@ _ffs() {
                     return 0
                     ;;
                     -m)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --new)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

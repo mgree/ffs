@@ -5,7 +5,7 @@ mod config;
 mod format;
 mod fs;
 
-use config::Config;
+use config::{Config, ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
 
 use fuser::MountOption;
 
@@ -26,7 +26,7 @@ fn main() {
             error!(
                 "No mount point specified; aborting. Use `--mount MOUNT` to specify a mountpoint."
             );
-            std::process::exit(1);
+            std::process::exit(ERROR_STATUS_CLI);
         }
     };
     let cleanup_mount = config.cleanup_mount;
@@ -41,7 +41,7 @@ fn main() {
         }
         Err(e) => {
             error!("I/O error: {}", e);
-            2
+            ERROR_STATUS_FUSE
         }
     };
 
