@@ -145,9 +145,10 @@ do
             break
         fi
     done
-    
+
+    size=$(stat -f %z $path)
     while read line
     do
-        printf "%s,%s,%s,%s\n" "$d" "$f" "$r" "$line"
+        printf "%s,%s,%s,%s,%s\n" "$d" "$f" "$r" "$size" "$line"
     done <$log
 done
