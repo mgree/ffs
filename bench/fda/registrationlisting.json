@@ -1,0 +1,100 @@
+{
+  "meta": {
+    "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+    "terms": "https://open.fda.gov/terms/",
+    "license": "https://open.fda.gov/license/",
+    "last_updated": "2021-07-12",
+    "results": {
+      "skip": 0,
+      "limit": 1,
+      "total": 304808
+    }
+  },
+  "results": [
+    {
+      "proprietary_name": [
+        "Optical Coherence Tomography OCT-A1"
+      ],
+      "establishment_type": [
+        "Develop Specifications But Do Not Manufacture At This Facility"
+      ],
+      "registration": {
+        "registration_number": "1000181430",
+        "fei_number": "1000181430",
+        "status_code": "1",
+        "initial_importer_flag": "N",
+        "reg_expiry_date_year": "2021",
+        "name": "CANON INC.",
+        "address_line_1": "9-1, Imaikami-cho, Nakahara-ku",
+        "address_line_2": "",
+        "city": "Kawasaki Kanagawa",
+        "state_code": "",
+        "iso_country_code": "JP",
+        "zip_code": "",
+        "postal_code": "211-8501",
+        "us_agent": {
+          "name": "MASAYUKI TAKEUCHI",
+          "business_name": "Canon Medical Components U.S.A., Inc.",
+          "bus_phone_area_code": "631",
+          "bus_phone_num": "3308587",
+          "bus_phone_extn": "",
+          "fax_area_code": "",
+          "fax_num": "",
+          "email_address": "mtakeuchi@mcu.canon",
+          "address_line_1": "15955",
+          "address_line_2": "Alton Parkway",
+          "city": "Irvine",
+          "state_code": "CA",
+          "iso_country_code": "US",
+          "zip_code": "92618",
+          "postal_code": ""
+        },
+        "owner_operator": {
+          "firm_name": "CANON INC.",
+          "owner_operator_number": "8030410",
+          "official_correspondent": {},
+          "contact_address": {
+            "address_1": "30-2 SHIMOMARUKO, 3-CHOME,",
+            "address_2": "OHTA-KU",
+            "city": "TOKYO",
+            "state_code": "JP-NOTA",
+            "state_province": "",
+            "iso_country_code": "JP",
+            "postal_code": "146-8501"
+          }
+        }
+      },
+      "pma_number": "",
+      "k_number": "K182942",
+      "products": [
+        {
+          "product_code": "HLI",
+          "created_date": "2019-07-24",
+          "owner_operator_number": "8030410",
+          "exempt": "",
+          "openfda": {
+            "device_name": "Ophthalmoscope, Ac-Powered",
+            "medical_specialty_description": "Ophthalmic",
+            "regulation_number": "886.1570",
+            "device_class": "2"
+          }
+        },
+        {
+          "product_code": "OBO",
+          "created_date": "2019-07-24",
+          "owner_operator_number": "8030410",
+          "exempt": "",
+          "openfda": {
+            "k_number": [
+              "K182942"
+            ],
+            "device_name": "Tomography, Optical Coherence",
+            "medical_specialty_description": "Ophthalmic",
+            "regulation_number": "886.1570",
+            "device_class": "2"
+          }
+        }
+      ]
+    }
+  ]
+}

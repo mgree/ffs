@@ -1,0 +1,3546 @@
+[
+  {
+    "id": "17322681750",
+    "type": "CreateEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "ref": "timing",
+      "ref_type": "branch",
+      "master_branch": "main",
+      "description": "the file filesystem: mount semi-structured data (like JSON) as a Unix filesystem",
+      "pusher_type": "user"
+    },
+    "public": true,
+    "created_at": "2021-07-27T14:07:47Z"
+  },
+  {
+    "id": "17296181634",
+    "type": "WatchEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 215404927,
+      "name": "kellyjonbrazil/jc",
+      "url": "https://api.github.com/repos/kellyjonbrazil/jc"
+    },
+    "payload": {
+      "action": "started"
+    },
+    "public": true,
+    "created_at": "2021-07-25T19:28:59Z"
+  },
+  {
+    "id": "17296122344",
+    "type": "WatchEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 41925963,
+      "name": "Nukesor/pueue",
+      "url": "https://api.github.com/repos/Nukesor/pueue"
+    },
+    "payload": {
+      "action": "started"
+    },
+    "public": true,
+    "created_at": "2021-07-25T19:12:54Z"
+  },
+  {
+    "id": "17285745586",
+    "type": "CreateEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 383849221,
+      "name": "mgree/dts",
+      "url": "https://api.github.com/repos/mgree/dts"
+    },
+    "payload": {
+      "ref": "mlton",
+      "ref_type": "branch",
+      "master_branch": "main",
+      "description": "Fritz Henglein and Jakob Rehof's '90s investigations into dynamic typing",
+      "pusher_type": "user"
+    },
+    "public": true,
+    "created_at": "2021-07-23T20:52:04Z"
+  },
+  {
+    "id": "17266839566",
+    "type": "PullRequestReviewEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 194473604,
+      "name": "binpash/pash",
+      "url": "https://api.github.com/repos/binpash/pash"
+    },
+    "payload": {
+      "action": "created",
+      "review": {
+        "id": 712878230,
+        "node_id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NzEyODc4MjMw",
+        "user": {
+          "login": "mgree",
+          "id": 505088,
+          "node_id": "MDQ6VXNlcjUwNTA4OA==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mgree",
+          "html_url": "https://github.com/mgree",
+          "followers_url": "https://api.github.com/users/mgree/followers",
+          "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+          "organizations_url": "https://api.github.com/users/mgree/orgs",
+          "repos_url": "https://api.github.com/users/mgree/repos",
+          "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mgree/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "body": "Left comments in; lgtm given pending fixes.",
+        "commit_id": "4820035a0f017052c265cdf282ae4c52e428572c",
+        "submitted_at": "2021-07-22T14:42:31Z",
+        "state": "approved",
+        "html_url": "https://github.com/binpash/pash/pull/246#pullrequestreview-712878230",
+        "pull_request_url": "https://api.github.com/repos/binpash/pash/pulls/246",
+        "author_association": "COLLABORATOR",
+        "_links": {
+          "html": {
+            "href": "https://github.com/binpash/pash/pull/246#pullrequestreview-712878230"
+          },
+          "pull_request": {
+            "href": "https://api.github.com/repos/binpash/pash/pulls/246"
+          }
+        }
+      },
+      "pull_request": {
+        "url": "https://api.github.com/repos/binpash/pash/pulls/246",
+        "id": 630896995,
+        "node_id": "MDExOlB1bGxSZXF1ZXN0NjMwODk2OTk1",
+        "html_url": "https://github.com/binpash/pash/pull/246",
+        "diff_url": "https://github.com/binpash/pash/pull/246.diff",
+        "patch_url": "https://github.com/binpash/pash/pull/246.patch",
+        "issue_url": "https://api.github.com/repos/binpash/pash/issues/246",
+        "number": 246,
+        "state": "open",
+        "locked": false,
+        "title": "Extend PaSh's expansion to properly handle input arguments",
+        "user": {
+          "login": "angelhof",
+          "id": 12186758,
+          "node_id": "MDQ6VXNlcjEyMTg2NzU4",
+          "avatar_url": "https://avatars.githubusercontent.com/u/12186758?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/angelhof",
+          "html_url": "https://github.com/angelhof",
+          "followers_url": "https://api.github.com/users/angelhof/followers",
+          "following_url": "https://api.github.com/users/angelhof/following{/other_user}",
+          "gists_url": "https://api.github.com/users/angelhof/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/angelhof/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/angelhof/subscriptions",
+          "organizations_url": "https://api.github.com/users/angelhof/orgs",
+          "repos_url": "https://api.github.com/users/angelhof/repos",
+          "events_url": "https://api.github.com/users/angelhof/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/angelhof/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "body": "@mgree whenever you have some time you could take a look and see if that looks reasonable to you, no rush!\r\n\r\nThe input arguments for scripts are stored in the pash runtime in the `pash_input_args` variable and therefore expansion needs to search them there.",
+        "created_at": "2021-05-05T20:58:15Z",
+        "updated_at": "2021-07-22T14:42:31Z",
+        "closed_at": null,
+        "merged_at": null,
+        "merge_commit_sha": "b85aebdba02442b9c82a721a0239f180960bdc98",
+        "assignee": null,
+        "assignees": [
+
+        ],
+        "requested_reviewers": [
+
+        ],
+        "requested_teams": [
+
+        ],
+        "labels": [
+
+        ],
+        "milestone": null,
+        "draft": false,
+        "commits_url": "https://api.github.com/repos/binpash/pash/pulls/246/commits",
+        "review_comments_url": "https://api.github.com/repos/binpash/pash/pulls/246/comments",
+        "review_comment_url": "https://api.github.com/repos/binpash/pash/pulls/comments{/number}",
+        "comments_url": "https://api.github.com/repos/binpash/pash/issues/246/comments",
+        "statuses_url": "https://api.github.com/repos/binpash/pash/statuses/476694b4c932afef9d0673066225696576f331e3",
+        "head": {
+          "label": "binpash:pash-expand-args",
+          "ref": "pash-expand-args",
+          "sha": "476694b4c932afef9d0673066225696576f331e3",
+          "user": {
+            "login": "binpash",
+            "id": 87086014,
+            "node_id": "MDEyOk9yZ2FuaXphdGlvbjg3MDg2MDE0",
+            "avatar_url": "https://avatars.githubusercontent.com/u/87086014?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/binpash",
+            "html_url": "https://github.com/binpash",
+            "followers_url": "https://api.github.com/users/binpash/followers",
+            "following_url": "https://api.github.com/users/binpash/following{/other_user}",
+            "gists_url": "https://api.github.com/users/binpash/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/binpash/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/binpash/subscriptions",
+            "organizations_url": "https://api.github.com/users/binpash/orgs",
+            "repos_url": "https://api.github.com/users/binpash/repos",
+            "events_url": "https://api.github.com/users/binpash/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/binpash/received_events",
+            "type": "Organization",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 194473604,
+            "node_id": "MDEwOlJlcG9zaXRvcnkxOTQ0NzM2MDQ=",
+            "name": "pash",
+            "full_name": "binpash/pash",
+            "private": false,
+            "owner": {
+              "login": "binpash",
+              "id": 87086014,
+              "node_id": "MDEyOk9yZ2FuaXphdGlvbjg3MDg2MDE0",
+              "avatar_url": "https://avatars.githubusercontent.com/u/87086014?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/binpash",
+              "html_url": "https://github.com/binpash",
+              "followers_url": "https://api.github.com/users/binpash/followers",
+              "following_url": "https://api.github.com/users/binpash/following{/other_user}",
+              "gists_url": "https://api.github.com/users/binpash/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/binpash/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/binpash/subscriptions",
+              "organizations_url": "https://api.github.com/users/binpash/orgs",
+              "repos_url": "https://api.github.com/users/binpash/repos",
+              "events_url": "https://api.github.com/users/binpash/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/binpash/received_events",
+              "type": "Organization",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/binpash/pash",
+            "description": "PaSh: Light-touch Data-Parallel Shell Processing",
+            "fork": false,
+            "url": "https://api.github.com/repos/binpash/pash",
+            "forks_url": "https://api.github.com/repos/binpash/pash/forks",
+            "keys_url": "https://api.github.com/repos/binpash/pash/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/binpash/pash/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/binpash/pash/teams",
+            "hooks_url": "https://api.github.com/repos/binpash/pash/hooks",
+            "issue_events_url": "https://api.github.com/repos/binpash/pash/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/binpash/pash/events",
+            "assignees_url": "https://api.github.com/repos/binpash/pash/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/binpash/pash/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/binpash/pash/tags",
+            "blobs_url": "https://api.github.com/repos/binpash/pash/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/binpash/pash/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/binpash/pash/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/binpash/pash/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/binpash/pash/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/binpash/pash/languages",
+            "stargazers_url": "https://api.github.com/repos/binpash/pash/stargazers",
+            "contributors_url": "https://api.github.com/repos/binpash/pash/contributors",
+            "subscribers_url": "https://api.github.com/repos/binpash/pash/subscribers",
+            "subscription_url": "https://api.github.com/repos/binpash/pash/subscription",
+            "commits_url": "https://api.github.com/repos/binpash/pash/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/binpash/pash/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/binpash/pash/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/binpash/pash/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/binpash/pash/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/binpash/pash/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/binpash/pash/merges",
+            "archive_url": "https://api.github.com/repos/binpash/pash/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/binpash/pash/downloads",
+            "issues_url": "https://api.github.com/repos/binpash/pash/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/binpash/pash/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/binpash/pash/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/binpash/pash/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/binpash/pash/labels{/name}",
+            "releases_url": "https://api.github.com/repos/binpash/pash/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/binpash/pash/deployments",
+            "created_at": "2019-06-30T04:12:11Z",
+            "updated_at": "2021-07-22T11:37:07Z",
+            "pushed_at": "2021-07-22T14:41:34Z",
+            "git_url": "git://github.com/binpash/pash.git",
+            "ssh_url": "git@github.com:binpash/pash.git",
+            "clone_url": "https://github.com/binpash/pash.git",
+            "svn_url": "https://github.com/binpash/pash",
+            "homepage": "",
+            "size": 24678,
+            "stargazers_count": 69,
+            "watchers_count": 69,
+            "language": "Python",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": false,
+            "has_pages": false,
+            "forks_count": 14,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 57,
+            "license": {
+              "key": "mit",
+              "name": "MIT License",
+              "spdx_id": "MIT",
+              "url": "https://api.github.com/licenses/mit",
+              "node_id": "MDc6TGljZW5zZTEz"
+            },
+            "forks": 14,
+            "open_issues": 57,
+            "watchers": 69,
+            "default_branch": "main"
+          }
+        },
+        "base": {
+          "label": "binpash:main",
+          "ref": "main",
+          "sha": "8b144dfcef60ff860136485c30681c3a4ef2b884",
+          "user": {
+            "login": "binpash",
+            "id": 87086014,
+            "node_id": "MDEyOk9yZ2FuaXphdGlvbjg3MDg2MDE0",
+            "avatar_url": "https://avatars.githubusercontent.com/u/87086014?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/binpash",
+            "html_url": "https://github.com/binpash",
+            "followers_url": "https://api.github.com/users/binpash/followers",
+            "following_url": "https://api.github.com/users/binpash/following{/other_user}",
+            "gists_url": "https://api.github.com/users/binpash/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/binpash/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/binpash/subscriptions",
+            "organizations_url": "https://api.github.com/users/binpash/orgs",
+            "repos_url": "https://api.github.com/users/binpash/repos",
+            "events_url": "https://api.github.com/users/binpash/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/binpash/received_events",
+            "type": "Organization",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 194473604,
+            "node_id": "MDEwOlJlcG9zaXRvcnkxOTQ0NzM2MDQ=",
+            "name": "pash",
+            "full_name": "binpash/pash",
+            "private": false,
+            "owner": {
+              "login": "binpash",
+              "id": 87086014,
+              "node_id": "MDEyOk9yZ2FuaXphdGlvbjg3MDg2MDE0",
+              "avatar_url": "https://avatars.githubusercontent.com/u/87086014?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/binpash",
+              "html_url": "https://github.com/binpash",
+              "followers_url": "https://api.github.com/users/binpash/followers",
+              "following_url": "https://api.github.com/users/binpash/following{/other_user}",
+              "gists_url": "https://api.github.com/users/binpash/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/binpash/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/binpash/subscriptions",
+              "organizations_url": "https://api.github.com/users/binpash/orgs",
+              "repos_url": "https://api.github.com/users/binpash/repos",
+              "events_url": "https://api.github.com/users/binpash/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/binpash/received_events",
+              "type": "Organization",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/binpash/pash",
+            "description": "PaSh: Light-touch Data-Parallel Shell Processing",
+            "fork": false,
+            "url": "https://api.github.com/repos/binpash/pash",
+            "forks_url": "https://api.github.com/repos/binpash/pash/forks",
+            "keys_url": "https://api.github.com/repos/binpash/pash/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/binpash/pash/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/binpash/pash/teams",
+            "hooks_url": "https://api.github.com/repos/binpash/pash/hooks",
+            "issue_events_url": "https://api.github.com/repos/binpash/pash/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/binpash/pash/events",
+            "assignees_url": "https://api.github.com/repos/binpash/pash/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/binpash/pash/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/binpash/pash/tags",
+            "blobs_url": "https://api.github.com/repos/binpash/pash/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/binpash/pash/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/binpash/pash/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/binpash/pash/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/binpash/pash/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/binpash/pash/languages",
+            "stargazers_url": "https://api.github.com/repos/binpash/pash/stargazers",
+            "contributors_url": "https://api.github.com/repos/binpash/pash/contributors",
+            "subscribers_url": "https://api.github.com/repos/binpash/pash/subscribers",
+            "subscription_url": "https://api.github.com/repos/binpash/pash/subscription",
+            "commits_url": "https://api.github.com/repos/binpash/pash/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/binpash/pash/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/binpash/pash/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/binpash/pash/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/binpash/pash/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/binpash/pash/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/binpash/pash/merges",
+            "archive_url": "https://api.github.com/repos/binpash/pash/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/binpash/pash/downloads",
+            "issues_url": "https://api.github.com/repos/binpash/pash/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/binpash/pash/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/binpash/pash/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/binpash/pash/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/binpash/pash/labels{/name}",
+            "releases_url": "https://api.github.com/repos/binpash/pash/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/binpash/pash/deployments",
+            "created_at": "2019-06-30T04:12:11Z",
+            "updated_at": "2021-07-22T11:37:07Z",
+            "pushed_at": "2021-07-22T14:41:34Z",
+            "git_url": "git://github.com/binpash/pash.git",
+            "ssh_url": "git@github.com:binpash/pash.git",
+            "clone_url": "https://github.com/binpash/pash.git",
+            "svn_url": "https://github.com/binpash/pash",
+            "homepage": "",
+            "size": 24678,
+            "stargazers_count": 69,
+            "watchers_count": 69,
+            "language": "Python",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": false,
+            "has_pages": false,
+            "forks_count": 14,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 57,
+            "license": {
+              "key": "mit",
+              "name": "MIT License",
+              "spdx_id": "MIT",
+              "url": "https://api.github.com/licenses/mit",
+              "node_id": "MDc6TGljZW5zZTEz"
+            },
+            "forks": 14,
+            "open_issues": 57,
+            "watchers": 69,
+            "default_branch": "main"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/binpash/pash/pulls/246"
+          },
+          "html": {
+            "href": "https://github.com/binpash/pash/pull/246"
+          },
+          "issue": {
+            "href": "https://api.github.com/repos/binpash/pash/issues/246"
+          },
+          "comments": {
+            "href": "https://api.github.com/repos/binpash/pash/issues/246/comments"
+          },
+          "review_comments": {
+            "href": "https://api.github.com/repos/binpash/pash/pulls/246/comments"
+          },
+          "review_comment": {
+            "href": "https://api.github.com/repos/binpash/pash/pulls/comments{/number}"
+          },
+          "commits": {
+            "href": "https://api.github.com/repos/binpash/pash/pulls/246/commits"
+          },
+          "statuses": {
+            "href": "https://api.github.com/repos/binpash/pash/statuses/476694b4c932afef9d0673066225696576f331e3"
+          }
+        },
+        "author_association": "COLLABORATOR",
+        "auto_merge": null,
+        "active_lock_reason": null
+      }
+    },
+    "public": true,
+    "created_at": "2021-07-22T14:42:31Z",
+    "org": {
+      "id": 87086014,
+      "login": "binpash",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/binpash",
+      "avatar_url": "https://avatars.githubusercontent.com/u/87086014?"
+    }
+  },
+  {
+    "id": "17266822997",
+    "type": "PushEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 194473604,
+      "name": "binpash/pash",
+      "url": "https://api.github.com/repos/binpash/pash"
+    },
+    "payload": {
+      "push_id": 7572546674,
+      "size": 1,
+      "distinct_size": 1,
+      "ref": "refs/heads/pash-expand-args",
+      "head": "476694b4c932afef9d0673066225696576f331e3",
+      "before": "ccb46be34e7822f4c9219fd2c7be62d2e40035e4",
+      "commits": [
+        {
+          "sha": "476694b4c932afef9d0673066225696576f331e3",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "notes on correct handling of positional arguments",
+          "distinct": true,
+          "url": "https://api.github.com/repos/binpash/pash/commits/476694b4c932afef9d0673066225696576f331e3"
+        }
+      ]
+    },
+    "public": true,
+    "created_at": "2021-07-22T14:41:33Z",
+    "org": {
+      "id": 87086014,
+      "login": "binpash",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/binpash",
+      "avatar_url": "https://avatars.githubusercontent.com/u/87086014?"
+    }
+  },
+  {
+    "id": "17266124302",
+    "type": "PushEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 384828736,
+      "name": "mgree/st",
+      "url": "https://api.github.com/repos/mgree/st"
+    },
+    "payload": {
+      "push_id": 7572217693,
+      "size": 1,
+      "distinct_size": 1,
+      "ref": "refs/heads/main",
+      "head": "5df8df13ff93b5d42dc2b5c6db6dfd4f01d8aaec",
+      "before": "4bf795e9ca2b9727760321c0b0daad45d3a84eeb",
+      "commits": [
+        {
+          "sha": "5df8df13ff93b5d42dc2b5c6db6dfd4f01d8aaec",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "working on 31",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/st/commits/5df8df13ff93b5d42dc2b5c6db6dfd4f01d8aaec"
+        }
+      ]
+    },
+    "public": true,
+    "created_at": "2021-07-22T14:00:07Z"
+  },
+  {
+    "id": "17251644658",
+    "type": "DeleteEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "ref": "exit-status",
+      "ref_type": "branch",
+      "pusher_type": "user"
+    },
+    "public": true,
+    "created_at": "2021-07-21T15:10:46Z"
+  },
+  {
+    "id": "17251643971",
+    "type": "PushEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "push_id": 7565010531,
+      "size": 1,
+      "distinct_size": 1,
+      "ref": "refs/heads/main",
+      "head": "b651c9c1ac66a1117bcbe93b1113bc1617be5928",
+      "before": "747301c8152b1f8a385299c1fe72a4977c7919cc",
+      "commits": [
+        {
+          "sha": "b651c9c1ac66a1117bcbe93b1113bc1617be5928",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "Exit status (#44)\n\nUnify exit status (0=success, 1=fs error, 2=cli error).\r\n\r\nDocumented and tested; one test is disabled due to an upstream error masking.",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/ffs/commits/b651c9c1ac66a1117bcbe93b1113bc1617be5928"
+        }
+      ]
+    },
+    "public": true,
+    "created_at": "2021-07-21T15:10:44Z"
+  },
+  {
+    "id": "17251643728",
+    "type": "PullRequestEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "action": "closed",
+      "number": 44,
+      "pull_request": {
+        "url": "https://api.github.com/repos/mgree/ffs/pulls/44",
+        "id": 694463605,
+        "node_id": "MDExOlB1bGxSZXF1ZXN0Njk0NDYzNjA1",
+        "html_url": "https://github.com/mgree/ffs/pull/44",
+        "diff_url": "https://github.com/mgree/ffs/pull/44.diff",
+        "patch_url": "https://github.com/mgree/ffs/pull/44.patch",
+        "issue_url": "https://api.github.com/repos/mgree/ffs/issues/44",
+        "number": 44,
+        "state": "closed",
+        "locked": false,
+        "title": "Exit status",
+        "user": {
+          "login": "mgree",
+          "id": 505088,
+          "node_id": "MDQ6VXNlcjUwNTA4OA==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mgree",
+          "html_url": "https://github.com/mgree",
+          "followers_url": "https://api.github.com/users/mgree/followers",
+          "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+          "organizations_url": "https://api.github.com/users/mgree/orgs",
+          "repos_url": "https://api.github.com/users/mgree/repos",
+          "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mgree/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "body": "Unify exit status.",
+        "created_at": "2021-07-21T15:05:41Z",
+        "updated_at": "2021-07-21T15:10:43Z",
+        "closed_at": "2021-07-21T15:10:43Z",
+        "merged_at": "2021-07-21T15:10:42Z",
+        "merge_commit_sha": "b651c9c1ac66a1117bcbe93b1113bc1617be5928",
+        "assignee": null,
+        "assignees": [
+
+        ],
+        "requested_reviewers": [
+
+        ],
+        "requested_teams": [
+
+        ],
+        "labels": [
+
+        ],
+        "milestone": null,
+        "draft": false,
+        "commits_url": "https://api.github.com/repos/mgree/ffs/pulls/44/commits",
+        "review_comments_url": "https://api.github.com/repos/mgree/ffs/pulls/44/comments",
+        "review_comment_url": "https://api.github.com/repos/mgree/ffs/pulls/comments{/number}",
+        "comments_url": "https://api.github.com/repos/mgree/ffs/issues/44/comments",
+        "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/93f4f8e56d08d51cb75e039f2981cdeb2a812e4f",
+        "head": {
+          "label": "mgree:exit-status",
+          "ref": "exit-status",
+          "sha": "93f4f8e56d08d51cb75e039f2981cdeb2a812e4f",
+          "user": {
+            "login": "mgree",
+            "id": 505088,
+            "node_id": "MDQ6VXNlcjUwNTA4OA==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/mgree",
+            "html_url": "https://github.com/mgree",
+            "followers_url": "https://api.github.com/users/mgree/followers",
+            "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+            "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+            "organizations_url": "https://api.github.com/users/mgree/orgs",
+            "repos_url": "https://api.github.com/users/mgree/repos",
+            "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/mgree/received_events",
+            "type": "User",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 374712709,
+            "node_id": "MDEwOlJlcG9zaXRvcnkzNzQ3MTI3MDk=",
+            "name": "ffs",
+            "full_name": "mgree/ffs",
+            "private": false,
+            "owner": {
+              "login": "mgree",
+              "id": 505088,
+              "node_id": "MDQ6VXNlcjUwNTA4OA==",
+              "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/mgree",
+              "html_url": "https://github.com/mgree",
+              "followers_url": "https://api.github.com/users/mgree/followers",
+              "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+              "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+              "organizations_url": "https://api.github.com/users/mgree/orgs",
+              "repos_url": "https://api.github.com/users/mgree/repos",
+              "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/mgree/received_events",
+              "type": "User",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/mgree/ffs",
+            "description": "the file filesystem: mount semi-structured data (like JSON) as a Unix filesystem",
+            "fork": false,
+            "url": "https://api.github.com/repos/mgree/ffs",
+            "forks_url": "https://api.github.com/repos/mgree/ffs/forks",
+            "keys_url": "https://api.github.com/repos/mgree/ffs/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/mgree/ffs/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/mgree/ffs/teams",
+            "hooks_url": "https://api.github.com/repos/mgree/ffs/hooks",
+            "issue_events_url": "https://api.github.com/repos/mgree/ffs/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/mgree/ffs/events",
+            "assignees_url": "https://api.github.com/repos/mgree/ffs/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/mgree/ffs/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/mgree/ffs/tags",
+            "blobs_url": "https://api.github.com/repos/mgree/ffs/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/mgree/ffs/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/mgree/ffs/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/mgree/ffs/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/mgree/ffs/languages",
+            "stargazers_url": "https://api.github.com/repos/mgree/ffs/stargazers",
+            "contributors_url": "https://api.github.com/repos/mgree/ffs/contributors",
+            "subscribers_url": "https://api.github.com/repos/mgree/ffs/subscribers",
+            "subscription_url": "https://api.github.com/repos/mgree/ffs/subscription",
+            "commits_url": "https://api.github.com/repos/mgree/ffs/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/mgree/ffs/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/mgree/ffs/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/mgree/ffs/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/mgree/ffs/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/mgree/ffs/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/mgree/ffs/merges",
+            "archive_url": "https://api.github.com/repos/mgree/ffs/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/mgree/ffs/downloads",
+            "issues_url": "https://api.github.com/repos/mgree/ffs/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/mgree/ffs/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/mgree/ffs/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/mgree/ffs/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/mgree/ffs/labels{/name}",
+            "releases_url": "https://api.github.com/repos/mgree/ffs/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/mgree/ffs/deployments",
+            "created_at": "2021-06-07T15:22:28Z",
+            "updated_at": "2021-07-21T13:32:46Z",
+            "pushed_at": "2021-07-21T15:10:42Z",
+            "git_url": "git://github.com/mgree/ffs.git",
+            "ssh_url": "git@github.com:mgree/ffs.git",
+            "clone_url": "https://github.com/mgree/ffs.git",
+            "svn_url": "https://github.com/mgree/ffs",
+            "homepage": "https://mgree.github.io/ffs/",
+            "size": 988,
+            "stargazers_count": 110,
+            "watchers_count": 110,
+            "language": "Rust",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": true,
+            "has_pages": true,
+            "forks_count": 3,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 15,
+            "license": {
+              "key": "gpl-3.0",
+              "name": "GNU General Public License v3.0",
+              "spdx_id": "GPL-3.0",
+              "url": "https://api.github.com/licenses/gpl-3.0",
+              "node_id": "MDc6TGljZW5zZTk="
+            },
+            "forks": 3,
+            "open_issues": 15,
+            "watchers": 110,
+            "default_branch": "main"
+          }
+        },
+        "base": {
+          "label": "mgree:main",
+          "ref": "main",
+          "sha": "747301c8152b1f8a385299c1fe72a4977c7919cc",
+          "user": {
+            "login": "mgree",
+            "id": 505088,
+            "node_id": "MDQ6VXNlcjUwNTA4OA==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/mgree",
+            "html_url": "https://github.com/mgree",
+            "followers_url": "https://api.github.com/users/mgree/followers",
+            "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+            "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+            "organizations_url": "https://api.github.com/users/mgree/orgs",
+            "repos_url": "https://api.github.com/users/mgree/repos",
+            "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/mgree/received_events",
+            "type": "User",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 374712709,
+            "node_id": "MDEwOlJlcG9zaXRvcnkzNzQ3MTI3MDk=",
+            "name": "ffs",
+            "full_name": "mgree/ffs",
+            "private": false,
+            "owner": {
+              "login": "mgree",
+              "id": 505088,
+              "node_id": "MDQ6VXNlcjUwNTA4OA==",
+              "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/mgree",
+              "html_url": "https://github.com/mgree",
+              "followers_url": "https://api.github.com/users/mgree/followers",
+              "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+              "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+              "organizations_url": "https://api.github.com/users/mgree/orgs",
+              "repos_url": "https://api.github.com/users/mgree/repos",
+              "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/mgree/received_events",
+              "type": "User",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/mgree/ffs",
+            "description": "the file filesystem: mount semi-structured data (like JSON) as a Unix filesystem",
+            "fork": false,
+            "url": "https://api.github.com/repos/mgree/ffs",
+            "forks_url": "https://api.github.com/repos/mgree/ffs/forks",
+            "keys_url": "https://api.github.com/repos/mgree/ffs/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/mgree/ffs/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/mgree/ffs/teams",
+            "hooks_url": "https://api.github.com/repos/mgree/ffs/hooks",
+            "issue_events_url": "https://api.github.com/repos/mgree/ffs/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/mgree/ffs/events",
+            "assignees_url": "https://api.github.com/repos/mgree/ffs/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/mgree/ffs/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/mgree/ffs/tags",
+            "blobs_url": "https://api.github.com/repos/mgree/ffs/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/mgree/ffs/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/mgree/ffs/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/mgree/ffs/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/mgree/ffs/languages",
+            "stargazers_url": "https://api.github.com/repos/mgree/ffs/stargazers",
+            "contributors_url": "https://api.github.com/repos/mgree/ffs/contributors",
+            "subscribers_url": "https://api.github.com/repos/mgree/ffs/subscribers",
+            "subscription_url": "https://api.github.com/repos/mgree/ffs/subscription",
+            "commits_url": "https://api.github.com/repos/mgree/ffs/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/mgree/ffs/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/mgree/ffs/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/mgree/ffs/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/mgree/ffs/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/mgree/ffs/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/mgree/ffs/merges",
+            "archive_url": "https://api.github.com/repos/mgree/ffs/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/mgree/ffs/downloads",
+            "issues_url": "https://api.github.com/repos/mgree/ffs/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/mgree/ffs/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/mgree/ffs/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/mgree/ffs/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/mgree/ffs/labels{/name}",
+            "releases_url": "https://api.github.com/repos/mgree/ffs/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/mgree/ffs/deployments",
+            "created_at": "2021-06-07T15:22:28Z",
+            "updated_at": "2021-07-21T13:32:46Z",
+            "pushed_at": "2021-07-21T15:10:42Z",
+            "git_url": "git://github.com/mgree/ffs.git",
+            "ssh_url": "git@github.com:mgree/ffs.git",
+            "clone_url": "https://github.com/mgree/ffs.git",
+            "svn_url": "https://github.com/mgree/ffs",
+            "homepage": "https://mgree.github.io/ffs/",
+            "size": 988,
+            "stargazers_count": 110,
+            "watchers_count": 110,
+            "language": "Rust",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": true,
+            "has_pages": true,
+            "forks_count": 3,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 15,
+            "license": {
+              "key": "gpl-3.0",
+              "name": "GNU General Public License v3.0",
+              "spdx_id": "GPL-3.0",
+              "url": "https://api.github.com/licenses/gpl-3.0",
+              "node_id": "MDc6TGljZW5zZTk="
+            },
+            "forks": 3,
+            "open_issues": 15,
+            "watchers": 110,
+            "default_branch": "main"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/44"
+          },
+          "html": {
+            "href": "https://github.com/mgree/ffs/pull/44"
+          },
+          "issue": {
+            "href": "https://api.github.com/repos/mgree/ffs/issues/44"
+          },
+          "comments": {
+            "href": "https://api.github.com/repos/mgree/ffs/issues/44/comments"
+          },
+          "review_comments": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/44/comments"
+          },
+          "review_comment": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/comments{/number}"
+          },
+          "commits": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/44/commits"
+          },
+          "statuses": {
+            "href": "https://api.github.com/repos/mgree/ffs/statuses/93f4f8e56d08d51cb75e039f2981cdeb2a812e4f"
+          }
+        },
+        "author_association": "OWNER",
+        "auto_merge": null,
+        "active_lock_reason": null,
+        "merged": true,
+        "mergeable": null,
+        "rebaseable": null,
+        "mergeable_state": "unknown",
+        "merged_by": {
+          "login": "mgree",
+          "id": 505088,
+          "node_id": "MDQ6VXNlcjUwNTA4OA==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mgree",
+          "html_url": "https://github.com/mgree",
+          "followers_url": "https://api.github.com/users/mgree/followers",
+          "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+          "organizations_url": "https://api.github.com/users/mgree/orgs",
+          "repos_url": "https://api.github.com/users/mgree/repos",
+          "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mgree/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "comments": 0,
+        "review_comments": 0,
+        "maintainer_can_modify": false,
+        "commits": 4,
+        "additions": 319,
+        "deletions": 41,
+        "changed_files": 13
+      }
+    },
+    "public": true,
+    "created_at": "2021-07-21T15:10:43Z"
+  },
+  {
+    "id": "17251602425",
+    "type": "PushEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "push_id": 7564991008,
+      "size": 1,
+      "distinct_size": 1,
+      "ref": "refs/heads/exit-status",
+      "head": "93f4f8e56d08d51cb75e039f2981cdeb2a812e4f",
+      "before": "4a23bc1b2e17e19768b95a3d0717f15098e10516",
+      "commits": [
+        {
+          "sha": "93f4f8e56d08d51cb75e039f2981cdeb2a812e4f",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "changelog",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/ffs/commits/93f4f8e56d08d51cb75e039f2981cdeb2a812e4f"
+        }
+      ]
+    },
+    "public": true,
+    "created_at": "2021-07-21T15:08:12Z"
+  },
+  {
+    "id": "17251560900",
+    "type": "PullRequestEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "action": "opened",
+      "number": 44,
+      "pull_request": {
+        "url": "https://api.github.com/repos/mgree/ffs/pulls/44",
+        "id": 694463605,
+        "node_id": "MDExOlB1bGxSZXF1ZXN0Njk0NDYzNjA1",
+        "html_url": "https://github.com/mgree/ffs/pull/44",
+        "diff_url": "https://github.com/mgree/ffs/pull/44.diff",
+        "patch_url": "https://github.com/mgree/ffs/pull/44.patch",
+        "issue_url": "https://api.github.com/repos/mgree/ffs/issues/44",
+        "number": 44,
+        "state": "open",
+        "locked": false,
+        "title": "Exit status",
+        "user": {
+          "login": "mgree",
+          "id": 505088,
+          "node_id": "MDQ6VXNlcjUwNTA4OA==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mgree",
+          "html_url": "https://github.com/mgree",
+          "followers_url": "https://api.github.com/users/mgree/followers",
+          "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+          "organizations_url": "https://api.github.com/users/mgree/orgs",
+          "repos_url": "https://api.github.com/users/mgree/repos",
+          "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mgree/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "body": "Unify exit status.",
+        "created_at": "2021-07-21T15:05:41Z",
+        "updated_at": "2021-07-21T15:05:41Z",
+        "closed_at": null,
+        "merged_at": null,
+        "merge_commit_sha": null,
+        "assignee": null,
+        "assignees": [
+
+        ],
+        "requested_reviewers": [
+
+        ],
+        "requested_teams": [
+
+        ],
+        "labels": [
+
+        ],
+        "milestone": null,
+        "draft": false,
+        "commits_url": "https://api.github.com/repos/mgree/ffs/pulls/44/commits",
+        "review_comments_url": "https://api.github.com/repos/mgree/ffs/pulls/44/comments",
+        "review_comment_url": "https://api.github.com/repos/mgree/ffs/pulls/comments{/number}",
+        "comments_url": "https://api.github.com/repos/mgree/ffs/issues/44/comments",
+        "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/4a23bc1b2e17e19768b95a3d0717f15098e10516",
+        "head": {
+          "label": "mgree:exit-status",
+          "ref": "exit-status",
+          "sha": "4a23bc1b2e17e19768b95a3d0717f15098e10516",
+          "user": {
+            "login": "mgree",
+            "id": 505088,
+            "node_id": "MDQ6VXNlcjUwNTA4OA==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/mgree",
+            "html_url": "https://github.com/mgree",
+            "followers_url": "https://api.github.com/users/mgree/followers",
+            "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+            "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+            "organizations_url": "https://api.github.com/users/mgree/orgs",
+            "repos_url": "https://api.github.com/users/mgree/repos",
+            "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/mgree/received_events",
+            "type": "User",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 374712709,
+            "node_id": "MDEwOlJlcG9zaXRvcnkzNzQ3MTI3MDk=",
+            "name": "ffs",
+            "full_name": "mgree/ffs",
+            "private": false,
+            "owner": {
+              "login": "mgree",
+              "id": 505088,
+              "node_id": "MDQ6VXNlcjUwNTA4OA==",
+              "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/mgree",
+              "html_url": "https://github.com/mgree",
+              "followers_url": "https://api.github.com/users/mgree/followers",
+              "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+              "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+              "organizations_url": "https://api.github.com/users/mgree/orgs",
+              "repos_url": "https://api.github.com/users/mgree/repos",
+              "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/mgree/received_events",
+              "type": "User",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/mgree/ffs",
+            "description": "the file filesystem: mount semi-structured data (like JSON) as a Unix filesystem",
+            "fork": false,
+            "url": "https://api.github.com/repos/mgree/ffs",
+            "forks_url": "https://api.github.com/repos/mgree/ffs/forks",
+            "keys_url": "https://api.github.com/repos/mgree/ffs/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/mgree/ffs/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/mgree/ffs/teams",
+            "hooks_url": "https://api.github.com/repos/mgree/ffs/hooks",
+            "issue_events_url": "https://api.github.com/repos/mgree/ffs/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/mgree/ffs/events",
+            "assignees_url": "https://api.github.com/repos/mgree/ffs/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/mgree/ffs/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/mgree/ffs/tags",
+            "blobs_url": "https://api.github.com/repos/mgree/ffs/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/mgree/ffs/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/mgree/ffs/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/mgree/ffs/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/mgree/ffs/languages",
+            "stargazers_url": "https://api.github.com/repos/mgree/ffs/stargazers",
+            "contributors_url": "https://api.github.com/repos/mgree/ffs/contributors",
+            "subscribers_url": "https://api.github.com/repos/mgree/ffs/subscribers",
+            "subscription_url": "https://api.github.com/repos/mgree/ffs/subscription",
+            "commits_url": "https://api.github.com/repos/mgree/ffs/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/mgree/ffs/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/mgree/ffs/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/mgree/ffs/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/mgree/ffs/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/mgree/ffs/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/mgree/ffs/merges",
+            "archive_url": "https://api.github.com/repos/mgree/ffs/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/mgree/ffs/downloads",
+            "issues_url": "https://api.github.com/repos/mgree/ffs/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/mgree/ffs/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/mgree/ffs/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/mgree/ffs/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/mgree/ffs/labels{/name}",
+            "releases_url": "https://api.github.com/repos/mgree/ffs/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/mgree/ffs/deployments",
+            "created_at": "2021-06-07T15:22:28Z",
+            "updated_at": "2021-07-21T13:32:46Z",
+            "pushed_at": "2021-07-21T15:05:41Z",
+            "git_url": "git://github.com/mgree/ffs.git",
+            "ssh_url": "git@github.com:mgree/ffs.git",
+            "clone_url": "https://github.com/mgree/ffs.git",
+            "svn_url": "https://github.com/mgree/ffs",
+            "homepage": "https://mgree.github.io/ffs/",
+            "size": 988,
+            "stargazers_count": 110,
+            "watchers_count": 110,
+            "language": "Rust",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": true,
+            "has_pages": true,
+            "forks_count": 3,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 16,
+            "license": {
+              "key": "gpl-3.0",
+              "name": "GNU General Public License v3.0",
+              "spdx_id": "GPL-3.0",
+              "url": "https://api.github.com/licenses/gpl-3.0",
+              "node_id": "MDc6TGljZW5zZTk="
+            },
+            "forks": 3,
+            "open_issues": 16,
+            "watchers": 110,
+            "default_branch": "main"
+          }
+        },
+        "base": {
+          "label": "mgree:main",
+          "ref": "main",
+          "sha": "747301c8152b1f8a385299c1fe72a4977c7919cc",
+          "user": {
+            "login": "mgree",
+            "id": 505088,
+            "node_id": "MDQ6VXNlcjUwNTA4OA==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/mgree",
+            "html_url": "https://github.com/mgree",
+            "followers_url": "https://api.github.com/users/mgree/followers",
+            "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+            "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+            "organizations_url": "https://api.github.com/users/mgree/orgs",
+            "repos_url": "https://api.github.com/users/mgree/repos",
+            "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/mgree/received_events",
+            "type": "User",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 374712709,
+            "node_id": "MDEwOlJlcG9zaXRvcnkzNzQ3MTI3MDk=",
+            "name": "ffs",
+            "full_name": "mgree/ffs",
+            "private": false,
+            "owner": {
+              "login": "mgree",
+              "id": 505088,
+              "node_id": "MDQ6VXNlcjUwNTA4OA==",
+              "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/mgree",
+              "html_url": "https://github.com/mgree",
+              "followers_url": "https://api.github.com/users/mgree/followers",
+              "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+              "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+              "organizations_url": "https://api.github.com/users/mgree/orgs",
+              "repos_url": "https://api.github.com/users/mgree/repos",
+              "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/mgree/received_events",
+              "type": "User",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/mgree/ffs",
+            "description": "the file filesystem: mount semi-structured data (like JSON) as a Unix filesystem",
+            "fork": false,
+            "url": "https://api.github.com/repos/mgree/ffs",
+            "forks_url": "https://api.github.com/repos/mgree/ffs/forks",
+            "keys_url": "https://api.github.com/repos/mgree/ffs/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/mgree/ffs/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/mgree/ffs/teams",
+            "hooks_url": "https://api.github.com/repos/mgree/ffs/hooks",
+            "issue_events_url": "https://api.github.com/repos/mgree/ffs/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/mgree/ffs/events",
+            "assignees_url": "https://api.github.com/repos/mgree/ffs/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/mgree/ffs/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/mgree/ffs/tags",
+            "blobs_url": "https://api.github.com/repos/mgree/ffs/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/mgree/ffs/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/mgree/ffs/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/mgree/ffs/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/mgree/ffs/languages",
+            "stargazers_url": "https://api.github.com/repos/mgree/ffs/stargazers",
+            "contributors_url": "https://api.github.com/repos/mgree/ffs/contributors",
+            "subscribers_url": "https://api.github.com/repos/mgree/ffs/subscribers",
+            "subscription_url": "https://api.github.com/repos/mgree/ffs/subscription",
+            "commits_url": "https://api.github.com/repos/mgree/ffs/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/mgree/ffs/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/mgree/ffs/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/mgree/ffs/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/mgree/ffs/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/mgree/ffs/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/mgree/ffs/merges",
+            "archive_url": "https://api.github.com/repos/mgree/ffs/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/mgree/ffs/downloads",
+            "issues_url": "https://api.github.com/repos/mgree/ffs/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/mgree/ffs/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/mgree/ffs/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/mgree/ffs/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/mgree/ffs/labels{/name}",
+            "releases_url": "https://api.github.com/repos/mgree/ffs/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/mgree/ffs/deployments",
+            "created_at": "2021-06-07T15:22:28Z",
+            "updated_at": "2021-07-21T13:32:46Z",
+            "pushed_at": "2021-07-21T15:05:41Z",
+            "git_url": "git://github.com/mgree/ffs.git",
+            "ssh_url": "git@github.com:mgree/ffs.git",
+            "clone_url": "https://github.com/mgree/ffs.git",
+            "svn_url": "https://github.com/mgree/ffs",
+            "homepage": "https://mgree.github.io/ffs/",
+            "size": 988,
+            "stargazers_count": 110,
+            "watchers_count": 110,
+            "language": "Rust",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": true,
+            "has_pages": true,
+            "forks_count": 3,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 16,
+            "license": {
+              "key": "gpl-3.0",
+              "name": "GNU General Public License v3.0",
+              "spdx_id": "GPL-3.0",
+              "url": "https://api.github.com/licenses/gpl-3.0",
+              "node_id": "MDc6TGljZW5zZTk="
+            },
+            "forks": 3,
+            "open_issues": 16,
+            "watchers": 110,
+            "default_branch": "main"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/44"
+          },
+          "html": {
+            "href": "https://github.com/mgree/ffs/pull/44"
+          },
+          "issue": {
+            "href": "https://api.github.com/repos/mgree/ffs/issues/44"
+          },
+          "comments": {
+            "href": "https://api.github.com/repos/mgree/ffs/issues/44/comments"
+          },
+          "review_comments": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/44/comments"
+          },
+          "review_comment": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/comments{/number}"
+          },
+          "commits": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/44/commits"
+          },
+          "statuses": {
+            "href": "https://api.github.com/repos/mgree/ffs/statuses/4a23bc1b2e17e19768b95a3d0717f15098e10516"
+          }
+        },
+        "author_association": "OWNER",
+        "auto_merge": null,
+        "active_lock_reason": null,
+        "merged": false,
+        "mergeable": null,
+        "rebaseable": null,
+        "mergeable_state": "unknown",
+        "merged_by": null,
+        "comments": 0,
+        "review_comments": 0,
+        "maintainer_can_modify": false,
+        "commits": 3,
+        "additions": 317,
+        "deletions": 41,
+        "changed_files": 12
+      }
+    },
+    "public": true,
+    "created_at": "2021-07-21T15:05:41Z"
+  },
+  {
+    "id": "17251475267",
+    "type": "PushEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "push_id": 7564930938,
+      "size": 1,
+      "distinct_size": 1,
+      "ref": "refs/heads/exit-status",
+      "head": "4a23bc1b2e17e19768b95a3d0717f15098e10516",
+      "before": "286189dea3619adfdd43066548e61caab37cb658",
+      "commits": [
+        {
+          "sha": "4a23bc1b2e17e19768b95a3d0717f15098e10516",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "fix test with new basename-based mountpoint inference",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/ffs/commits/4a23bc1b2e17e19768b95a3d0717f15098e10516"
+        }
+      ]
+    },
+    "public": true,
+    "created_at": "2021-07-21T15:00:42Z"
+  },
+  {
+    "id": "17251397036",
+    "type": "PushEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "push_id": 7564893502,
+      "size": 1,
+      "distinct_size": 1,
+      "ref": "refs/heads/exit-status",
+      "head": "286189dea3619adfdd43066548e61caab37cb658",
+      "before": "8e36dad9618b797c6c02f7ae6ac2b72697b3068a",
+      "commits": [
+        {
+          "sha": "286189dea3619adfdd43066548e61caab37cb658",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "disable test masked by fuser issue",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/ffs/commits/286189dea3619adfdd43066548e61caab37cb658"
+        }
+      ]
+    },
+    "public": true,
+    "created_at": "2021-07-21T14:56:10Z"
+  },
+  {
+    "id": "17251293164",
+    "type": "CreateEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "ref": "exit-status",
+      "ref_type": "branch",
+      "master_branch": "main",
+      "description": "the file filesystem: mount semi-structured data (like JSON) as a Unix filesystem",
+      "pusher_type": "user"
+    },
+    "public": true,
+    "created_at": "2021-07-21T14:50:05Z"
+  },
+  {
+    "id": "17250026213",
+    "type": "IssueCommentEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "action": "created",
+      "issue": {
+        "url": "https://api.github.com/repos/mgree/ffs/issues/42",
+        "repository_url": "https://api.github.com/repos/mgree/ffs",
+        "labels_url": "https://api.github.com/repos/mgree/ffs/issues/42/labels{/name}",
+        "comments_url": "https://api.github.com/repos/mgree/ffs/issues/42/comments",
+        "events_url": "https://api.github.com/repos/mgree/ffs/issues/42/events",
+        "html_url": "https://github.com/mgree/ffs/issues/42",
+        "id": 949192571,
+        "node_id": "MDU6SXNzdWU5NDkxOTI1NzE=",
+        "number": 42,
+        "title": "Invalid mount attempt leaves behind empty directory/member",
+        "user": {
+          "login": "RaphaelWimmer",
+          "id": 382535,
+          "node_id": "MDQ6VXNlcjM4MjUzNQ==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/382535?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/RaphaelWimmer",
+          "html_url": "https://github.com/RaphaelWimmer",
+          "followers_url": "https://api.github.com/users/RaphaelWimmer/followers",
+          "following_url": "https://api.github.com/users/RaphaelWimmer/following{/other_user}",
+          "gists_url": "https://api.github.com/users/RaphaelWimmer/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/RaphaelWimmer/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/RaphaelWimmer/subscriptions",
+          "organizations_url": "https://api.github.com/users/RaphaelWimmer/orgs",
+          "repos_url": "https://api.github.com/users/RaphaelWimmer/repos",
+          "events_url": "https://api.github.com/users/RaphaelWimmer/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/RaphaelWimmer/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "labels": [
+
+        ],
+        "state": "closed",
+        "locked": false,
+        "assignee": null,
+        "assignees": [
+
+        ],
+        "milestone": null,
+        "comments": 1,
+        "created_at": "2021-07-20T23:40:28Z",
+        "updated_at": "2021-07-21T13:34:21Z",
+        "closed_at": "2021-07-21T13:34:21Z",
+        "author_association": "NONE",
+        "active_lock_reason": null,
+        "body": "Trying to mount a JSON file within the virtual filesystem fails (which is ok, I guess):\r\n\r\n> raphael@tukk ~/Downloads> ./ffs -i ffs1.json\r\n> raphael@tukk ~/Downloads> cat ffs1.json\r\n> {\"option\":\"test\"}\r\n> raphael@tukk ~/Downloads> cp ffs1.json ffs1/\r\n> raphael@tukk ~/Downloads> ls ffs1/\r\n> ffs1.json  option\r\n> raphael@tukk ~/Downloads> ./ffs -i ffs1/ffs1.json \r\n> fusermount: bad mount point ffs1/ffs1: Permission denied\r\n> thread 'main' panicked at 'called `Result::unwrap()` on an `Err`\r\n> value: Os { code: 2, kind: NotFound, message: \"No such file or\r\n> directory\" }', src/main.rs:38:41\r\n> note: run with `RUST_BACKTRACE=1` environment variable to display a\r\n> backtrace\r\n\r\nThis actually creates the subdirectory `ffs1/ffs1` but does not mount anything there. Unmounting the filesystem results in an additional entry \"ffs1: {}\" in the json file. I'd suggest that a failed command should not leave behind any new files/members.\r\n",
+        "performed_via_github_app": null
+      },
+      "comment": {
+        "url": "https://api.github.com/repos/mgree/ffs/issues/comments/884194283",
+        "html_url": "https://github.com/mgree/ffs/issues/42#issuecomment-884194283",
+        "issue_url": "https://api.github.com/repos/mgree/ffs/issues/42",
+        "id": 884194283,
+        "node_id": "IC_kwDOFlWphc40s7vr",
+        "user": {
+          "login": "mgree",
+          "id": 505088,
+          "node_id": "MDQ6VXNlcjUwNTA4OA==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mgree",
+          "html_url": "https://github.com/mgree",
+          "followers_url": "https://api.github.com/users/mgree/followers",
+          "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+          "organizations_url": "https://api.github.com/users/mgree/orgs",
+          "repos_url": "https://api.github.com/users/mgree/repos",
+          "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mgree/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "created_at": "2021-07-21T13:34:21Z",
+        "updated_at": "2021-07-21T13:34:21Z",
+        "author_association": "OWNER",
+        "body": "Thanks for this report! I patterned my test off of your example, so it should be good. Can you download a dev build and comment/re-open this if it's not fixed?",
+        "performed_via_github_app": null
+      }
+    },
+    "public": true,
+    "created_at": "2021-07-21T13:34:21Z"
+  },
+  {
+    "id": "17250026321",
+    "type": "IssuesEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "action": "closed",
+      "issue": {
+        "url": "https://api.github.com/repos/mgree/ffs/issues/42",
+        "repository_url": "https://api.github.com/repos/mgree/ffs",
+        "labels_url": "https://api.github.com/repos/mgree/ffs/issues/42/labels{/name}",
+        "comments_url": "https://api.github.com/repos/mgree/ffs/issues/42/comments",
+        "events_url": "https://api.github.com/repos/mgree/ffs/issues/42/events",
+        "html_url": "https://github.com/mgree/ffs/issues/42",
+        "id": 949192571,
+        "node_id": "MDU6SXNzdWU5NDkxOTI1NzE=",
+        "number": 42,
+        "title": "Invalid mount attempt leaves behind empty directory/member",
+        "user": {
+          "login": "RaphaelWimmer",
+          "id": 382535,
+          "node_id": "MDQ6VXNlcjM4MjUzNQ==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/382535?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/RaphaelWimmer",
+          "html_url": "https://github.com/RaphaelWimmer",
+          "followers_url": "https://api.github.com/users/RaphaelWimmer/followers",
+          "following_url": "https://api.github.com/users/RaphaelWimmer/following{/other_user}",
+          "gists_url": "https://api.github.com/users/RaphaelWimmer/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/RaphaelWimmer/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/RaphaelWimmer/subscriptions",
+          "organizations_url": "https://api.github.com/users/RaphaelWimmer/orgs",
+          "repos_url": "https://api.github.com/users/RaphaelWimmer/repos",
+          "events_url": "https://api.github.com/users/RaphaelWimmer/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/RaphaelWimmer/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "labels": [
+
+        ],
+        "state": "closed",
+        "locked": false,
+        "assignee": null,
+        "assignees": [
+
+        ],
+        "milestone": null,
+        "comments": 1,
+        "created_at": "2021-07-20T23:40:28Z",
+        "updated_at": "2021-07-21T13:34:21Z",
+        "closed_at": "2021-07-21T13:34:21Z",
+        "author_association": "NONE",
+        "active_lock_reason": null,
+        "body": "Trying to mount a JSON file within the virtual filesystem fails (which is ok, I guess):\r\n\r\n> raphael@tukk ~/Downloads> ./ffs -i ffs1.json\r\n> raphael@tukk ~/Downloads> cat ffs1.json\r\n> {\"option\":\"test\"}\r\n> raphael@tukk ~/Downloads> cp ffs1.json ffs1/\r\n> raphael@tukk ~/Downloads> ls ffs1/\r\n> ffs1.json  option\r\n> raphael@tukk ~/Downloads> ./ffs -i ffs1/ffs1.json \r\n> fusermount: bad mount point ffs1/ffs1: Permission denied\r\n> thread 'main' panicked at 'called `Result::unwrap()` on an `Err`\r\n> value: Os { code: 2, kind: NotFound, message: \"No such file or\r\n> directory\" }', src/main.rs:38:41\r\n> note: run with `RUST_BACKTRACE=1` environment variable to display a\r\n> backtrace\r\n\r\nThis actually creates the subdirectory `ffs1/ffs1` but does not mount anything there. Unmounting the filesystem results in an additional entry \"ffs1: {}\" in the json file. I'd suggest that a failed command should not leave behind any new files/members.\r\n",
+        "performed_via_github_app": null
+      }
+    },
+    "public": true,
+    "created_at": "2021-07-21T13:34:22Z"
+  },
+  {
+    "id": "17250003102",
+    "type": "DeleteEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "ref": "nested-mount",
+      "ref_type": "branch",
+      "pusher_type": "user"
+    },
+    "public": true,
+    "created_at": "2021-07-21T13:32:52Z"
+  },
+  {
+    "id": "17250001270",
+    "type": "PushEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "push_id": 7564237721,
+      "size": 1,
+      "distinct_size": 1,
+      "ref": "refs/heads/main",
+      "head": "747301c8152b1f8a385299c1fe72a4977c7919cc",
+      "before": "6668f60068fe5f3ece858c9af695b6c6c0a512aa",
+      "commits": [
+        {
+          "sha": "747301c8152b1f8a385299c1fe72a4977c7919cc",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "Fix nested mount bug (#43)\n\n@RaphaelWimmer reports in #42 an issue with nested mounts (which are just disallowed by FUSE and macFUSE), which we were handling poorly.\r\n\r\nThe solution is to check that mount2 worked correctly and report messages.",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/ffs/commits/747301c8152b1f8a385299c1fe72a4977c7919cc"
+        }
+      ]
+    },
+    "public": true,
+    "created_at": "2021-07-21T13:32:45Z"
+  },
+  {
+    "id": "17250001082",
+    "type": "PullRequestEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "action": "closed",
+      "number": 43,
+      "pull_request": {
+        "url": "https://api.github.com/repos/mgree/ffs/pulls/43",
+        "id": 694370698,
+        "node_id": "MDExOlB1bGxSZXF1ZXN0Njk0MzcwNjk4",
+        "html_url": "https://github.com/mgree/ffs/pull/43",
+        "diff_url": "https://github.com/mgree/ffs/pull/43.diff",
+        "patch_url": "https://github.com/mgree/ffs/pull/43.patch",
+        "issue_url": "https://api.github.com/repos/mgree/ffs/issues/43",
+        "number": 43,
+        "state": "closed",
+        "locked": false,
+        "title": "Fix nested mount bug",
+        "user": {
+          "login": "mgree",
+          "id": 505088,
+          "node_id": "MDQ6VXNlcjUwNTA4OA==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mgree",
+          "html_url": "https://github.com/mgree",
+          "followers_url": "https://api.github.com/users/mgree/followers",
+          "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+          "organizations_url": "https://api.github.com/users/mgree/orgs",
+          "repos_url": "https://api.github.com/users/mgree/repos",
+          "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mgree/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "body": "#42 reports an issue with nested mounts (which are just disallowed by FUSE and macFUSE), which we were handling poorly.\r\n\r\nCheck that `mount2` worked correctly and report messages.",
+        "created_at": "2021-07-21T13:27:30Z",
+        "updated_at": "2021-07-21T13:32:44Z",
+        "closed_at": "2021-07-21T13:32:44Z",
+        "merged_at": "2021-07-21T13:32:44Z",
+        "merge_commit_sha": "747301c8152b1f8a385299c1fe72a4977c7919cc",
+        "assignee": null,
+        "assignees": [
+
+        ],
+        "requested_reviewers": [
+
+        ],
+        "requested_teams": [
+
+        ],
+        "labels": [
+
+        ],
+        "milestone": null,
+        "draft": false,
+        "commits_url": "https://api.github.com/repos/mgree/ffs/pulls/43/commits",
+        "review_comments_url": "https://api.github.com/repos/mgree/ffs/pulls/43/comments",
+        "review_comment_url": "https://api.github.com/repos/mgree/ffs/pulls/comments{/number}",
+        "comments_url": "https://api.github.com/repos/mgree/ffs/issues/43/comments",
+        "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/5a9d06b157660daf74449f41ad6f32ec2ff329aa",
+        "head": {
+          "label": "mgree:nested-mount",
+          "ref": "nested-mount",
+          "sha": "5a9d06b157660daf74449f41ad6f32ec2ff329aa",
+          "user": {
+            "login": "mgree",
+            "id": 505088,
+            "node_id": "MDQ6VXNlcjUwNTA4OA==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/mgree",
+            "html_url": "https://github.com/mgree",
+            "followers_url": "https://api.github.com/users/mgree/followers",
+            "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+            "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+            "organizations_url": "https://api.github.com/users/mgree/orgs",
+            "repos_url": "https://api.github.com/users/mgree/repos",
+            "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/mgree/received_events",
+            "type": "User",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 374712709,
+            "node_id": "MDEwOlJlcG9zaXRvcnkzNzQ3MTI3MDk=",
+            "name": "ffs",
+            "full_name": "mgree/ffs",
+            "private": false,
+            "owner": {
+              "login": "mgree",
+              "id": 505088,
+              "node_id": "MDQ6VXNlcjUwNTA4OA==",
+              "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/mgree",
+              "html_url": "https://github.com/mgree",
+              "followers_url": "https://api.github.com/users/mgree/followers",
+              "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+              "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+              "organizations_url": "https://api.github.com/users/mgree/orgs",
+              "repos_url": "https://api.github.com/users/mgree/repos",
+              "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/mgree/received_events",
+              "type": "User",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/mgree/ffs",
+            "description": "the file filesystem: mount semi-structured data (like JSON) as a Unix filesystem",
+            "fork": false,
+            "url": "https://api.github.com/repos/mgree/ffs",
+            "forks_url": "https://api.github.com/repos/mgree/ffs/forks",
+            "keys_url": "https://api.github.com/repos/mgree/ffs/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/mgree/ffs/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/mgree/ffs/teams",
+            "hooks_url": "https://api.github.com/repos/mgree/ffs/hooks",
+            "issue_events_url": "https://api.github.com/repos/mgree/ffs/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/mgree/ffs/events",
+            "assignees_url": "https://api.github.com/repos/mgree/ffs/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/mgree/ffs/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/mgree/ffs/tags",
+            "blobs_url": "https://api.github.com/repos/mgree/ffs/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/mgree/ffs/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/mgree/ffs/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/mgree/ffs/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/mgree/ffs/languages",
+            "stargazers_url": "https://api.github.com/repos/mgree/ffs/stargazers",
+            "contributors_url": "https://api.github.com/repos/mgree/ffs/contributors",
+            "subscribers_url": "https://api.github.com/repos/mgree/ffs/subscribers",
+            "subscription_url": "https://api.github.com/repos/mgree/ffs/subscription",
+            "commits_url": "https://api.github.com/repos/mgree/ffs/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/mgree/ffs/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/mgree/ffs/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/mgree/ffs/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/mgree/ffs/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/mgree/ffs/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/mgree/ffs/merges",
+            "archive_url": "https://api.github.com/repos/mgree/ffs/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/mgree/ffs/downloads",
+            "issues_url": "https://api.github.com/repos/mgree/ffs/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/mgree/ffs/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/mgree/ffs/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/mgree/ffs/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/mgree/ffs/labels{/name}",
+            "releases_url": "https://api.github.com/repos/mgree/ffs/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/mgree/ffs/deployments",
+            "created_at": "2021-06-07T15:22:28Z",
+            "updated_at": "2021-07-16T16:29:00Z",
+            "pushed_at": "2021-07-21T13:32:43Z",
+            "git_url": "git://github.com/mgree/ffs.git",
+            "ssh_url": "git@github.com:mgree/ffs.git",
+            "clone_url": "https://github.com/mgree/ffs.git",
+            "svn_url": "https://github.com/mgree/ffs",
+            "homepage": "https://mgree.github.io/ffs/",
+            "size": 983,
+            "stargazers_count": 110,
+            "watchers_count": 110,
+            "language": "Rust",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": true,
+            "has_pages": true,
+            "forks_count": 3,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 16,
+            "license": {
+              "key": "gpl-3.0",
+              "name": "GNU General Public License v3.0",
+              "spdx_id": "GPL-3.0",
+              "url": "https://api.github.com/licenses/gpl-3.0",
+              "node_id": "MDc6TGljZW5zZTk="
+            },
+            "forks": 3,
+            "open_issues": 16,
+            "watchers": 110,
+            "default_branch": "main"
+          }
+        },
+        "base": {
+          "label": "mgree:main",
+          "ref": "main",
+          "sha": "6668f60068fe5f3ece858c9af695b6c6c0a512aa",
+          "user": {
+            "login": "mgree",
+            "id": 505088,
+            "node_id": "MDQ6VXNlcjUwNTA4OA==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/mgree",
+            "html_url": "https://github.com/mgree",
+            "followers_url": "https://api.github.com/users/mgree/followers",
+            "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+            "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+            "organizations_url": "https://api.github.com/users/mgree/orgs",
+            "repos_url": "https://api.github.com/users/mgree/repos",
+            "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/mgree/received_events",
+            "type": "User",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 374712709,
+            "node_id": "MDEwOlJlcG9zaXRvcnkzNzQ3MTI3MDk=",
+            "name": "ffs",
+            "full_name": "mgree/ffs",
+            "private": false,
+            "owner": {
+              "login": "mgree",
+              "id": 505088,
+              "node_id": "MDQ6VXNlcjUwNTA4OA==",
+              "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/mgree",
+              "html_url": "https://github.com/mgree",
+              "followers_url": "https://api.github.com/users/mgree/followers",
+              "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+              "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+              "organizations_url": "https://api.github.com/users/mgree/orgs",
+              "repos_url": "https://api.github.com/users/mgree/repos",
+              "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/mgree/received_events",
+              "type": "User",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/mgree/ffs",
+            "description": "the file filesystem: mount semi-structured data (like JSON) as a Unix filesystem",
+            "fork": false,
+            "url": "https://api.github.com/repos/mgree/ffs",
+            "forks_url": "https://api.github.com/repos/mgree/ffs/forks",
+            "keys_url": "https://api.github.com/repos/mgree/ffs/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/mgree/ffs/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/mgree/ffs/teams",
+            "hooks_url": "https://api.github.com/repos/mgree/ffs/hooks",
+            "issue_events_url": "https://api.github.com/repos/mgree/ffs/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/mgree/ffs/events",
+            "assignees_url": "https://api.github.com/repos/mgree/ffs/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/mgree/ffs/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/mgree/ffs/tags",
+            "blobs_url": "https://api.github.com/repos/mgree/ffs/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/mgree/ffs/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/mgree/ffs/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/mgree/ffs/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/mgree/ffs/languages",
+            "stargazers_url": "https://api.github.com/repos/mgree/ffs/stargazers",
+            "contributors_url": "https://api.github.com/repos/mgree/ffs/contributors",
+            "subscribers_url": "https://api.github.com/repos/mgree/ffs/subscribers",
+            "subscription_url": "https://api.github.com/repos/mgree/ffs/subscription",
+            "commits_url": "https://api.github.com/repos/mgree/ffs/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/mgree/ffs/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/mgree/ffs/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/mgree/ffs/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/mgree/ffs/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/mgree/ffs/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/mgree/ffs/merges",
+            "archive_url": "https://api.github.com/repos/mgree/ffs/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/mgree/ffs/downloads",
+            "issues_url": "https://api.github.com/repos/mgree/ffs/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/mgree/ffs/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/mgree/ffs/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/mgree/ffs/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/mgree/ffs/labels{/name}",
+            "releases_url": "https://api.github.com/repos/mgree/ffs/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/mgree/ffs/deployments",
+            "created_at": "2021-06-07T15:22:28Z",
+            "updated_at": "2021-07-16T16:29:00Z",
+            "pushed_at": "2021-07-21T13:32:43Z",
+            "git_url": "git://github.com/mgree/ffs.git",
+            "ssh_url": "git@github.com:mgree/ffs.git",
+            "clone_url": "https://github.com/mgree/ffs.git",
+            "svn_url": "https://github.com/mgree/ffs",
+            "homepage": "https://mgree.github.io/ffs/",
+            "size": 983,
+            "stargazers_count": 110,
+            "watchers_count": 110,
+            "language": "Rust",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": true,
+            "has_pages": true,
+            "forks_count": 3,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 16,
+            "license": {
+              "key": "gpl-3.0",
+              "name": "GNU General Public License v3.0",
+              "spdx_id": "GPL-3.0",
+              "url": "https://api.github.com/licenses/gpl-3.0",
+              "node_id": "MDc6TGljZW5zZTk="
+            },
+            "forks": 3,
+            "open_issues": 16,
+            "watchers": 110,
+            "default_branch": "main"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/43"
+          },
+          "html": {
+            "href": "https://github.com/mgree/ffs/pull/43"
+          },
+          "issue": {
+            "href": "https://api.github.com/repos/mgree/ffs/issues/43"
+          },
+          "comments": {
+            "href": "https://api.github.com/repos/mgree/ffs/issues/43/comments"
+          },
+          "review_comments": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/43/comments"
+          },
+          "review_comment": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/comments{/number}"
+          },
+          "commits": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/43/commits"
+          },
+          "statuses": {
+            "href": "https://api.github.com/repos/mgree/ffs/statuses/5a9d06b157660daf74449f41ad6f32ec2ff329aa"
+          }
+        },
+        "author_association": "OWNER",
+        "auto_merge": null,
+        "active_lock_reason": null,
+        "merged": true,
+        "mergeable": null,
+        "rebaseable": null,
+        "mergeable_state": "unknown",
+        "merged_by": {
+          "login": "mgree",
+          "id": 505088,
+          "node_id": "MDQ6VXNlcjUwNTA4OA==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mgree",
+          "html_url": "https://github.com/mgree",
+          "followers_url": "https://api.github.com/users/mgree/followers",
+          "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+          "organizations_url": "https://api.github.com/users/mgree/orgs",
+          "repos_url": "https://api.github.com/users/mgree/repos",
+          "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mgree/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "comments": 0,
+        "review_comments": 0,
+        "maintainer_can_modify": false,
+        "commits": 2,
+        "additions": 183,
+        "deletions": 6,
+        "changed_files": 4
+      }
+    },
+    "public": true,
+    "created_at": "2021-07-21T13:32:44Z"
+  },
+  {
+    "id": "17249918814",
+    "type": "PullRequestEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "action": "opened",
+      "number": 43,
+      "pull_request": {
+        "url": "https://api.github.com/repos/mgree/ffs/pulls/43",
+        "id": 694370698,
+        "node_id": "MDExOlB1bGxSZXF1ZXN0Njk0MzcwNjk4",
+        "html_url": "https://github.com/mgree/ffs/pull/43",
+        "diff_url": "https://github.com/mgree/ffs/pull/43.diff",
+        "patch_url": "https://github.com/mgree/ffs/pull/43.patch",
+        "issue_url": "https://api.github.com/repos/mgree/ffs/issues/43",
+        "number": 43,
+        "state": "open",
+        "locked": false,
+        "title": "Fix nested mount bug",
+        "user": {
+          "login": "mgree",
+          "id": 505088,
+          "node_id": "MDQ6VXNlcjUwNTA4OA==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mgree",
+          "html_url": "https://github.com/mgree",
+          "followers_url": "https://api.github.com/users/mgree/followers",
+          "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+          "organizations_url": "https://api.github.com/users/mgree/orgs",
+          "repos_url": "https://api.github.com/users/mgree/repos",
+          "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mgree/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "body": "#42 reports an issue with nested mounts (which are just disallowed by FUSE and macFUSE), which we were handling poorly.\r\n\r\nCheck that `mount2` worked correctly and report messages.",
+        "created_at": "2021-07-21T13:27:30Z",
+        "updated_at": "2021-07-21T13:27:30Z",
+        "closed_at": null,
+        "merged_at": null,
+        "merge_commit_sha": null,
+        "assignee": null,
+        "assignees": [
+
+        ],
+        "requested_reviewers": [
+
+        ],
+        "requested_teams": [
+
+        ],
+        "labels": [
+
+        ],
+        "milestone": null,
+        "draft": false,
+        "commits_url": "https://api.github.com/repos/mgree/ffs/pulls/43/commits",
+        "review_comments_url": "https://api.github.com/repos/mgree/ffs/pulls/43/comments",
+        "review_comment_url": "https://api.github.com/repos/mgree/ffs/pulls/comments{/number}",
+        "comments_url": "https://api.github.com/repos/mgree/ffs/issues/43/comments",
+        "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/5a9d06b157660daf74449f41ad6f32ec2ff329aa",
+        "head": {
+          "label": "mgree:nested-mount",
+          "ref": "nested-mount",
+          "sha": "5a9d06b157660daf74449f41ad6f32ec2ff329aa",
+          "user": {
+            "login": "mgree",
+            "id": 505088,
+            "node_id": "MDQ6VXNlcjUwNTA4OA==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/mgree",
+            "html_url": "https://github.com/mgree",
+            "followers_url": "https://api.github.com/users/mgree/followers",
+            "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+            "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+            "organizations_url": "https://api.github.com/users/mgree/orgs",
+            "repos_url": "https://api.github.com/users/mgree/repos",
+            "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/mgree/received_events",
+            "type": "User",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 374712709,
+            "node_id": "MDEwOlJlcG9zaXRvcnkzNzQ3MTI3MDk=",
+            "name": "ffs",
+            "full_name": "mgree/ffs",
+            "private": false,
+            "owner": {
+              "login": "mgree",
+              "id": 505088,
+              "node_id": "MDQ6VXNlcjUwNTA4OA==",
+              "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/mgree",
+              "html_url": "https://github.com/mgree",
+              "followers_url": "https://api.github.com/users/mgree/followers",
+              "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+              "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+              "organizations_url": "https://api.github.com/users/mgree/orgs",
+              "repos_url": "https://api.github.com/users/mgree/repos",
+              "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/mgree/received_events",
+              "type": "User",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/mgree/ffs",
+            "description": "the file filesystem: mount semi-structured data (like JSON) as a Unix filesystem",
+            "fork": false,
+            "url": "https://api.github.com/repos/mgree/ffs",
+            "forks_url": "https://api.github.com/repos/mgree/ffs/forks",
+            "keys_url": "https://api.github.com/repos/mgree/ffs/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/mgree/ffs/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/mgree/ffs/teams",
+            "hooks_url": "https://api.github.com/repos/mgree/ffs/hooks",
+            "issue_events_url": "https://api.github.com/repos/mgree/ffs/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/mgree/ffs/events",
+            "assignees_url": "https://api.github.com/repos/mgree/ffs/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/mgree/ffs/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/mgree/ffs/tags",
+            "blobs_url": "https://api.github.com/repos/mgree/ffs/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/mgree/ffs/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/mgree/ffs/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/mgree/ffs/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/mgree/ffs/languages",
+            "stargazers_url": "https://api.github.com/repos/mgree/ffs/stargazers",
+            "contributors_url": "https://api.github.com/repos/mgree/ffs/contributors",
+            "subscribers_url": "https://api.github.com/repos/mgree/ffs/subscribers",
+            "subscription_url": "https://api.github.com/repos/mgree/ffs/subscription",
+            "commits_url": "https://api.github.com/repos/mgree/ffs/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/mgree/ffs/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/mgree/ffs/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/mgree/ffs/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/mgree/ffs/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/mgree/ffs/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/mgree/ffs/merges",
+            "archive_url": "https://api.github.com/repos/mgree/ffs/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/mgree/ffs/downloads",
+            "issues_url": "https://api.github.com/repos/mgree/ffs/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/mgree/ffs/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/mgree/ffs/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/mgree/ffs/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/mgree/ffs/labels{/name}",
+            "releases_url": "https://api.github.com/repos/mgree/ffs/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/mgree/ffs/deployments",
+            "created_at": "2021-06-07T15:22:28Z",
+            "updated_at": "2021-07-16T16:29:00Z",
+            "pushed_at": "2021-07-21T13:27:30Z",
+            "git_url": "git://github.com/mgree/ffs.git",
+            "ssh_url": "git@github.com:mgree/ffs.git",
+            "clone_url": "https://github.com/mgree/ffs.git",
+            "svn_url": "https://github.com/mgree/ffs",
+            "homepage": "https://mgree.github.io/ffs/",
+            "size": 983,
+            "stargazers_count": 110,
+            "watchers_count": 110,
+            "language": "Rust",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": true,
+            "has_pages": true,
+            "forks_count": 3,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 17,
+            "license": {
+              "key": "gpl-3.0",
+              "name": "GNU General Public License v3.0",
+              "spdx_id": "GPL-3.0",
+              "url": "https://api.github.com/licenses/gpl-3.0",
+              "node_id": "MDc6TGljZW5zZTk="
+            },
+            "forks": 3,
+            "open_issues": 17,
+            "watchers": 110,
+            "default_branch": "main"
+          }
+        },
+        "base": {
+          "label": "mgree:main",
+          "ref": "main",
+          "sha": "6668f60068fe5f3ece858c9af695b6c6c0a512aa",
+          "user": {
+            "login": "mgree",
+            "id": 505088,
+            "node_id": "MDQ6VXNlcjUwNTA4OA==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/mgree",
+            "html_url": "https://github.com/mgree",
+            "followers_url": "https://api.github.com/users/mgree/followers",
+            "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+            "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+            "organizations_url": "https://api.github.com/users/mgree/orgs",
+            "repos_url": "https://api.github.com/users/mgree/repos",
+            "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/mgree/received_events",
+            "type": "User",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 374712709,
+            "node_id": "MDEwOlJlcG9zaXRvcnkzNzQ3MTI3MDk=",
+            "name": "ffs",
+            "full_name": "mgree/ffs",
+            "private": false,
+            "owner": {
+              "login": "mgree",
+              "id": 505088,
+              "node_id": "MDQ6VXNlcjUwNTA4OA==",
+              "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/mgree",
+              "html_url": "https://github.com/mgree",
+              "followers_url": "https://api.github.com/users/mgree/followers",
+              "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+              "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+              "organizations_url": "https://api.github.com/users/mgree/orgs",
+              "repos_url": "https://api.github.com/users/mgree/repos",
+              "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/mgree/received_events",
+              "type": "User",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/mgree/ffs",
+            "description": "the file filesystem: mount semi-structured data (like JSON) as a Unix filesystem",
+            "fork": false,
+            "url": "https://api.github.com/repos/mgree/ffs",
+            "forks_url": "https://api.github.com/repos/mgree/ffs/forks",
+            "keys_url": "https://api.github.com/repos/mgree/ffs/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/mgree/ffs/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/mgree/ffs/teams",
+            "hooks_url": "https://api.github.com/repos/mgree/ffs/hooks",
+            "issue_events_url": "https://api.github.com/repos/mgree/ffs/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/mgree/ffs/events",
+            "assignees_url": "https://api.github.com/repos/mgree/ffs/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/mgree/ffs/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/mgree/ffs/tags",
+            "blobs_url": "https://api.github.com/repos/mgree/ffs/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/mgree/ffs/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/mgree/ffs/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/mgree/ffs/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/mgree/ffs/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/mgree/ffs/languages",
+            "stargazers_url": "https://api.github.com/repos/mgree/ffs/stargazers",
+            "contributors_url": "https://api.github.com/repos/mgree/ffs/contributors",
+            "subscribers_url": "https://api.github.com/repos/mgree/ffs/subscribers",
+            "subscription_url": "https://api.github.com/repos/mgree/ffs/subscription",
+            "commits_url": "https://api.github.com/repos/mgree/ffs/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/mgree/ffs/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/mgree/ffs/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/mgree/ffs/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/mgree/ffs/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/mgree/ffs/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/mgree/ffs/merges",
+            "archive_url": "https://api.github.com/repos/mgree/ffs/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/mgree/ffs/downloads",
+            "issues_url": "https://api.github.com/repos/mgree/ffs/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/mgree/ffs/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/mgree/ffs/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/mgree/ffs/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/mgree/ffs/labels{/name}",
+            "releases_url": "https://api.github.com/repos/mgree/ffs/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/mgree/ffs/deployments",
+            "created_at": "2021-06-07T15:22:28Z",
+            "updated_at": "2021-07-16T16:29:00Z",
+            "pushed_at": "2021-07-21T13:27:30Z",
+            "git_url": "git://github.com/mgree/ffs.git",
+            "ssh_url": "git@github.com:mgree/ffs.git",
+            "clone_url": "https://github.com/mgree/ffs.git",
+            "svn_url": "https://github.com/mgree/ffs",
+            "homepage": "https://mgree.github.io/ffs/",
+            "size": 983,
+            "stargazers_count": 110,
+            "watchers_count": 110,
+            "language": "Rust",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": true,
+            "has_pages": true,
+            "forks_count": 3,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 17,
+            "license": {
+              "key": "gpl-3.0",
+              "name": "GNU General Public License v3.0",
+              "spdx_id": "GPL-3.0",
+              "url": "https://api.github.com/licenses/gpl-3.0",
+              "node_id": "MDc6TGljZW5zZTk="
+            },
+            "forks": 3,
+            "open_issues": 17,
+            "watchers": 110,
+            "default_branch": "main"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/43"
+          },
+          "html": {
+            "href": "https://github.com/mgree/ffs/pull/43"
+          },
+          "issue": {
+            "href": "https://api.github.com/repos/mgree/ffs/issues/43"
+          },
+          "comments": {
+            "href": "https://api.github.com/repos/mgree/ffs/issues/43/comments"
+          },
+          "review_comments": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/43/comments"
+          },
+          "review_comment": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/comments{/number}"
+          },
+          "commits": {
+            "href": "https://api.github.com/repos/mgree/ffs/pulls/43/commits"
+          },
+          "statuses": {
+            "href": "https://api.github.com/repos/mgree/ffs/statuses/5a9d06b157660daf74449f41ad6f32ec2ff329aa"
+          }
+        },
+        "author_association": "OWNER",
+        "auto_merge": null,
+        "active_lock_reason": null,
+        "merged": false,
+        "mergeable": null,
+        "rebaseable": null,
+        "mergeable_state": "unknown",
+        "merged_by": null,
+        "comments": 0,
+        "review_comments": 0,
+        "maintainer_can_modify": false,
+        "commits": 2,
+        "additions": 183,
+        "deletions": 6,
+        "changed_files": 4
+      }
+    },
+    "public": true,
+    "created_at": "2021-07-21T13:27:30Z"
+  },
+  {
+    "id": "17249787909",
+    "type": "PushEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "push_id": 7564135783,
+      "size": 1,
+      "distinct_size": 1,
+      "ref": "refs/heads/nested-mount",
+      "head": "5a9d06b157660daf74449f41ad6f32ec2ff329aa",
+      "before": "745aa79018088e81ed3411b4515d00bbf62e51a1",
+      "commits": [
+        {
+          "sha": "5a9d06b157660daf74449f41ad6f32ec2ff329aa",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "record change, fix linux test",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/ffs/commits/5a9d06b157660daf74449f41ad6f32ec2ff329aa"
+        }
+      ]
+    },
+    "public": true,
+    "created_at": "2021-07-21T13:19:10Z"
+  },
+  {
+    "id": "17249659237",
+    "type": "CreateEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 374712709,
+      "name": "mgree/ffs",
+      "url": "https://api.github.com/repos/mgree/ffs"
+    },
+    "payload": {
+      "ref": "nested-mount",
+      "ref_type": "branch",
+      "master_branch": "main",
+      "description": "the file filesystem: mount semi-structured data (like JSON) as a Unix filesystem",
+      "pusher_type": "user"
+    },
+    "public": true,
+    "created_at": "2021-07-21T13:10:54Z"
+  },
+  {
+    "id": "17238022913",
+    "type": "CreateEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 25701929,
+      "name": "mgree/phpenkoder",
+      "url": "https://api.github.com/repos/mgree/phpenkoder"
+    },
+    "payload": {
+      "ref": "1.15.1",
+      "ref_type": "tag",
+      "master_branch": "trunk",
+      "description": "Mirror of https://plugins.trac.wordpress.org/browser/php-enkoder/. Wordpress plugin for obfuscating email addresses.",
+      "pusher_type": "user"
+    },
+    "public": true,
+    "created_at": "2021-07-20T18:22:39Z"
+  },
+  {
+    "id": "17238004887",
+    "type": "IssueCommentEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 25701929,
+      "name": "mgree/phpenkoder",
+      "url": "https://api.github.com/repos/mgree/phpenkoder"
+    },
+    "payload": {
+      "action": "created",
+      "issue": {
+        "url": "https://api.github.com/repos/mgree/phpenkoder/issues/5",
+        "repository_url": "https://api.github.com/repos/mgree/phpenkoder",
+        "labels_url": "https://api.github.com/repos/mgree/phpenkoder/issues/5/labels{/name}",
+        "comments_url": "https://api.github.com/repos/mgree/phpenkoder/issues/5/comments",
+        "events_url": "https://api.github.com/repos/mgree/phpenkoder/issues/5/events",
+        "html_url": "https://github.com/mgree/phpenkoder/pull/5",
+        "id": 948184574,
+        "node_id": "MDExOlB1bGxSZXF1ZXN0NjkzMDYwOTE2",
+        "number": 5,
+        "title": "fix: typos in enk_extract_linktext / LINKTEXT",
+        "user": {
+          "login": "basscl",
+          "id": 4893796,
+          "node_id": "MDQ6VXNlcjQ4OTM3OTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4893796?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/basscl",
+          "html_url": "https://github.com/basscl",
+          "followers_url": "https://api.github.com/users/basscl/followers",
+          "following_url": "https://api.github.com/users/basscl/following{/other_user}",
+          "gists_url": "https://api.github.com/users/basscl/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/basscl/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/basscl/subscriptions",
+          "organizations_url": "https://api.github.com/users/basscl/orgs",
+          "repos_url": "https://api.github.com/users/basscl/repos",
+          "events_url": "https://api.github.com/users/basscl/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/basscl/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "labels": [
+
+        ],
+        "state": "closed",
+        "locked": false,
+        "assignee": null,
+        "assignees": [
+
+        ],
+        "milestone": null,
+        "comments": 0,
+        "created_at": "2021-07-20T02:14:51Z",
+        "updated_at": "2021-07-20T18:21:14Z",
+        "closed_at": "2021-07-20T18:13:32Z",
+        "author_association": "CONTRIBUTOR",
+        "active_lock_reason": null,
+        "pull_request": {
+          "url": "https://api.github.com/repos/mgree/phpenkoder/pulls/5",
+          "html_url": "https://github.com/mgree/phpenkoder/pull/5",
+          "diff_url": "https://github.com/mgree/phpenkoder/pull/5.diff",
+          "patch_url": "https://github.com/mgree/phpenkoder/pull/5.patch"
+        },
+        "body": "line 146 \r\ndefine(\"LINK_TEXT\", \"#/>(.*?)</a#i\");\r\nshould be \r\ndefine(\"LINK_TEXT\", \"#>(.*?)</a#i\");\r\n\r\nText that successfully matches MAILTO_EMAIL '#(<a[^<>]*?href=[\\'\\\"]mailto:[^<>]*?>.*?</a>)#i' will not then match LINK_TEXT \"#/>(.*?)</a#i\" because of an extraneous forward slash (maybe left over from changing the regex delimiter?)\r\n\r\nline 149 \r\n$tmatches = preg_match(LINK_TEXT, $text, $tmatches); //array();\r\nshould be\r\npreg_match(LINK_TEXT, $text, $tmatches);\r\n\r\nThe preg_match function will fill the 3rd parameter with the results of search which is what we want, but assigning the return value of the function to $tmatches as well overwrites this with 0 or 1.\r\n\r\nfixes #4 ",
+        "performed_via_github_app": null
+      },
+      "comment": {
+        "url": "https://api.github.com/repos/mgree/phpenkoder/issues/comments/883600249",
+        "html_url": "https://github.com/mgree/phpenkoder/pull/5#issuecomment-883600249",
+        "issue_url": "https://api.github.com/repos/mgree/phpenkoder/issues/5",
+        "id": 883600249,
+        "node_id": "IC_kwDOAYguKc40qqt5",
+        "user": {
+          "login": "mgree",
+          "id": 505088,
+          "node_id": "MDQ6VXNlcjUwNTA4OA==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mgree",
+          "html_url": "https://github.com/mgree",
+          "followers_url": "https://api.github.com/users/mgree/followers",
+          "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+          "organizations_url": "https://api.github.com/users/mgree/orgs",
+          "repos_url": "https://api.github.com/users/mgree/repos",
+          "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mgree/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "created_at": "2021-07-20T18:21:14Z",
+        "updated_at": "2021-07-20T18:21:14Z",
+        "author_association": "OWNER",
+        "body": "Good catch! I am, honestly, slightly confused that it worked at all before. But all tests pass and this makes sense to me. Thank you!",
+        "performed_via_github_app": null
+      }
+    },
+    "public": true,
+    "created_at": "2021-07-20T18:21:14Z"
+  },
+  {
+    "id": "17237981495",
+    "type": "PushEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 25701929,
+      "name": "mgree/phpenkoder",
+      "url": "https://api.github.com/repos/mgree/phpenkoder"
+    },
+    "payload": {
+      "push_id": 7558346816,
+      "size": 1,
+      "distinct_size": 1,
+      "ref": "refs/heads/trunk",
+      "head": "12de965459cc126b1bb23d5ffafa922c15ed9c17",
+      "before": "921b30692eea0cc77a13e91a44894c8d84679d7b",
+      "commits": [
+        {
+          "sha": "12de965459cc126b1bb23d5ffafa922c15ed9c17",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "release bugfix as 1.15.1",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/phpenkoder/commits/12de965459cc126b1bb23d5ffafa922c15ed9c17"
+        }
+      ]
+    },
+    "public": true,
+    "created_at": "2021-07-20T18:19:23Z"
+  },
+  {
+    "id": "17237908668",
+    "type": "PushEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 25701929,
+      "name": "mgree/phpenkoder",
+      "url": "https://api.github.com/repos/mgree/phpenkoder"
+    },
+    "payload": {
+      "push_id": 7558312211,
+      "size": 2,
+      "distinct_size": 2,
+      "ref": "refs/heads/trunk",
+      "head": "921b30692eea0cc77a13e91a44894c8d84679d7b",
+      "before": "7932e76ddc415a31659818489302aecc9ce3fb1d",
+      "commits": [
+        {
+          "sha": "0c6679e654be7303a735d4bb330897bcca3677a3",
+          "author": {
+            "email": "eileenmack@gmail.com",
+            "name": "Eileen Mack"
+          },
+          "message": "fix: typos in enk_extract_linktext / LINKTEXT",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/phpenkoder/commits/0c6679e654be7303a735d4bb330897bcca3677a3"
+        },
+        {
+          "sha": "921b30692eea0cc77a13e91a44894c8d84679d7b",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "Merge pull request #5 from basscl/bugfix\n\nfix: typos in enk_extract_linktext / LINKTEXT",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/phpenkoder/commits/921b30692eea0cc77a13e91a44894c8d84679d7b"
+        }
+      ]
+    },
+    "public": true,
+    "created_at": "2021-07-20T18:13:34Z"
+  },
+  {
+    "id": "17237908465",
+    "type": "PullRequestEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 25701929,
+      "name": "mgree/phpenkoder",
+      "url": "https://api.github.com/repos/mgree/phpenkoder"
+    },
+    "payload": {
+      "action": "closed",
+      "number": 5,
+      "pull_request": {
+        "url": "https://api.github.com/repos/mgree/phpenkoder/pulls/5",
+        "id": 693060916,
+        "node_id": "MDExOlB1bGxSZXF1ZXN0NjkzMDYwOTE2",
+        "html_url": "https://github.com/mgree/phpenkoder/pull/5",
+        "diff_url": "https://github.com/mgree/phpenkoder/pull/5.diff",
+        "patch_url": "https://github.com/mgree/phpenkoder/pull/5.patch",
+        "issue_url": "https://api.github.com/repos/mgree/phpenkoder/issues/5",
+        "number": 5,
+        "state": "closed",
+        "locked": false,
+        "title": "fix: typos in enk_extract_linktext / LINKTEXT",
+        "user": {
+          "login": "basscl",
+          "id": 4893796,
+          "node_id": "MDQ6VXNlcjQ4OTM3OTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4893796?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/basscl",
+          "html_url": "https://github.com/basscl",
+          "followers_url": "https://api.github.com/users/basscl/followers",
+          "following_url": "https://api.github.com/users/basscl/following{/other_user}",
+          "gists_url": "https://api.github.com/users/basscl/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/basscl/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/basscl/subscriptions",
+          "organizations_url": "https://api.github.com/users/basscl/orgs",
+          "repos_url": "https://api.github.com/users/basscl/repos",
+          "events_url": "https://api.github.com/users/basscl/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/basscl/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "body": "line 146 \r\ndefine(\"LINK_TEXT\", \"#/>(.*?)</a#i\");\r\nshould be \r\ndefine(\"LINK_TEXT\", \"#>(.*?)</a#i\");\r\n\r\nText that successfully matches MAILTO_EMAIL '#(<a[^<>]*?href=[\\'\\\"]mailto:[^<>]*?>.*?</a>)#i' will not then match LINK_TEXT \"#/>(.*?)</a#i\" because of an extraneous forward slash (maybe left over from changing the regex delimiter?)\r\n\r\nline 149 \r\n$tmatches = preg_match(LINK_TEXT, $text, $tmatches); //array();\r\nshould be\r\npreg_match(LINK_TEXT, $text, $tmatches);\r\n\r\nThe preg_match function will fill the 3rd parameter with the results of search which is what we want, but assigning the return value of the function to $tmatches as well overwrites this with 0 or 1.\r\n\r\nfixes #4 ",
+        "created_at": "2021-07-20T02:14:51Z",
+        "updated_at": "2021-07-20T18:13:33Z",
+        "closed_at": "2021-07-20T18:13:32Z",
+        "merged_at": "2021-07-20T18:13:32Z",
+        "merge_commit_sha": "921b30692eea0cc77a13e91a44894c8d84679d7b",
+        "assignee": null,
+        "assignees": [
+
+        ],
+        "requested_reviewers": [
+
+        ],
+        "requested_teams": [
+
+        ],
+        "labels": [
+
+        ],
+        "milestone": null,
+        "draft": false,
+        "commits_url": "https://api.github.com/repos/mgree/phpenkoder/pulls/5/commits",
+        "review_comments_url": "https://api.github.com/repos/mgree/phpenkoder/pulls/5/comments",
+        "review_comment_url": "https://api.github.com/repos/mgree/phpenkoder/pulls/comments{/number}",
+        "comments_url": "https://api.github.com/repos/mgree/phpenkoder/issues/5/comments",
+        "statuses_url": "https://api.github.com/repos/mgree/phpenkoder/statuses/0c6679e654be7303a735d4bb330897bcca3677a3",
+        "head": {
+          "label": "basscl:bugfix",
+          "ref": "bugfix",
+          "sha": "0c6679e654be7303a735d4bb330897bcca3677a3",
+          "user": {
+            "login": "basscl",
+            "id": 4893796,
+            "node_id": "MDQ6VXNlcjQ4OTM3OTY=",
+            "avatar_url": "https://avatars.githubusercontent.com/u/4893796?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/basscl",
+            "html_url": "https://github.com/basscl",
+            "followers_url": "https://api.github.com/users/basscl/followers",
+            "following_url": "https://api.github.com/users/basscl/following{/other_user}",
+            "gists_url": "https://api.github.com/users/basscl/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/basscl/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/basscl/subscriptions",
+            "organizations_url": "https://api.github.com/users/basscl/orgs",
+            "repos_url": "https://api.github.com/users/basscl/repos",
+            "events_url": "https://api.github.com/users/basscl/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/basscl/received_events",
+            "type": "User",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 387645420,
+            "node_id": "MDEwOlJlcG9zaXRvcnkzODc2NDU0MjA=",
+            "name": "phpenkoder",
+            "full_name": "basscl/phpenkoder",
+            "private": false,
+            "owner": {
+              "login": "basscl",
+              "id": 4893796,
+              "node_id": "MDQ6VXNlcjQ4OTM3OTY=",
+              "avatar_url": "https://avatars.githubusercontent.com/u/4893796?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/basscl",
+              "html_url": "https://github.com/basscl",
+              "followers_url": "https://api.github.com/users/basscl/followers",
+              "following_url": "https://api.github.com/users/basscl/following{/other_user}",
+              "gists_url": "https://api.github.com/users/basscl/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/basscl/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/basscl/subscriptions",
+              "organizations_url": "https://api.github.com/users/basscl/orgs",
+              "repos_url": "https://api.github.com/users/basscl/repos",
+              "events_url": "https://api.github.com/users/basscl/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/basscl/received_events",
+              "type": "User",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/basscl/phpenkoder",
+            "description": "Mirror of https://plugins.trac.wordpress.org/browser/php-enkoder/. Wordpress plugin for obfuscating email addresses.",
+            "fork": true,
+            "url": "https://api.github.com/repos/basscl/phpenkoder",
+            "forks_url": "https://api.github.com/repos/basscl/phpenkoder/forks",
+            "keys_url": "https://api.github.com/repos/basscl/phpenkoder/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/basscl/phpenkoder/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/basscl/phpenkoder/teams",
+            "hooks_url": "https://api.github.com/repos/basscl/phpenkoder/hooks",
+            "issue_events_url": "https://api.github.com/repos/basscl/phpenkoder/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/basscl/phpenkoder/events",
+            "assignees_url": "https://api.github.com/repos/basscl/phpenkoder/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/basscl/phpenkoder/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/basscl/phpenkoder/tags",
+            "blobs_url": "https://api.github.com/repos/basscl/phpenkoder/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/basscl/phpenkoder/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/basscl/phpenkoder/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/basscl/phpenkoder/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/basscl/phpenkoder/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/basscl/phpenkoder/languages",
+            "stargazers_url": "https://api.github.com/repos/basscl/phpenkoder/stargazers",
+            "contributors_url": "https://api.github.com/repos/basscl/phpenkoder/contributors",
+            "subscribers_url": "https://api.github.com/repos/basscl/phpenkoder/subscribers",
+            "subscription_url": "https://api.github.com/repos/basscl/phpenkoder/subscription",
+            "commits_url": "https://api.github.com/repos/basscl/phpenkoder/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/basscl/phpenkoder/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/basscl/phpenkoder/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/basscl/phpenkoder/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/basscl/phpenkoder/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/basscl/phpenkoder/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/basscl/phpenkoder/merges",
+            "archive_url": "https://api.github.com/repos/basscl/phpenkoder/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/basscl/phpenkoder/downloads",
+            "issues_url": "https://api.github.com/repos/basscl/phpenkoder/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/basscl/phpenkoder/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/basscl/phpenkoder/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/basscl/phpenkoder/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/basscl/phpenkoder/labels{/name}",
+            "releases_url": "https://api.github.com/repos/basscl/phpenkoder/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/basscl/phpenkoder/deployments",
+            "created_at": "2021-07-20T02:09:53Z",
+            "updated_at": "2021-07-20T02:09:54Z",
+            "pushed_at": "2021-07-20T02:13:07Z",
+            "git_url": "git://github.com/basscl/phpenkoder.git",
+            "ssh_url": "git@github.com:basscl/phpenkoder.git",
+            "clone_url": "https://github.com/basscl/phpenkoder.git",
+            "svn_url": "https://github.com/basscl/phpenkoder",
+            "homepage": "http://www.weaselhat.com/phpenkoder/",
+            "size": 46,
+            "stargazers_count": 0,
+            "watchers_count": 0,
+            "language": null,
+            "has_issues": false,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": false,
+            "has_pages": false,
+            "forks_count": 0,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 0,
+            "license": {
+              "key": "bsd-3-clause",
+              "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+              "spdx_id": "BSD-3-Clause",
+              "url": "https://api.github.com/licenses/bsd-3-clause",
+              "node_id": "MDc6TGljZW5zZTU="
+            },
+            "forks": 0,
+            "open_issues": 0,
+            "watchers": 0,
+            "default_branch": "trunk"
+          }
+        },
+        "base": {
+          "label": "mgree:trunk",
+          "ref": "trunk",
+          "sha": "7932e76ddc415a31659818489302aecc9ce3fb1d",
+          "user": {
+            "login": "mgree",
+            "id": 505088,
+            "node_id": "MDQ6VXNlcjUwNTA4OA==",
+            "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/mgree",
+            "html_url": "https://github.com/mgree",
+            "followers_url": "https://api.github.com/users/mgree/followers",
+            "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+            "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+            "organizations_url": "https://api.github.com/users/mgree/orgs",
+            "repos_url": "https://api.github.com/users/mgree/repos",
+            "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/mgree/received_events",
+            "type": "User",
+            "site_admin": false
+          },
+          "repo": {
+            "id": 25701929,
+            "node_id": "MDEwOlJlcG9zaXRvcnkyNTcwMTkyOQ==",
+            "name": "phpenkoder",
+            "full_name": "mgree/phpenkoder",
+            "private": false,
+            "owner": {
+              "login": "mgree",
+              "id": 505088,
+              "node_id": "MDQ6VXNlcjUwNTA4OA==",
+              "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/mgree",
+              "html_url": "https://github.com/mgree",
+              "followers_url": "https://api.github.com/users/mgree/followers",
+              "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+              "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+              "organizations_url": "https://api.github.com/users/mgree/orgs",
+              "repos_url": "https://api.github.com/users/mgree/repos",
+              "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/mgree/received_events",
+              "type": "User",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/mgree/phpenkoder",
+            "description": "Mirror of https://plugins.trac.wordpress.org/browser/php-enkoder/. Wordpress plugin for obfuscating email addresses.",
+            "fork": false,
+            "url": "https://api.github.com/repos/mgree/phpenkoder",
+            "forks_url": "https://api.github.com/repos/mgree/phpenkoder/forks",
+            "keys_url": "https://api.github.com/repos/mgree/phpenkoder/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/mgree/phpenkoder/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/mgree/phpenkoder/teams",
+            "hooks_url": "https://api.github.com/repos/mgree/phpenkoder/hooks",
+            "issue_events_url": "https://api.github.com/repos/mgree/phpenkoder/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/mgree/phpenkoder/events",
+            "assignees_url": "https://api.github.com/repos/mgree/phpenkoder/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/mgree/phpenkoder/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/mgree/phpenkoder/tags",
+            "blobs_url": "https://api.github.com/repos/mgree/phpenkoder/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/mgree/phpenkoder/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/mgree/phpenkoder/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/mgree/phpenkoder/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/mgree/phpenkoder/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/mgree/phpenkoder/languages",
+            "stargazers_url": "https://api.github.com/repos/mgree/phpenkoder/stargazers",
+            "contributors_url": "https://api.github.com/repos/mgree/phpenkoder/contributors",
+            "subscribers_url": "https://api.github.com/repos/mgree/phpenkoder/subscribers",
+            "subscription_url": "https://api.github.com/repos/mgree/phpenkoder/subscription",
+            "commits_url": "https://api.github.com/repos/mgree/phpenkoder/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/mgree/phpenkoder/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/mgree/phpenkoder/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/mgree/phpenkoder/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/mgree/phpenkoder/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/mgree/phpenkoder/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/mgree/phpenkoder/merges",
+            "archive_url": "https://api.github.com/repos/mgree/phpenkoder/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/mgree/phpenkoder/downloads",
+            "issues_url": "https://api.github.com/repos/mgree/phpenkoder/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/mgree/phpenkoder/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/mgree/phpenkoder/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/mgree/phpenkoder/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/mgree/phpenkoder/labels{/name}",
+            "releases_url": "https://api.github.com/repos/mgree/phpenkoder/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/mgree/phpenkoder/deployments",
+            "created_at": "2014-10-24T18:23:13Z",
+            "updated_at": "2021-07-10T12:53:59Z",
+            "pushed_at": "2021-07-20T18:13:32Z",
+            "git_url": "git://github.com/mgree/phpenkoder.git",
+            "ssh_url": "git@github.com:mgree/phpenkoder.git",
+            "clone_url": "https://github.com/mgree/phpenkoder.git",
+            "svn_url": "https://github.com/mgree/phpenkoder",
+            "homepage": "http://www.weaselhat.com/phpenkoder/",
+            "size": 45,
+            "stargazers_count": 2,
+            "watchers_count": 2,
+            "language": "PHP",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": false,
+            "has_pages": false,
+            "forks_count": 4,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 2,
+            "license": {
+              "key": "bsd-3-clause",
+              "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+              "spdx_id": "BSD-3-Clause",
+              "url": "https://api.github.com/licenses/bsd-3-clause",
+              "node_id": "MDc6TGljZW5zZTU="
+            },
+            "forks": 4,
+            "open_issues": 2,
+            "watchers": 2,
+            "default_branch": "trunk"
+          }
+        },
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/mgree/phpenkoder/pulls/5"
+          },
+          "html": {
+            "href": "https://github.com/mgree/phpenkoder/pull/5"
+          },
+          "issue": {
+            "href": "https://api.github.com/repos/mgree/phpenkoder/issues/5"
+          },
+          "comments": {
+            "href": "https://api.github.com/repos/mgree/phpenkoder/issues/5/comments"
+          },
+          "review_comments": {
+            "href": "https://api.github.com/repos/mgree/phpenkoder/pulls/5/comments"
+          },
+          "review_comment": {
+            "href": "https://api.github.com/repos/mgree/phpenkoder/pulls/comments{/number}"
+          },
+          "commits": {
+            "href": "https://api.github.com/repos/mgree/phpenkoder/pulls/5/commits"
+          },
+          "statuses": {
+            "href": "https://api.github.com/repos/mgree/phpenkoder/statuses/0c6679e654be7303a735d4bb330897bcca3677a3"
+          }
+        },
+        "author_association": "NONE",
+        "auto_merge": null,
+        "active_lock_reason": null,
+        "merged": true,
+        "mergeable": null,
+        "rebaseable": null,
+        "mergeable_state": "unknown",
+        "merged_by": {
+          "login": "mgree",
+          "id": 505088,
+          "node_id": "MDQ6VXNlcjUwNTA4OA==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/505088?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/mgree",
+          "html_url": "https://github.com/mgree",
+          "followers_url": "https://api.github.com/users/mgree/followers",
+          "following_url": "https://api.github.com/users/mgree/following{/other_user}",
+          "gists_url": "https://api.github.com/users/mgree/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/mgree/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/mgree/subscriptions",
+          "organizations_url": "https://api.github.com/users/mgree/orgs",
+          "repos_url": "https://api.github.com/users/mgree/repos",
+          "events_url": "https://api.github.com/users/mgree/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/mgree/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "comments": 0,
+        "review_comments": 0,
+        "maintainer_can_modify": false,
+        "commits": 1,
+        "additions": 2,
+        "deletions": 2,
+        "changed_files": 1
+      }
+    },
+    "public": true,
+    "created_at": "2021-07-20T18:13:33Z"
+  },
+  {
+    "id": "17237908447",
+    "type": "IssuesEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 25701929,
+      "name": "mgree/phpenkoder",
+      "url": "https://api.github.com/repos/mgree/phpenkoder"
+    },
+    "payload": {
+      "action": "closed",
+      "issue": {
+        "url": "https://api.github.com/repos/mgree/phpenkoder/issues/4",
+        "repository_url": "https://api.github.com/repos/mgree/phpenkoder",
+        "labels_url": "https://api.github.com/repos/mgree/phpenkoder/issues/4/labels{/name}",
+        "comments_url": "https://api.github.com/repos/mgree/phpenkoder/issues/4/comments",
+        "events_url": "https://api.github.com/repos/mgree/phpenkoder/issues/4/events",
+        "html_url": "https://github.com/mgree/phpenkoder/issues/4",
+        "id": 948184049,
+        "node_id": "MDU6SXNzdWU5NDgxODQwNDk=",
+        "number": 4,
+        "title": "typos in enk_extract_linktext / LINKTEXT?",
+        "user": {
+          "login": "basscl",
+          "id": 4893796,
+          "node_id": "MDQ6VXNlcjQ4OTM3OTY=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/4893796?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/basscl",
+          "html_url": "https://github.com/basscl",
+          "followers_url": "https://api.github.com/users/basscl/followers",
+          "following_url": "https://api.github.com/users/basscl/following{/other_user}",
+          "gists_url": "https://api.github.com/users/basscl/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/basscl/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/basscl/subscriptions",
+          "organizations_url": "https://api.github.com/users/basscl/orgs",
+          "repos_url": "https://api.github.com/users/basscl/repos",
+          "events_url": "https://api.github.com/users/basscl/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/basscl/received_events",
+          "type": "User",
+          "site_admin": false
+        },
+        "labels": [
+
+        ],
+        "state": "closed",
+        "locked": false,
+        "assignee": null,
+        "assignees": [
+
+        ],
+        "milestone": null,
+        "comments": 0,
+        "created_at": "2021-07-20T02:13:33Z",
+        "updated_at": "2021-07-20T18:13:32Z",
+        "closed_at": "2021-07-20T18:13:32Z",
+        "author_association": "NONE",
+        "active_lock_reason": null,
+        "body": "I'm getting the error:\r\nNotice: Undefined offset: 1 in .../wp-content/plugins/php-enkoder/enkoder.php on line 150\r\nwhen phpenkoder processes mailto links.",
+        "performed_via_github_app": null
+      }
+    },
+    "public": true,
+    "created_at": "2021-07-20T18:13:33Z"
+  },
+  {
+    "id": "17236074877",
+    "type": "PushEvent",
+    "actor": {
+      "id": 505088,
+      "login": "mgree",
+      "display_login": "mgree",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mgree",
+      "avatar_url": "https://avatars.githubusercontent.com/u/505088?"
+    },
+    "repo": {
+      "id": 279703846,
+      "name": "mgree/mgt",
+      "url": "https://api.github.com/repos/mgree/mgt"
+    },
+    "payload": {
+      "push_id": 7557438842,
+      "size": 24,
+      "distinct_size": 24,
+      "ref": "refs/heads/main",
+      "head": "a67cdc3def907bd9e1c796ca4925d0410f4a5ac1",
+      "before": "0985185ccd3e000a724713404e088b4e26269b1d",
+      "commits": [
+        {
+          "sha": "a701775f14c2f881b3ff101dfe0054bbf09256d7",
+          "author": {
+            "email": "a.guha@northeastern.edu",
+            "name": "Arjun Guha"
+          },
+          "message": "Hacks for paper",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/a701775f14c2f881b3ff101dfe0054bbf09256d7"
+        },
+        {
+          "sha": "25744cfbc87bdecb3a0b58dc2a530b81f5759c67",
+          "author": {
+            "email": "a.guha@northeastern.edu",
+            "name": "Arjun Guha"
+          },
+          "message": "more hacks",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/25744cfbc87bdecb3a0b58dc2a530b81f5759c67"
+        },
+        {
+          "sha": "c0d77ed52045ddeb799588fe0392131902dc63b8",
+          "author": {
+            "email": "a.guha@northeastern.edu",
+            "name": "Arjun Guha"
+          },
+          "message": "Programming champion",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/c0d77ed52045ddeb799588fe0392131902dc63b8"
+        },
+        {
+          "sha": "19fc87daa47ad94d0948c27782109ff63a74b66d",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "clippy warnings",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/19fc87daa47ad94d0948c27782109ff63a74b66d"
+        },
+        {
+          "sha": "7a16e0d4e4ac940fa9c43ee9628143242adeda3b",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "more clippy",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/7a16e0d4e4ac940fa9c43ee9628143242adeda3b"
+        },
+        {
+          "sha": "4b80e53ae41e49020ef8a9230973123e3c11ed4d",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "Switch to OrdMap and OrdSet, to ensure determinism. We're still using\nhashes to name variations, but all internal work is based on\norderings, which ought (and seem) to be entirely deterministic.",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/4b80e53ae41e49020ef8a9230973123e3c11ed4d"
+        },
+        {
+          "sha": "36e0971cbc8e2bb2ac582ab5b75b4d9041ff536c",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "adversarial examples",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/36e0971cbc8e2bb2ac582ab5b75b4d9041ff536c"
+        },
+        {
+          "sha": "fc330f426ee96a796c214be80ee1f3a5c8bdfb49",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "update travis ocaml",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/fc330f426ee96a796c214be80ee1f3a5c8bdfb49"
+        },
+        {
+          "sha": "15ae31152ffa1c42ef9b01c8338be71f4008070a",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "add gh actions",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/15ae31152ffa1c42ef9b01c8338be71f4008070a"
+        },
+        {
+          "sha": "fa9f8c11b832d0466f561e0cda74a4fc5679cce3",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "drop upgrade line",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/fa9f8c11b832d0466f561e0cda74a4fc5679cce3"
+        },
+        {
+          "sha": "059b71141bbe4aaaeecf533345b8b79c25b6bf49",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "consolidate build and test; no caching",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/059b71141bbe4aaaeecf533345b8b79c25b6bf49"
+        },
+        {
+          "sha": "aa5d73a934476ac89d6aff8a94b033209563da12",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "moving from travis to gh actions",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/aa5d73a934476ac89d6aff8a94b033209563da12"
+        },
+        {
+          "sha": "89ac6688de755f79530cea2fa2751145a2a04bc7",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "more examples [ci skip]",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/89ac6688de755f79530cea2fa2751145a2a04bc7"
+        },
+        {
+          "sha": "2692b58ecae20139e2ace3e3313c5c7678fd8599",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "clippy",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/2692b58ecae20139e2ace3e3313c5c7678fd8599"
+        },
+        {
+          "sha": "2307b04f71e4f62ac89327c03059ea1b7552ab4a",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "clippy satisfied, modulo lalrpop",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/2307b04f71e4f62ac89327c03059ea1b7552ab4a"
+        },
+        {
+          "sha": "d479657a3f287a4d46a3bf3a804781d0cafb46d8",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "more examples, confirming mgt produces failing programs",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/d479657a3f287a4d46a3bf3a804781d0cafb46d8"
+        },
+        {
+          "sha": "cebb8953f3622dba29c7de94b0c35c7e972039a0",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "clean up cli, pretty print doomed coercions",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/cebb8953f3622dba29c7de94b0c35c7e972039a0"
+        },
+        {
+          "sha": "34111accfc7744eabff3eeea7d87eedb839a24cf",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "merge main",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/34111accfc7744eabff3eeea7d87eedb839a24cf"
+        },
+        {
+          "sha": "d6b7ca46b775c12d7f3c027f44da9f52cca75e7d",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "unit tests passing, integration tests failing",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/d6b7ca46b775c12d7f3c027f44da9f52cca75e7d"
+        },
+        {
+          "sha": "43ce474123acc0c2218c0174436c731c4ae7636a",
+          "author": {
+            "email": "michael.greenberg@pomona.edu",
+            "name": "Michael Greenberg"
+          },
+          "message": "integration tests passing",
+          "distinct": true,
+          "url": "https://api.github.com/repos/mgree/mgt/commits/43ce474123acc0c2218c0174436c731c4ae7636a"
+        }
+      ]
+    },
+    "public": true,
+    "created_at": "2021-07-20T15:54:27Z"
+  }
+]

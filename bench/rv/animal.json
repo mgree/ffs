@@ -1,0 +1,317 @@
+[
+  {
+    "mandal": 1, 
+    "meter": "Trishtup", 
+    "sukta": 162, 
+    "sungby": "Dirghatamas Auchathya", 
+    "sungbycategory": "human male", 
+    "sungfor": "Horse", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 1, 
+    "meter": "Jagati", 
+    "sukta": 162, 
+    "sungby": "Dirghatamas Auchathya", 
+    "sungbycategory": "human male", 
+    "sungfor": "Horse", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 2, 
+    "meter": "Jagati", 
+    "sukta": 42, 
+    "sungby": "Gritasmad Bhargav Shaunak", 
+    "sungbycategory": "human male", 
+    "sungfor": "Birds", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 2, 
+    "meter": "Shakchari", 
+    "sukta": 42, 
+    "sungby": "Gritasmad Bhargav Shaunak", 
+    "sungbycategory": "human male", 
+    "sungfor": "Birds", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 3, 
+    "meter": "Trishtup", 
+    "sukta": 20, 
+    "sungby": "Gathi Kaushik", 
+    "sungbycategory": "human male", 
+    "sungfor": "Dadhikra", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 4, 
+    "meter": "Trishtup", 
+    "sukta": 26, 
+    "sungby": "Vamadev Gautam", 
+    "sungbycategory": "human male", 
+    "sungfor": "Hawk", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 4, 
+    "meter": "Trishtup", 
+    "sukta": 27, 
+    "sungby": "Vamadev Gautam", 
+    "sungbycategory": "human male", 
+    "sungfor": "Hawk", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 4, 
+    "meter": "Trishtup", 
+    "sukta": 38, 
+    "sungby": "Vamadev Gautam", 
+    "sungbycategory": "human male", 
+    "sungfor": "Dadhikra", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 4, 
+    "meter": "Trishtup", 
+    "sukta": 39, 
+    "sungby": "Vamadev Gautam", 
+    "sungbycategory": "human male", 
+    "sungfor": "Dadhikra", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 4, 
+    "meter": "Anushtup", 
+    "sukta": 39, 
+    "sungby": "Vamadev Gautam", 
+    "sungbycategory": "human male", 
+    "sungfor": "Dadhikra", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 4, 
+    "meter": "Trishtup", 
+    "sukta": 40, 
+    "sungby": "Vamadev Gautam", 
+    "sungbycategory": "human male", 
+    "sungfor": "Dadhikra", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 4, 
+    "meter": "Jagati", 
+    "sukta": 40, 
+    "sungby": "Vamadev Gautam", 
+    "sungbycategory": "human male", 
+    "sungfor": "Dadhikra", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 4, 
+    "meter": "Anushtup", 
+    "sukta": 57, 
+    "sungby": "Vamadev Gautam", 
+    "sungbycategory": "human male", 
+    "sungfor": "Ox", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 4, 
+    "meter": "Ushnik", 
+    "sukta": 57, 
+    "sungby": "Vamadev Gautam", 
+    "sungbycategory": "human male", 
+    "sungfor": "Ox", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 5, 
+    "meter": "Trishtup", 
+    "sukta": 43, 
+    "sungby": "Atri Bhaum", 
+    "sungbycategory": "human male", 
+    "sungfor": "Cow", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 5, 
+    "meter": "Trishtup", 
+    "sukta": 45, 
+    "sungby": "Sadaprin Atreya", 
+    "sungbycategory": "human male", 
+    "sungfor": "Sarama", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 6, 
+    "meter": "Trishtup", 
+    "sukta": 28, 
+    "sungby": "Bharadwaj Barhaspatya", 
+    "sungbycategory": "human male", 
+    "sungfor": "Cow", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 6, 
+    "meter": "Anushtup", 
+    "sukta": 28, 
+    "sungby": "Bharadwaj Barhaspatya", 
+    "sungbycategory": "human male", 
+    "sungfor": "Cow", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 6, 
+    "meter": "Kakup", 
+    "sukta": 48, 
+    "sungby": "Shanyu Bharadwaj", 
+    "sungbycategory": "human male", 
+    "sungfor": "Cow", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 6, 
+    "meter": "Ushnik", 
+    "sukta": 48, 
+    "sungby": "Shanyu Bharadwaj", 
+    "sungbycategory": "human male", 
+    "sungfor": "Cow", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 6, 
+    "meter": "Trishtup", 
+    "sukta": 50, 
+    "sungby": "Rijishwa Bharadwaj", 
+    "sungbycategory": "human male", 
+    "sungfor": "Cow", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 6, 
+    "meter": "Jagati", 
+    "sukta": 75, 
+    "sungby": "Payu Bharadwaj", 
+    "sungbycategory": "human male", 
+    "sungfor": "Horse", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 7, 
+    "meter": "Jagati", 
+    "sukta": 44, 
+    "sungby": "Vasishth Maitravaruni", 
+    "sungbycategory": "human male", 
+    "sungfor": "Dadhikra", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 7, 
+    "meter": "Trishtup", 
+    "sukta": 44, 
+    "sungby": "Vasishth Maitravaruni", 
+    "sungbycategory": "human male", 
+    "sungfor": "Dadhikra", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 7, 
+    "meter": "Brihati", 
+    "sukta": 55, 
+    "sungby": "Vasishth Maitravaruni", 
+    "sungbycategory": "human male", 
+    "sungfor": "Sarama", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 7, 
+    "meter": "Trishtup", 
+    "sukta": 103, 
+    "sungby": "Vasishth Maitravaruni", 
+    "sungbycategory": "human male", 
+    "sungfor": "Frogs", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 7, 
+    "meter": "Anushtup", 
+    "sukta": 103, 
+    "sungby": "Vasishth Maitravaruni", 
+    "sungbycategory": "human male", 
+    "sungfor": "Frogs", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 8, 
+    "meter": "Trishtup", 
+    "sukta": 101, 
+    "sungby": "Jamadagni Bhargav", 
+    "sungbycategory": "human male", 
+    "sungfor": "Cow", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 10, 
+    "meter": "Trishtup", 
+    "sukta": 14, 
+    "sungby": "Yama Vaivasvat", 
+    "sungbycategory": "divine male", 
+    "sungfor": "Dogs", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 10, 
+    "meter": "Anushtup", 
+    "sukta": 19, 
+    "sungby": "Mathit Yamayan", 
+    "sungbycategory": "human male", 
+    "sungfor": "Cow", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 10, 
+    "meter": "Jagati", 
+    "sukta": 65, 
+    "sungby": "Vasukarn Vasukra", 
+    "sungbycategory": "human male", 
+    "sungfor": "Cow", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 10, 
+    "meter": "Trishtup", 
+    "sukta": 101, 
+    "sungby": "Budh Saumya", 
+    "sungbycategory": "divine male", 
+    "sungfor": "Dadhikra", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 10, 
+    "meter": "Trishtup", 
+    "sukta": 108, 
+    "sungby": "Pani", 
+    "sungbycategory": "demon male", 
+    "sungfor": "Sarama", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 10, 
+    "meter": "Trishtup", 
+    "sukta": 165, 
+    "sungby": "Kapot Nairrit", 
+    "sungbycategory": "human male", 
+    "sungfor": "Pigeon", 
+    "sungforcategory": "animal"
+  }, 
+  {
+    "mandal": 10, 
+    "meter": "Trishtup", 
+    "sukta": 169, 
+    "sungby": "Shambar Kakshivat", 
+    "sungbycategory": "human male", 
+    "sungfor": "Cow", 
+    "sungforcategory": "animal"
+  }
+]

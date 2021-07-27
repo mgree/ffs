@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+    "terms": "https://open.fda.gov/terms/",
+    "license": "https://open.fda.gov/license/",
+    "last_updated": "2021-04-30",
+    "results": {
+      "skip": 0,
+      "limit": 1,
+      "total": 1042
+    }
+  },
+  "results": [
+    {
+      "date_submitted": "02/03/2020",
+      "nonuser_affected": "No",
+      "reported_health_problems": [
+        "Petit mal",
+        "Seizures"
+      ],
+      "number_tobacco_products": 1,
+      "number_health_problems": 2,
+      "report_id": 2079781,
+      "reported_product_problems": [
+        "No information provided"
+      ],
+      "tobacco_products": [
+        "Electronic cigarette, electronic nicotine or vaping product (E-cigarette, e-cigars, e-hookahs, e-pipes, vape pens, hookah pens, and personal vaporizers; E-liquids, e-juice or vape juice)"
+      ],
+      "number_product_problems": 0
+    }
+  ]
+}
