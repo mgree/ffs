@@ -1,7 +1,7 @@
 Files for benchmarking. Each directory is from a different source.
 
+ - synthetic (artificial, hand-crafted examples)
  - json_org (https://json.org examples)
- - fake (artificial, hand-crafted examples)
  - gh (GitHub API https://api.github.com/)
  - ncdc (NCDC NOAA API https://www.ncdc.noaa.gov/cdo-web/webservices/v2)
  - gov.uk (https://gov.uk)

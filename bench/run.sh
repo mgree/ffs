@@ -114,6 +114,9 @@ shuf $all >$plan
 
 # EXECUTE PLAN
 tempdir mnt
+
+printf "source,file,run,size,activity,ns\n" "$d" "$f" "$r" "$size" "$line" # header
+
 for entry in $(cat $plan | grep -e "$PATTERN")
 do
     d=$(echo $entry | cut -d, -f1)
