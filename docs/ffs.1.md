@@ -1,4 +1,4 @@
-% FFS(1) Version 0.1.0 | File Filesystem Documentation
+% FFS(1) Version 0.1.1 | File Filesystem Documentation
 % Michael Greenberg
 
 # NAME
@@ -56,6 +56,10 @@ installed on your system to use *ffs*.
 --readonly
 
 : Mounted filesystem will be readonly
+
+--time
+
+: Emit timing information on stderr in an 'event,time' format; time is in nanoseconds
 
 --unpadded
 

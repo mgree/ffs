@@ -6,7 +6,7 @@ use tracing::{debug, error, info, instrument, warn};
 
 use fuser::FileType;
 
-use super::config::{ERROR_STATUS_FUSE, Config, Input, Munge, Output};
+use super::config::{Config, Input, Munge, Output, ERROR_STATUS_FUSE};
 use super::fs::{DirEntry, DirType, Entry, Inode, FS};
 
 use ::toml as serde_toml;
@@ -133,6 +133,24 @@ impl Format {
     /// NB there is no check that `self == fs.config.input_format`!
     #[instrument(level = "info", skip(config))]
     pub fn load(&self, config: Config) -> FS {
+        macro_rules! time_ns {
+            ($msg:expr, $e:expr) => {{
+                let start = std::time::Instant::now();
+                let v = $e;
+
+                let msg = $msg;
+                let elapsed = start.elapsed().as_nanos();
+                if config.timing {
+                    eprintln!("{},{}", msg, elapsed);
+                } else {
+                    info!("{} ({}ns)", msg, elapsed);
+                }
+
+                v
+            }};
+        }
+
+        info!("loading");
         let mut inodes: Vec<Option<Inode>> = Vec::new();
 
         let reader: Box<dyn std::io::Read> = match &config.input {
@@ -164,25 +182,19 @@ impl Format {
 
         match self {
             Format::Json => {
-                info!("reading json value");
-                let v: serde_json::Value = serde_json::from_reader(reader).expect("JSON");
-                info!("building inodes");
-                fs_from_value(v, &config, &mut inodes);
-                info!("done");
+                let v: serde_json::Value = time_ns!(
+                    "reading json",
+                    serde_json::from_reader(reader).expect("JSON")
+                );
+                time_ns!("inodes", fs_from_value(v, &config, &mut inodes));
             }
             Format::Toml => {
-                info!("reading toml value");
-                let v = toml::from_reader(reader).expect("TOML");
-                info!("building inodes");
-                fs_from_value(v, &config, &mut inodes);
-                info!("done");
+                let v = time_ns!("reading toml", toml::from_reader(reader).expect("TOML"));
+                time_ns!("inodes", fs_from_value(v, &config, &mut inodes));
             }
             Format::Yaml => {
-                info!("reading toml value");
-                let v = yaml::from_reader(reader).expect("YAML");
-                info!("building inodes");
-                fs_from_value(v, &config, &mut inodes);
-                info!("done");
+                let v = time_ns!("reading yaml", yaml::from_reader(reader).expect("YAML"));
+                time_ns!("inodes,", fs_from_value(v, &config, &mut inodes));
             }
         };
 
@@ -195,6 +207,22 @@ impl Format {
     /// NB there is no check that `self == fs.config.output_format`!
     #[instrument(level = "info", skip(fs))]
     pub fn save(&self, fs: &FS) {
+        macro_rules! time_ns {
+            ($msg:expr, $e:expr) => {{
+                let start = std::time::Instant::now();
+                let v = $e;
+
+                let msg = $msg;
+                let elapsed = start.elapsed().as_nanos();
+                if fs.config.timing {
+                    eprintln!("{},{}", msg, elapsed);
+                } else {
+                    info!("{} ({}ns)", msg, elapsed);
+                }
+                v
+            }};
+        }
+
         let writer: Box<dyn std::io::Write> = match &fs.config.output {
             Output::Stdout => {
                 debug!("outputting on STDOUT");
@@ -212,36 +240,35 @@ impl Format {
 
         match self {
             Format::Json => {
-                info!("generating json value");
-                let v: serde_json::Value = value_from_fs(fs, fuser::FUSE_ROOT_ID);
-                info!("writing");
+                let v: serde_json::Value =
+                    time_ns!("saving", value_from_fs(fs, fuser::FUSE_ROOT_ID));
                 debug!("outputting {}", v);
-                if fs.config.pretty {
-                    serde_json::to_writer_pretty(writer, &v).unwrap();
-                } else {
-                    serde_json::to_writer(writer, &v).unwrap();
-                }
-                info!("done")
+                time_ns!(
+                    "writing",
+                    if fs.config.pretty {
+                        serde_json::to_writer_pretty(writer, &v).unwrap();
+                    } else {
+                        serde_json::to_writer(writer, &v).unwrap();
+                    }
+                );
             }
             Format::Toml => {
-                info!("generating toml value");
-                let v: serde_toml::Value = value_from_fs(fs, fuser::FUSE_ROOT_ID);
-                info!("writing");
+                let v: serde_toml::Value =
+                    time_ns!("saving", value_from_fs(fs, fuser::FUSE_ROOT_ID));
                 debug!("outputting {}", v);
-                if fs.config.pretty {
-                    toml::to_writer_pretty(writer, &v).unwrap();
-                } else {
-                    toml::to_writer(writer, &v).unwrap();
-                }
-                info!("done");
+                time_ns!(
+                    "writing",
+                    if fs.config.pretty {
+                        toml::to_writer_pretty(writer, &v).unwrap();
+                    } else {
+                        toml::to_writer(writer, &v).unwrap();
+                    }
+                );
             }
             Format::Yaml => {
-                info!("generating yaml value");
-                let v: yaml::Value = value_from_fs(fs, fuser::FUSE_ROOT_ID);
-                info!("writing");
+                let v: yaml::Value = time_ns!("saving", value_from_fs(fs, fuser::FUSE_ROOT_ID));
                 debug!("outputting {}", v);
-                yaml::to_writer(writer, &v).unwrap();
-                info!("done");
+                time_ns!("writing", yaml::to_writer(writer, &v).unwrap());
             }
         }
     }

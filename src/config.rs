@@ -41,6 +41,7 @@ pub struct Config {
     pub input: Input,
     pub output: Output,
     pub pretty: bool,
+    pub timing: bool,
     pub mount: Option<PathBuf>,
     pub cleanup_mount: bool,
 }
@@ -146,6 +147,7 @@ impl Config {
         }
 
         // simple flags
+        config.timing = args.is_present("TIMING");
         config.add_newlines = !args.is_present("EXACT");
         config.pad_element_names = !args.is_present("UNPADDED");
         config.read_only = args.is_present("READONLY");
@@ -593,6 +595,7 @@ impl Default for Config {
             input: Input::Stdin,
             output: Output::Stdout,
             pretty: false,
+            timing: false,
             mount: None,
             cleanup_mount: false,
         }
