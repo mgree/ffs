@@ -40,13 +40,14 @@ trap 'echo "Interrupted!"; cleanup; exit' INT
 NUM_RUNS_DEFAULT=10
 usage() {
     exec >&2
-    printf "Usage: %s [-n NUM_RUNS] [PATTERNS ...]\n\n" "$(basename $0)" 
-    printf "       NUM_RUNS    the number of runs for each test case (defaults to $NUM_RUNS_DEFAULT)\n"
-    printf "       PATTERNS    regular expression patterns for grep; tests matching any pattern will be run (defaults .*)\n"
+    printf "Usage: %s [-n NUM_RUNS] [-d DIR] [PATTERNS ...]\n\n" "$(basename $0)"
+    printf "       -d DIR         runs tests in DIR only\n"
+    printf "       -n NUM_RUNS    the number of runs for each test case (defaults to $NUM_RUNS_DEFAULT)\n"
+    printf "       PATTERNS       regular expression patterns for grep; tests matching any pattern will be run (defaults .*)\n"
     exit 2
 }
 
-while getopts ":n:h" opt
+while getopts ":n:d:h" opt
 do
     case "$opt" in
         (n) if [ $((OPTARG)) -le 0 ]
@@ -55,6 +56,13 @@ do
                 usage
             fi
             NUM_RUNS=$OPTARG
+            ;;
+        (d) if ! [ -d "$OPTARG" ]
+            then
+                printf "No such directory '%s'." "$OPTARG"
+                exit 1
+            fi
+            DIRS="$OPTARG"
             ;;
         (h) usage
             ;;
@@ -80,12 +88,7 @@ run_digits=${#NUM_RUNS}
 : ${FFS=$(dirname $0)/../target/release/ffs}
 : ${PATTERN=".*"}
 
-# COLLECT DIRECTORIES
-dirs=""
-for file in $(ls)
-do
-    [ -d $file ] && dirs="$dirs $file"
-done
+: ${DIRS=doi fda gh gov.uk json.org ncdc penguin penn rv synthetic}
 
 # GENERATE PLAN
 # each file gets $NUM_RUNS runs, in a random order
@@ -94,7 +97,7 @@ tempfile plan
 
 dir_len=0
 
-for d in $dirs
+for d in $DIRS
 do
     for f in $(ls $d)
     do
