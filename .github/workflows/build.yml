@@ -36,7 +36,7 @@ jobs:
           cargo test
         
       - name: Integration tests
-        run: PATH="$(pwd)/target/debug:$PATH" ./run_tests.sh
+        run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
 
       - name: Upload macOS release build
         uses: actions/upload-artifact@v2
