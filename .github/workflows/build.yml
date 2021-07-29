@@ -38,6 +38,12 @@ jobs:
       - name: Integration tests
         run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
 
+      - name: Benchmarks
+        run: |
+          PATH="$(pwd)/target/release:$PATH" ./run_bench.sh -n 3
+          mkdir data
+          mv *.log *.png data
+          
       - name: Upload macOS release build
         uses: actions/upload-artifact@v2
         if: ${{ matrix.os == 'macos-latest' }}
@@ -50,8 +56,22 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-latest' }}
         with:
           name: ffs.linux
-          path: target/release/ffs
+          path: target/release/ffs            
 
+      - name: Upload macOS benchmark data
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.os == 'macos-latest' }}
+        with:
+          name: benchmarks.macos
+          path: data
+            
+      - name: Upload Linux benchmark data
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        with:
+          name: benchmarks.linux
+          path: data
+            
   prerelease:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
