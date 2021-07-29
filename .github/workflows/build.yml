@@ -37,4 +37,10 @@ jobs:
         
       - name: Integration tests
         run: PATH="$(pwd)/target/debug:$PATH" ./run_tests.sh
+
+      - name: Upload release build
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ format("ffs.{0}",env.RUNNER_OS) }}
+          path: target/release/ffs
       
