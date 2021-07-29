@@ -14,7 +14,7 @@ do
         for kind in list named
         do
             file="micro/${kind}_${approach}_${size}.json"
-            ./synth.py $kind $approach $size >$file 2>/dev/null
+            ../utils/synth_json $kind $approach $size >$file 2>/dev/null
             if [ $? -ne 0 ] || ! [ -s $file ]
             then
                 echo "Couldn't build $file."
