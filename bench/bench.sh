@@ -34,6 +34,19 @@ cleanup() {
     PIDS=""
 }
 
+if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
+    filesize() {
+        stat --printf=%s $1
+    }
+elif [ "$RUNNER_OS" = "macOS" ] || [ "$(uname)" = "Darwin" ]; then
+    filesize() {
+        stat -f "%z" $1
+    }
+else
+    echo "The benchmark suite only runs on macOS and Linux." >&2
+    exit 3
+fi
+
 trap 'cleanup' EXIT
 trap 'echo "Interrupted!"; cleanup; exit' INT
 
@@ -116,7 +129,7 @@ do
     done
 done
 # randomize, and then sort by 'run' number
-shuf $all | sort -k 3 -t , -s -n >$plan
+sort -R $all | sort -k 3 -t , -s -n >$plan
 
 total_runs=$(( $(cat $plan | wc -l) ))
 total_digits=${#total_runs}
@@ -194,7 +207,7 @@ do
         fi
     done
 
-    size=$(stat -f %z $path)
+    size=$(filesize $path)
     while read line
     do
         printf "%s,%s,%s,%s,%s\n" "$d" "$f" "$r" "$size" "$line"
