@@ -43,7 +43,10 @@ jobs:
           Rscript -e "install.packages('ggplot2', repos = 'https://cloud.r-project.org/')"
           PATH="$(pwd)/target/release:$PATH" ./run_bench.sh -n 3
           mkdir data
-          mv *.log *.png data
+          for x in *.log *.png
+          do
+            mv $x data/${x##*_}
+          done
           
       - name: Upload macOS release build
         uses: actions/upload-artifact@v2
