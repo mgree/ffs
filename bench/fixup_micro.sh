@@ -3,7 +3,7 @@
 # the log format for micro benchmark has a bunch of information nested in the filename
 # here we break it apart so that we can generate appropriate charts
 
-[ "$#" -eq 2 ] && [ -f "$1" ] || {
+[ "$#" -eq 1 ] && [ -f "$1" ] || {
     echo "Usage: $(basename $0) [BENCHMARK LOG]"    >&2
     echo                                            >&2
     echo "       see run_bench.sh in the repo root" >&2
