@@ -1,3 +1,5 @@
+To run benchmarks, run `run_bench.sh` (in the repo root).
+
 Files for benchmarking. Each directory is from a different source.
 
  - synthetic (artificial, hand-crafted examples)
@@ -12,3 +14,6 @@ Files for benchmarking. Each directory is from a different source.
  - fda (https://open.fda.gov/apis/)
 
 https://github.com/public-apis/public-apis is a useful meta-source.
+
+We generate micro-benchmarks using `mk_micro.sh`, which will wipe out
+and recreate the directory `micro`.
