@@ -32,15 +32,23 @@ jobs:
 
       - name: Build ffs and run unit tests
         run: |
-          cargo build --verbose --all
+          cargo build --verbose --all --release
           cargo test
         
       - name: Integration tests
         run: PATH="$(pwd)/target/debug:$PATH" ./run_tests.sh
 
-      - name: Upload release build
+      - name: Upload macOS release build
         uses: actions/upload-artifact@v2
+        if: ${{ matrix.os == 'macos-latest' }}
         with:
-          name: ${{ format('ffs.{0}', env.RUNNER_OS) }}
+          name: ffs.macos
           path: target/release/ffs
-      
+
+      - name: Upload Linux release build
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        with:
+          name: ffs.linux
+          path: target/release/ffs
+
