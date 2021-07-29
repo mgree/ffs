@@ -40,7 +40,7 @@ jobs:
 
       - name: Benchmarks
         run: |
-          Rscript -e 'install.packages("ggplot2")'
+          Rscript -e "install.packages('ggplot2', repos = 'https://cloud.r-project.org/')"
           PATH="$(pwd)/target/release:$PATH" ./run_bench.sh -n 3
           mkdir data
           mv *.log *.png data
