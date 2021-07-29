@@ -83,8 +83,10 @@ then
     done
 fi
 
+TIMEOUT="$(cd ../utils; pwd)/timeout"
+
 : ${NUM_RUNS=$NUM_RUNS_DEFAULT}
-run_digits=${#NUM_RUNS}
+run_digits=$(( ${#NUM_RUNS} ))
 : ${FFS=$(dirname $0)/../target/release/ffs}
 : ${PATTERN=".*"}
 
@@ -113,13 +115,35 @@ do
         done
     done
 done
-shuf $all >$plan
+# randomize, and then sort by 'run' number
+shuf $all | sort -k 3 -t , -s -n >$plan
+
+total_runs=$(( $(cat $plan | wc -l) ))
+total_digits=${#total_runs}
 
 # EXECUTE PLAN
 tempdir mnt
 
 printf "source,file,run,size,activity,ns\n" "$d" "$f" "$r" "$size" "$line" # header
 
+errors=""
+has_error() {
+    case "$errors" in
+        (*$1*) return 0;;
+    esac
+    return 1
+}
+errored() {
+    if ! has_error $1
+    then
+        errors="$errors $1"
+    fi
+    kill $PID >/dev/null 2>&1
+    [ -d $mnt ] && umount $mnt >/dev/null 2>&1
+    [ -f $log ] && rm $log
+}
+
+run=0
 for entry in $(cat $plan | grep -e "$PATTERN")
 do
     d=$(echo $entry | cut -d, -f1)
@@ -127,15 +151,33 @@ do
     r=$(echo $entry | cut -d, -f3)
 
     path="$d/$f"
-    printf "%${dir_len}s (copy %${run_digits}d)\n" "$path" "$r" >&2
+
+    : $((run += 1))
+    printf "%${total_digits}d/%d  %${dir_len}s " "$run" "$total_runs" "$path" >&2
+    if has_error "$path"
+    then
+        printf "(errored earlier; skipping)\n" >&2
+        continue
+    else
+        printf "(copy %${run_digits}d)\n" "$r" >&2
+    fi
 
     tempfile log
     $FFS --time -m $mnt $path >/dev/null 2>$log &
     PID=$!
     PIDS="$PIDS $PID"
+    count=0
     while ! umount $mnt >/dev/null 2>&1
     do
-        sleep 1
+        sleep $count
+        if [ "$count" -le 5 ]
+        then
+            : $((count += 1))
+        else
+            printf "%$((2 * total_digits + 1))s  warning: couldn't unmount for $path\n" ' ' >&2
+            errored $path
+            continue 2
+        fi
     done
     
     count=0
@@ -146,9 +188,9 @@ do
         then
             : $((count += 1))
         else
-            echo "warning: $PID still running for $path" >&2
-            kill $PID
-            break
+            printf "%$((2 * total_digits + 1))s  warning: $PID still running for $path" ' ' >&2
+            errored $path
+            continue 2
         fi
     done
 

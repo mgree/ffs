@@ -1,14 +1,15 @@
 #!/bin/sh
 
+[ -d micro ] && rm -r micro
 mkdir micro
 for size in 1 2 4 8 16 32 64 128 256
 do
     for approach in deep wide
     do
-        if [ "$approach" = "deep" ] && [ "$size" -ge 128 ]
-        then
-            continue
-        fi
+#        if [ "$approach" = "deep" ] && [ "$size" -ge 128 ]
+#        then
+#            continue
+#        fi
         
         for kind in list named
         do

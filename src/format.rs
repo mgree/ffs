@@ -183,18 +183,18 @@ impl Format {
         match self {
             Format::Json => {
                 let v: serde_json::Value = time_ns!(
-                    "reading json",
+                    "reading",
                     serde_json::from_reader(reader).expect("JSON")
                 );
-                time_ns!("inodes", fs_from_value(v, &config, &mut inodes));
+                time_ns!("loading", fs_from_value(v, &config, &mut inodes));
             }
             Format::Toml => {
-                let v = time_ns!("reading toml", toml::from_reader(reader).expect("TOML"));
-                time_ns!("inodes", fs_from_value(v, &config, &mut inodes));
+                let v = time_ns!("reading", toml::from_reader(reader).expect("TOML"));
+                time_ns!("loading", fs_from_value(v, &config, &mut inodes));
             }
             Format::Yaml => {
-                let v = time_ns!("reading yaml", yaml::from_reader(reader).expect("YAML"));
-                time_ns!("inodes,", fs_from_value(v, &config, &mut inodes));
+                let v = time_ns!("reading", yaml::from_reader(reader).expect("YAML"));
+                time_ns!("loading", fs_from_value(v, &config, &mut inodes));
             }
         };
 

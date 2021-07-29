@@ -13,6 +13,7 @@ fail() {
 }
 
 TESTS="$(pwd)"
+TIMEOUT="$(cd ../utils; pwd)/timeout"
 
 D=$(mktemp -d)
 
@@ -35,7 +36,7 @@ esac
 
 cp ../single.json .
 
-"${TESTS}"/timeout -t 3 -l single.timeout ffs -i single.json 2>single.err
+"$TIMEOUT" -t 3 -l single.timeout ffs -i single.json 2>single.err
 NESTEDSTATUS=$?
 [ -f single.timeout ] && fail timeout
 [ -s single.err ] || fail error
