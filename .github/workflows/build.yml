@@ -40,7 +40,7 @@ jobs:
 
       - name: Benchmarks
         run: |
-          echo 'install.packages("ggplot2")' | Rscript 
+          Rscript -e 'install.packages("ggplot2")'
           PATH="$(pwd)/target/release:$PATH" ./run_bench.sh -n 3
           mkdir data
           mv *.log *.png data
