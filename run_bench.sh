@@ -12,6 +12,6 @@ MICRO_RAW=$(mktemp)
 ./bench.sh -d micro >"$MICRO"
 
 MICRO="../${TIMESTAMP}_micro.log"
-./fixup_micro.sh >"$MICRO"
+./fixup_micro.sh "$MICRO_RAW" >"$MICRO"
 
 ./generate_charts.R "$BENCH" "$MICRO"
