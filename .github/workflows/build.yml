@@ -88,6 +88,9 @@ jobs:
       - name: Download binaries
         uses: actions/download-artifact@v2
 
+      - name: Show downloaded files
+        run: ls -lR
+  
       - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -96,8 +99,8 @@ jobs:
           prerelease: true
           title: "Latest development build"
           files: |
-            ffs.linux/ffs.linux
-            ffs.macos/ffs.macos
+            ffs/ffs.linux
+            ffs/ffs.macos
 
         
         
