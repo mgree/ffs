@@ -88,8 +88,11 @@ jobs:
       - name: Download binaries
         uses: actions/download-artifact@v2
 
-      - name: Show downloaded files
-        run: ls -lR
+      - name: Rename binaries
+        run: |
+          mkdir ffs
+          mv ffs.linux/ffs ffs/ffs.linux
+          mv ffs.macos/ffs ffs/ffs.macos
   
       - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
