@@ -1,2 +1,5 @@
 /target
 *~
+*.log
+*.png
+.Rhistory

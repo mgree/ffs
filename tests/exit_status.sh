@@ -13,6 +13,7 @@ fail() {
 }
 
 TESTS="$(pwd)"
+TIMEOUT="$(cd ../utils; pwd)/timeout"
 
 D=$(mktemp -d)
 
@@ -29,7 +30,7 @@ chmod -w unwriteable
 
 # in place mount, mountpoint exists
 mkdir single
-"$TESTS"/timeout -t 2 ffs -i single.json 2>single.err
+"$TIMEOUT" -t 2 ffs -i single.json 2>single.err
 [ $? -eq 1 ] || fail imountstatus
 [ -s single.err ] || fail imountmsg
 rmdir single
@@ -37,7 +38,7 @@ rm single.err
 
 # in place, can't make mountpoint
 cd unwriteable
-"$TESTS"/timeout -t 2 ffs -i single.json 2>../single.err
+"$TIMEOUT" -t 2 ffs -i single.json 2>../single.err
 [ $? -eq 1 ] || fail imkmountstatus
 cd ..
 [ -s single.err ] || fail imkmountmsg
@@ -45,7 +46,7 @@ rm single.err
 
 # new, mountpoint exists
 mkdir foo
-"$TESTS"/timeout -t 2 ffs --new foo.json 2>foo.err
+"$TIMEOUT" -t 2 ffs --new foo.json 2>foo.err
 [ $? -eq 1 ] || fail newmountstatus
 [ -s foo.err ] || fail newmountmsg
 rmdir foo
@@ -53,47 +54,47 @@ rm foo.err
 
 # new, can't make mountpoint
 cd unwriteable
-"$TESTS"/timeout -t 2 ffs --new foo.json 2>../foo.err
+"$TIMEOUT" -t 2 ffs --new foo.json 2>../foo.err
 [ $? -eq 1 ] || fail newmkmountstatus
 cd ..
 [ -s foo.err ] || fail newmkmountmsg
 rm foo.err
 
 # input file, can't infer mountpoint
-"$TESTS"/timeout -t 2 ffs --new .. 2>dotdot.err
+"$TIMEOUT" -t 2 ffs --new .. 2>dotdot.err
 [ $? -eq 1 ] || fail newdotdotmountstatus
 [ -s dotdot.err ] || fail newdotdotmountmsg
 rm dotdot.err
 
 # --new, output file exists
 touch foo.yaml
-"$TESTS"/timeout -t 2 ffs --new foo.yaml 2>foo.err
+"$TIMEOUT" -t 2 ffs --new foo.yaml 2>foo.err
 [ $? -eq 1 ] || fail omountstatus
 [ -s foo.err ] || fail omountmsg
 rm foo.yaml
 rm foo.err
 
 # --new, mountpoint doesn't exist
-"$TESTS"/timeout -t 2 ffs -m notthere --new foo.json 2>foo.err
+"$TIMEOUT" -t 2 ffs -m notthere --new foo.json 2>foo.err
 [ $? -eq 1 ] || fail mmountstatus1
 [ -s foo.err ] || fail mmountmsg1
 rm foo.err
 
 # mountpoint doesn't exist
-"$TESTS"/timeout -t 2 ffs -m notthere single.json 2>single.err
+"$TIMEOUT" -t 2 ffs -m notthere single.json 2>single.err
 [ $? -eq 1 ] || fail mmountstatus2
 [ -s single.err ] || fail mmountmsg2
 rm single.err
 
 # input file doesn't exists
-"$TESTS"/timeout -t 2 ffs nonesuch.toml 2>nonesuch.err
+"$TIMEOUT" -t 2 ffs nonesuch.toml 2>nonesuch.err
 [ $? -eq 1 ] || fail inputmountstatus1
 [ -s nonesuch.err ] || fail inputmountmsg1
 rm nonesuch.err
 
 # input file, mountpoint exists
 mkdir single
-"$TESTS"/timeout -t 2 ffs single.json 2>single.err
+"$TIMEOUT" -t 2 ffs single.json 2>single.err
 [ $? -eq 1 ] || fail inputmountstatus2
 [ -s single.err ] || fail inputmountmsg2
 rmdir single
@@ -101,74 +102,74 @@ rm single.err
 
 # input file, can't make mount point
 cd unwriteable
-"$TESTS"/timeout -t 2 ffs ../single.json 2>../single.err
+"$TIMEOUT" -t 2 ffs ../single.json 2>../single.err
 [ $? -eq 1 ] || fail inputmkmountstatus
 cd ..
 [ -s single.err ] || fail inputmkmountmsg
 rm single.err
 
 # input file, can't infer mountpoint
-"$TESTS"/timeout -t 2 ffs .. 2>dotdot.err
+"$TIMEOUT" -t 2 ffs .. 2>dotdot.err
 [ $? -eq 1 ] || fail inputdotdotmountstatus
 [ -s dotdot.err ] || fail inputdotdotmountmsg
 rm dotdot.err
 
 # unreadable input
-"$TESTS"/timeout -t 2 ffs unreadable.json 2>ur.err
+"$TIMEOUT" -t 2 ffs unreadable.json 2>ur.err
 [ $? -eq 1 ] || fail unreadablemountstatus
 [ -s ur.err ] || fail unreadablemountmsg
 rm ur.err
 
 # plain value input
-"$TESTS"/timeout -t 2 ffs false.json 2>false.err
+"$TIMEOUT" -t 2 ffs false.json 2>false.err
 [ $? -eq 1 ] || fail falsemountstatus
 [ -s false.err ] || fail falsemountmsg
 rm false.err
 
 # bad mount point (fuser is masking this error)
-# "$TESTS"/timeout -t 2 ffs /etc single.json 2>etc.err
+# "$TIMEOUT" -t 2 ffs /etc single.json 2>etc.err
 # [ $? -eq 1 ] || fail etcmountstatus
 # [ -s etc.err ] || fail etcmountmsg
 # rm etc.err
 
 # bad shell completion
-"$TESTS"/timeout -t 2 ffs --completions smoosh 2>comp.err
+"$TIMEOUT" -t 2 ffs --completions smoosh 2>comp.err
 [ $? -eq 2 ] || fail compmountstatus
 [ -s comp.err ] || fail compmountmsg
 rm comp.err
 
 # bad mode
-"$TESTS"/timeout -t 2 ffs --mode 888 2>mode.err
+"$TIMEOUT" -t 2 ffs --mode 888 2>mode.err
 [ $? -eq 2 ] || fail modemountstatus
 [ -s mode.err ] || fail modemountmsg
 rm mode.err
 
 # bad dirmode
-"$TESTS"/timeout -t 2 ffs --dirmode 888 2>dirmode.err
+"$TIMEOUT" -t 2 ffs --dirmode 888 2>dirmode.err
 [ $? -eq 2 ] || fail dirmodemountstatus
 [ -s dirmode.err ] || fail dirmodemountmsg
 rm dirmode.err
 
 # new and input file
-"$TESTS"/timeout -t 2 ffs --new foo.json single.json 2>ni.err
+"$TIMEOUT" -t 2 ffs --new foo.json single.json 2>ni.err
 [ $? -eq 2 ] || fail nimountstatus
 [ -s ni.err ] || fail nimountmsg
 rm ni.err
 
 # unknown --source
-"$TESTS"/timeout -t 2 ffs --source hieratic single.json 2>source.err
+"$TIMEOUT" -t 2 ffs --source hieratic single.json 2>source.err
 [ $? -eq 2 ] || fail sourcemountstatus
 [ -s source.err ] || fail sourcemountmsg
 rm source.err
 
 # unknown --target
-"$TESTS"/timeout -t 2 ffs --target hieratic single.json 2>target.err
+"$TIMEOUT" -t 2 ffs --target hieratic single.json 2>target.err
 [ $? -eq 2 ] || fail targetmountstatus
 [ -s target.err ] || fail targetmountmsg
 rm target.err
 
 # stdin read, no mountpoint
-"$TESTS"/timeout -t 2 ffs 2>im.err
+"$TIMEOUT" -t 2 ffs 2>im.err
 [ $? -eq 2 ] || fail immountstatus
 [ -s im.err ] || fail immountmsg
 rm im.err

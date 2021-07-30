@@ -1,0 +1,2281 @@
+source,file,run,size,activity,ns
+ncdc,ncdc_07030.json,10,111,reading json,431618
+ncdc,ncdc_07030.json,10,111,inodes,31518
+ncdc,ncdc_07030.json,10,111,saving,20509
+ncdc,ncdc_07030.json,10,111,writing,26573
+doi,doi_smoosh.json,5,537,reading json,979869
+doi,doi_smoosh.json,5,537,inodes,85518
+doi,doi_smoosh.json,5,537,saving,44687
+doi,doi_smoosh.json,5,537,writing,28731
+ncdc,ncdc_ewr_station.json,8,191,reading json,538446
+ncdc,ncdc_ewr_station.json,8,191,inodes,42581
+ncdc,ncdc_ewr_station.json,8,191,saving,27181
+ncdc,ncdc_ewr_station.json,8,191,writing,23940
+ncdc,ncdc_07030.json,9,111,reading json,191674
+ncdc,ncdc_07030.json,9,111,inodes,29554
+ncdc,ncdc_07030.json,9,111,saving,21555
+ncdc,ncdc_07030.json,9,111,writing,21568
+fda,tobacco100.json,6,63634,reading json,83321760
+fda,tobacco100.json,6,63634,inodes,1065987
+fda,tobacco100.json,6,63634,saving,818362
+fda,tobacco100.json,6,63634,writing,714635
+json_org,json_eg1.json,6,583,reading json,799666
+json_org,json_eg1.json,6,583,inodes,58544
+json_org,json_eg1.json,6,583,saving,34616
+json_org,json_eg1.json,6,583,writing,20519
+penguin,dekeijzer.json,6,446,reading json,981338
+penguin,dekeijzer.json,6,446,inodes,33291
+penguin,dekeijzer.json,6,446,saving,34628
+penguin,dekeijzer.json,6,446,writing,26908
+fda,waterpipe.json,3,1955,reading json,2685721
+fda,waterpipe.json,3,1955,inodes,74111
+fda,waterpipe.json,3,1955,saving,52369
+fda,waterpipe.json,3,1955,writing,34919
+json_org,json_eg1.json,4,583,reading json,798447
+json_org,json_eg1.json,4,583,inodes,57370
+json_org,json_eg1.json,4,583,saving,30754
+json_org,json_eg1.json,4,583,writing,22394
+gh,gh_gpl3.json,5,36979,reading json,49433712
+gh,gh_gpl3.json,5,36979,inodes,70626
+gh,gh_gpl3.json,5,36979,saving,79376
+gh,gh_gpl3.json,5,36979,writing,222160
+fda,tobacco_products.json,4,2345,reading json,3074299
+fda,tobacco_products.json,4,2345,inodes,84693
+fda,tobacco_products.json,4,2345,saving,67549
+fda,tobacco_products.json,4,2345,writing,44591
+fda,event100.json,5,2945177,reading json,3682362925
+fda,event100.json,5,2945177,inodes,46501210
+fda,event100.json,5,2945177,saving,28075869
+fda,event100.json,5,2945177,writing,19882857
+ncdc,ncdc_ewr_station.json,1,191,reading json,299840
+ncdc,ncdc_ewr_station.json,1,191,inodes,31958
+ncdc,ncdc_ewr_station.json,1,191,saving,23241
+ncdc,ncdc_ewr_station.json,1,191,writing,27077
+gh,ffs_issues.json,2,38158,reading json,52606117
+gh,ffs_issues.json,2,38158,inodes,681533
+gh,ffs_issues.json,2,38158,saving,573127
+gh,ffs_issues.json,2,38158,writing,511388
+penguin,rust.json,5,161726,reading json,208310844
+penguin,rust.json,5,161726,inodes,770728
+penguin,rust.json,5,161726,saving,815652
+penguin,rust.json,5,161726,writing,770769
+gh,mgree_repos.json,9,159905,reading json,211167274
+gh,mgree_repos.json,9,159905,inodes,1853105
+gh,mgree_repos.json,9,159905,saving,2491718
+gh,mgree_repos.json,9,159905,writing,1890915
+json_org,json_eg3.json,1,602,reading json,1017589
+json_org,json_eg3.json,1,602,inodes,38317
+json_org,json_eg3.json,1,602,saving,39482
+json_org,json_eg3.json,1,602,writing,23616
+gh,gh_emoji.json,8,173641,reading json,223875308
+gh,gh_emoji.json,8,173641,inodes,1350039
+gh,gh_emoji.json,8,173641,saving,2006923
+gh,gh_emoji.json,8,173641,writing,1436164
+fda,recall50.json,3,1049501,reading json,1321955888
+fda,recall50.json,3,1049501,inodes,21899588
+fda,recall50.json,3,1049501,saving,12456384
+fda,recall50.json,3,1049501,writing,12192593
+rv,animal.json,7,7051,reading json,13649274
+rv,animal.json,7,7051,inodes,183484
+rv,animal.json,7,7051,saving,180514
+rv,animal.json,7,7051,writing,154952
+penguin,rust.json,9,161726,reading json,205662372
+penguin,rust.json,9,161726,inodes,748907
+penguin,rust.json,9,161726,saving,798712
+penguin,rust.json,9,161726,writing,688282
+penn,historic-20181028.json,10,1468638,reading json,1870866478
+penn,historic-20181028.json,10,1468638,inodes,34813611
+penn,historic-20181028.json,10,1468638,saving,27032815
+penn,historic-20181028.json,10,1468638,writing,18228324
+fda,tobacco100.json,8,63634,reading json,82626169
+fda,tobacco100.json,8,63634,inodes,1051263
+fda,tobacco100.json,8,63634,saving,785301
+fda,tobacco100.json,8,63634,writing,710768
+fake,object.json,9,77,reading json,419803
+fake,object.json,9,77,inodes,29699
+fake,object.json,9,77,saving,27082
+fake,object.json,9,77,writing,11043
+gh,gh_events.json,4,54778,reading json,73803698
+gh,gh_events.json,4,54778,inodes,848649
+gh,gh_events.json,4,54778,saving,786024
+gh,gh_events.json,4,54778,writing,723590
+fda,tobacco_products.json,6,2345,reading json,2940580
+fda,tobacco_products.json,6,2345,inodes,81556
+fda,tobacco_products.json,6,2345,saving,66549
+fda,tobacco_products.json,6,2345,writing,42976
+fda,recall.json,9,22475,reading json,30991148
+fda,recall.json,9,22475,inodes,577525
+fda,recall.json,9,22475,saving,351325
+fda,recall.json,9,22475,writing,301554
+gh,gh_events.json,1,54778,reading json,71898827
+gh,gh_events.json,1,54778,inodes,855672
+gh,gh_events.json,1,54778,saving,730970
+gh,gh_events.json,1,54778,writing,643297
+gh,gh_mgree_events.json,9,168832,reading json,220550484
+gh,gh_mgree_events.json,9,168832,inodes,2468419
+gh,gh_mgree_events.json,9,168832,saving,2211888
+gh,gh_mgree_events.json,9,168832,writing,1951167
+fake,object_null.json,3,95,reading json,164817
+fake,object_null.json,3,95,inodes,27025
+fake,object_null.json,3,95,saving,23937
+fake,object_null.json,3,95,writing,14528
+ncdc,ncdc_datatypes.json,5,4013,reading json,7033577
+ncdc,ncdc_datatypes.json,5,4013,inodes,151628
+ncdc,ncdc_datatypes.json,5,4013,saving,85470
+ncdc,ncdc_datatypes.json,5,4013,writing,80795
+gh,gh_apache2.json,5,12591,reading json,17168102
+gh,gh_apache2.json,5,12591,inodes,71478
+gh,gh_apache2.json,5,12591,saving,45486
+gh,gh_apache2.json,5,12591,writing,88712
+fda,registrationlisting.json,1,3228,reading json,4544143
+fda,registrationlisting.json,1,3228,inodes,118493
+fda,registrationlisting.json,1,3228,saving,88038
+fda,registrationlisting.json,1,3228,writing,57505
+ncdc,ncdc_locationcategories.json,8,543,reading json,1310517
+ncdc,ncdc_locationcategories.json,8,543,inodes,115540
+ncdc,ncdc_locationcategories.json,8,543,saving,52097
+ncdc,ncdc_locationcategories.json,8,543,writing,29318
+fake,object.json,3,77,reading json,150900
+fake,object.json,3,77,inodes,27547
+fake,object.json,3,77,saving,23922
+fake,object.json,3,77,writing,13932
+gh,mgree.json,10,1331,reading json,2261370
+gh,mgree.json,10,1331,inodes,62357
+gh,mgree.json,10,1331,saving,48940
+gh,mgree.json,10,1331,writing,31297
+penn,historic-20181028.json,6,1468638,reading json,1869470334
+penn,historic-20181028.json,6,1468638,inodes,34415337
+penn,historic-20181028.json,6,1468638,saving,26356241
+penn,historic-20181028.json,6,1468638,writing,17694571
+ncdc,ncdc_datatypes.json,1,4013,reading json,5602757
+ncdc,ncdc_datatypes.json,1,4013,inodes,130532
+ncdc,ncdc_datatypes.json,1,4013,saving,115728
+ncdc,ncdc_datatypes.json,1,4013,writing,101938
+json_org,json_eg3.json,9,602,reading json,862411
+json_org,json_eg3.json,9,602,inodes,47866
+json_org,json_eg3.json,9,602,saving,46620
+json_org,json_eg3.json,9,602,writing,22906
+ncdc,ncdc_ewr_station.json,7,191,reading json,289068
+ncdc,ncdc_ewr_station.json,7,191,inodes,31488
+ncdc,ncdc_ewr_station.json,7,191,saving,37732
+ncdc,ncdc_ewr_station.json,7,191,writing,23037
+penguin,bsd.json,1,5415,reading json,7486456
+penguin,bsd.json,1,5415,inodes,106768
+penguin,bsd.json,1,5415,saving,92619
+penguin,bsd.json,1,5415,writing,65627
+gh,mgree.json,7,1331,reading json,1741934
+gh,mgree.json,7,1331,inodes,41418
+gh,mgree.json,7,1331,saving,48182
+gh,mgree.json,7,1331,writing,30964
+gh,ffs.json,10,5089,reading json,7203407
+gh,ffs.json,10,5089,inodes,76397
+gh,ffs.json,10,5089,saving,112032
+gh,ffs.json,10,5089,writing,73551
+penguin,bsd.json,4,5415,reading json,6891133
+penguin,bsd.json,4,5415,inodes,88279
+penguin,bsd.json,4,5415,saving,105402
+penguin,bsd.json,4,5415,writing,65750
+penguin,dekeijzer.json,1,446,reading json,627346
+penguin,dekeijzer.json,1,446,inodes,40898
+penguin,dekeijzer.json,1,446,saving,30894
+penguin,dekeijzer.json,1,446,writing,21466
+fda,registrationlisting100.json,5,214459,reading json,271738570
+fda,registrationlisting100.json,5,214459,inodes,3872667
+fda,registrationlisting100.json,5,214459,saving,3814137
+fda,registrationlisting100.json,5,214459,writing,3210584
+penguin,grisham.json,4,22488,reading json,32445395
+penguin,grisham.json,4,22488,inodes,857856
+penguin,grisham.json,4,22488,saving,803521
+penguin,grisham.json,4,22488,writing,647573
+fda,tobacco10.json,1,6567,reading json,8498489
+fda,tobacco10.json,1,6567,inodes,160620
+fda,tobacco10.json,1,6567,saving,111645
+fda,tobacco10.json,1,6567,writing,83987
+rv,agni.json,4,89267,reading json,120177509
+rv,agni.json,4,89267,inodes,1899755
+rv,agni.json,4,89267,saving,1859422
+rv,agni.json,4,89267,writing,1769665
+penguin,rust.json,1,161726,reading json,207497029
+penguin,rust.json,1,161726,inodes,815617
+penguin,rust.json,1,161726,saving,859627
+penguin,rust.json,1,161726,writing,769291
+penguin,bsd.json,6,5415,reading json,7261165
+penguin,bsd.json,6,5415,inodes,124431
+penguin,bsd.json,6,5415,saving,90187
+penguin,bsd.json,6,5415,writing,65019
+fake,obj_rename.json,1,69,reading json,404481
+fake,obj_rename.json,1,69,inodes,31452
+fake,obj_rename.json,1,69,saving,21078
+fake,obj_rename.json,1,69,writing,11563
+ncdc,ncdc_07030_stations.json,7,1476,reading json,2367970
+ncdc,ncdc_07030_stations.json,7,1476,inodes,112479
+ncdc,ncdc_07030_stations.json,7,1476,saving,69049
+ncdc,ncdc_07030_stations.json,7,1476,writing,65159
+gh,gh_licenses.json,3,2507,reading json,3240605
+gh,gh_licenses.json,3,2507,inodes,88713
+gh,gh_licenses.json,3,2507,saving,66987
+gh,gh_licenses.json,3,2507,writing,57895
+gh,gh_licenses.json,4,2507,reading json,3693362
+gh,gh_licenses.json,4,2507,inodes,105137
+gh,gh_licenses.json,4,2507,saving,56274
+gh,gh_licenses.json,4,2507,writing,44858
+fake,object_null.json,4,95,reading json,178954
+fake,object_null.json,4,95,inodes,28383
+fake,object_null.json,4,95,saving,17964
+fake,object_null.json,4,95,writing,12234
+json_org,json_eg3.json,4,602,reading json,806497
+json_org,json_eg3.json,4,602,inodes,38241
+json_org,json_eg3.json,4,602,saving,34256
+json_org,json_eg3.json,4,602,writing,22923
+penguin,linux.json,7,64401,reading json,85946396
+penguin,linux.json,7,64401,inodes,772088
+penguin,linux.json,7,64401,saving,706866
+penguin,linux.json,7,64401,writing,594336
+ncdc,ncdc_07030.json,6,111,reading json,191357
+ncdc,ncdc_07030.json,6,111,inodes,29305
+ncdc,ncdc_07030.json,6,111,saving,22485
+ncdc,ncdc_07030.json,6,111,writing,20977
+fda,recall50.json,5,1049501,reading json,1321817244
+fda,recall50.json,5,1049501,inodes,21779393
+fda,recall50.json,5,1049501,saving,13454583
+fda,recall50.json,5,1049501,writing,12599756
+gh,gh_mgree_events.json,3,168832,reading json,216444037
+gh,gh_mgree_events.json,3,168832,inodes,2097246
+gh,gh_mgree_events.json,3,168832,saving,1877689
+gh,gh_mgree_events.json,3,168832,writing,1456218
+fda,tobacco10.json,7,6567,reading json,8505104
+fda,tobacco10.json,7,6567,inodes,170262
+fda,tobacco10.json,7,6567,saving,118278
+fda,tobacco10.json,7,6567,writing,86435
+json_org,json_eg3.json,5,602,reading json,779559
+json_org,json_eg3.json,5,602,inodes,37101
+json_org,json_eg3.json,5,602,saving,47195
+json_org,json_eg3.json,5,602,writing,21216
+fda,tobacco10.json,8,6567,reading json,8840353
+fda,tobacco10.json,8,6567,inodes,135562
+fda,tobacco10.json,8,6567,saving,114742
+fda,tobacco10.json,8,6567,writing,83466
+ncdc,ncdc_07030_stations.json,8,1476,reading json,1903668
+ncdc,ncdc_07030_stations.json,8,1476,inodes,96571
+ncdc,ncdc_07030_stations.json,8,1476,saving,71429
+ncdc,ncdc_07030_stations.json,8,1476,writing,64307
+fda,tobacco_products.json,8,2345,reading json,3079529
+fda,tobacco_products.json,8,2345,inodes,84800
+fda,tobacco_products.json,8,2345,saving,76662
+fda,tobacco_products.json,8,2345,writing,42068
+ncdc,ncdc_stations_big.json,6,200908,reading json,265439771
+ncdc,ncdc_stations_big.json,6,200908,inodes,6432459
+ncdc,ncdc_stations_big.json,6,200908,saving,5421637
+ncdc,ncdc_stations_big.json,6,200908,writing,4786801
+penguin,linux.json,5,64401,reading json,83470880
+penguin,linux.json,5,64401,inodes,663929
+penguin,linux.json,5,64401,saving,701972
+penguin,linux.json,5,64401,writing,525776
+gh,kmt.json,8,4979,reading json,6403036
+gh,kmt.json,8,4979,inodes,86746
+gh,kmt.json,8,4979,saving,84069
+gh,kmt.json,8,4979,writing,54075
+json_org,json_eg1.json,1,583,reading json,794197
+json_org,json_eg1.json,1,583,inodes,57404
+json_org,json_eg1.json,1,583,saving,34422
+json_org,json_eg1.json,1,583,writing,22365
+penn,historic-20181028.json,9,1468638,reading json,1856192351
+penn,historic-20181028.json,9,1468638,inodes,35038438
+penn,historic-20181028.json,9,1468638,saving,26437065
+penn,historic-20181028.json,9,1468638,writing,17696541
+fake,obj_rename.json,3,69,reading json,129290
+fake,obj_rename.json,3,69,inodes,23081
+fake,obj_rename.json,3,69,saving,15703
+fake,obj_rename.json,3,69,writing,13261
+ncdc,ncdc_datacategories.json,6,1075,reading json,2293296
+ncdc,ncdc_datacategories.json,6,1075,inodes,115792
+ncdc,ncdc_datacategories.json,6,1075,saving,79607
+ncdc,ncdc_datacategories.json,6,1075,writing,49462
+ncdc,ncdc_zips.json,7,2851,reading json,4363588
+ncdc,ncdc_zips.json,7,2851,inodes,130299
+ncdc,ncdc_zips.json,7,2851,saving,112753
+ncdc,ncdc_zips.json,7,2851,writing,101593
+gh,gh_emoji.json,7,173641,reading json,223221801
+gh,gh_emoji.json,7,173641,inodes,1244338
+gh,gh_emoji.json,7,173641,saving,2034344
+gh,gh_emoji.json,7,173641,writing,1481285
+penguin,bsd.json,5,5415,reading json,6840955
+penguin,bsd.json,5,5415,inodes,97191
+penguin,bsd.json,5,5415,saving,94765
+penguin,bsd.json,5,5415,writing,67025
+fda,event.json,8,1819,reading json,2321125
+fda,event.json,8,1819,inodes,79057
+fda,event.json,8,1819,saving,68367
+fda,event.json,8,1819,writing,36509
+penguin,bsd.json,8,5415,reading json,7027703
+penguin,bsd.json,8,5415,inodes,103285
+penguin,bsd.json,8,5415,saving,92051
+penguin,bsd.json,8,5415,writing,64931
+rv,demons.json,10,194,reading json,516124
+rv,demons.json,10,194,inodes,57790
+rv,demons.json,10,194,saving,26757
+rv,demons.json,10,194,writing,16284
+penguin,grisham.json,9,22488,reading json,32031754
+penguin,grisham.json,9,22488,inodes,929160
+penguin,grisham.json,9,22488,saving,666001
+penguin,grisham.json,9,22488,writing,501416
+fda,tobacco100.json,9,63634,reading json,82437966
+fda,tobacco100.json,9,63634,inodes,1094664
+fda,tobacco100.json,9,63634,saving,769029
+fda,tobacco100.json,9,63634,writing,683564
+penguin,grisham.json,6,22488,reading json,30576749
+penguin,grisham.json,6,22488,inodes,922489
+penguin,grisham.json,6,22488,saving,907210
+penguin,grisham.json,6,22488,writing,674091
+ncdc,ncdc_datasets.json,10,1625,reading json,2390570
+ncdc,ncdc_datasets.json,10,1625,inodes,107343
+ncdc,ncdc_datasets.json,10,1625,saving,75632
+ncdc,ncdc_datasets.json,10,1625,writing,66395
+gh,gh_emoji.json,3,173641,reading json,222855632
+gh,gh_emoji.json,3,173641,inodes,1428426
+gh,gh_emoji.json,3,173641,saving,2048371
+gh,gh_emoji.json,3,173641,writing,1431518
+ncdc,ncdc_datatypes.json,9,4013,reading json,5161056
+ncdc,ncdc_datatypes.json,9,4013,inodes,131266
+ncdc,ncdc_datatypes.json,9,4013,saving,109207
+ncdc,ncdc_datatypes.json,9,4013,writing,104678
+ncdc,ncdc_locationcategories.json,4,543,reading json,802001
+ncdc,ncdc_locationcategories.json,4,543,inodes,71520
+ncdc,ncdc_locationcategories.json,4,543,saving,54068
+ncdc,ncdc_locationcategories.json,4,543,writing,30148
+fda,registrationlisting.json,6,3228,reading json,4114788
+fda,registrationlisting.json,6,3228,inodes,112076
+fda,registrationlisting.json,6,3228,saving,84394
+fda,registrationlisting.json,6,3228,writing,57216
+fda,recall10.json,2,212061,reading json,270410437
+fda,recall10.json,2,212061,inodes,4568008
+fda,recall10.json,2,212061,saving,2958970
+fda,recall10.json,2,212061,writing,2584431
+ncdc,ncdc_stations_big.json,2,200908,reading json,266673858
+ncdc,ncdc_stations_big.json,2,200908,inodes,6357319
+ncdc,ncdc_stations_big.json,2,200908,saving,5400811
+ncdc,ncdc_stations_big.json,2,200908,writing,4473991
+doi,doi_10.1000_1.json,8,369,reading json,1598998
+doi,doi_10.1000_1.json,8,369,inodes,88034
+doi,doi_10.1000_1.json,8,369,saving,44562
+doi,doi_10.1000_1.json,8,369,writing,22776
+json_org,json_eg5.json,7,873,reading json,1406381
+json_org,json_eg5.json,7,873,inodes,76402
+json_org,json_eg5.json,7,873,saving,55766
+json_org,json_eg5.json,7,873,writing,35551
+fda,waterpipe.json,4,1955,reading json,2580361
+fda,waterpipe.json,4,1955,inodes,74716
+fda,waterpipe.json,4,1955,saving,66395
+fda,waterpipe.json,4,1955,writing,31950
+fda,tobacco100.json,7,63634,reading json,83129730
+fda,tobacco100.json,7,63634,inodes,1031441
+fda,tobacco100.json,7,63634,saving,763287
+fda,tobacco100.json,7,63634,writing,682253
+ncdc,ncdc_07030.json,1,111,reading json,190713
+ncdc,ncdc_07030.json,1,111,inodes,30223
+ncdc,ncdc_07030.json,1,111,saving,26180
+ncdc,ncdc_07030.json,1,111,writing,34051
+fda,tobacco.json,1,1144,reading json,1534927
+fda,tobacco.json,1,1144,inodes,63646
+fda,tobacco.json,1,1144,saving,41624
+fda,tobacco.json,1,1144,writing,24617
+doi,doi_smoosh.json,7,537,reading json,741870
+doi,doi_smoosh.json,7,537,inodes,66681
+doi,doi_smoosh.json,7,537,saving,44472
+doi,doi_smoosh.json,7,537,writing,27847
+json_org,json_eg3.json,6,602,reading json,778850
+json_org,json_eg3.json,6,602,inodes,36336
+json_org,json_eg3.json,6,602,saving,48309
+json_org,json_eg3.json,6,602,writing,20513
+ncdc,ncdc_locations.json,6,2808,reading json,3914911
+ncdc,ncdc_locations.json,6,2808,inodes,142722
+ncdc,ncdc_locations.json,6,2808,saving,110328
+ncdc,ncdc_locations.json,6,2808,writing,99516
+ncdc,ncdc_gsom_sample.json,6,2867,reading json,4252154
+ncdc,ncdc_gsom_sample.json,6,2867,inodes,135906
+ncdc,ncdc_gsom_sample.json,6,2867,saving,109055
+ncdc,ncdc_gsom_sample.json,6,2867,writing,99804
+gov.uk,bank-holidays.json,8,15124,reading json,24145192
+gov.uk,bank-holidays.json,8,15124,inodes,651257
+gov.uk,bank-holidays.json,8,15124,saving,584054
+gov.uk,bank-holidays.json,8,15124,writing,466100
+gh,mgree.json,5,1331,reading json,1712933
+gh,mgree.json,5,1331,inodes,41219
+gh,mgree.json,5,1331,saving,51660
+gh,mgree.json,5,1331,writing,32929
+json_org,json_eg4.json,8,3468,reading json,4912588
+json_org,json_eg4.json,8,3468,inodes,107179
+json_org,json_eg4.json,8,3468,saving,99003
+json_org,json_eg4.json,8,3468,writing,60146
+gh,gh_events.json,8,54778,reading json,70897652
+gh,gh_events.json,8,54778,inodes,748231
+gh,gh_events.json,8,54778,saving,785366
+gh,gh_events.json,8,54778,writing,718432
+penguin,grisham.json,1,22488,reading json,30867035
+penguin,grisham.json,1,22488,inodes,969158
+penguin,grisham.json,1,22488,saving,840047
+penguin,grisham.json,1,22488,writing,654051
+gh,gh_emoji.json,1,173641,reading json,225094537
+gh,gh_emoji.json,1,173641,inodes,1441338
+gh,gh_emoji.json,1,173641,saving,2009515
+gh,gh_emoji.json,1,173641,writing,1413652
+ncdc,ncdc_stations_big.json,8,200908,reading json,257530322
+ncdc,ncdc_stations_big.json,8,200908,inodes,6623697
+ncdc,ncdc_stations_big.json,8,200908,saving,5669267
+ncdc,ncdc_stations_big.json,8,200908,writing,4960167
+doi,doi_smoosh.json,1,537,reading json,718991
+doi,doi_smoosh.json,1,537,inodes,66341
+doi,doi_smoosh.json,1,537,saving,44994
+doi,doi_smoosh.json,1,537,writing,21987
+ncdc,ncdc_datacategories.json,5,1075,reading json,1553948
+ncdc,ncdc_datacategories.json,5,1075,inodes,103856
+ncdc,ncdc_datacategories.json,5,1075,saving,80467
+ncdc,ncdc_datacategories.json,5,1075,writing,48497
+fda,recall100.json,2,2117776,reading json,2669744711
+fda,recall100.json,2,2117776,inodes,43603053
+fda,recall100.json,2,2117776,saving,24477909
+fda,recall100.json,2,2117776,writing,20144759
+fda,recall100.json,9,2117776,reading json,2648390491
+fda,recall100.json,9,2117776,inodes,43929332
+fda,recall100.json,9,2117776,saving,25069358
+fda,recall100.json,9,2117776,writing,20153595
+rv,agni.json,5,89267,reading json,113840693
+rv,agni.json,5,89267,inodes,2031157
+rv,agni.json,5,89267,saving,1763225
+rv,agni.json,5,89267,writing,1760408
+ncdc,ncdc_datatypes.json,8,4013,reading json,5193665
+ncdc,ncdc_datatypes.json,8,4013,inodes,133635
+ncdc,ncdc_datatypes.json,8,4013,saving,113754
+ncdc,ncdc_datatypes.json,8,4013,writing,103808
+ncdc,ncdc_datasets.json,9,1625,reading json,2152571
+ncdc,ncdc_datasets.json,9,1625,inodes,98165
+ncdc,ncdc_datasets.json,9,1625,saving,78485
+ncdc,ncdc_datasets.json,9,1625,writing,66583
+doi,doi_10.1000_1.json,4,369,reading json,519430
+doi,doi_10.1000_1.json,4,369,inodes,67656
+doi,doi_10.1000_1.json,4,369,saving,38801
+doi,doi_10.1000_1.json,4,369,writing,24053
+json_org,json_eg4.json,3,3468,reading json,4503443
+json_org,json_eg4.json,3,3468,inodes,107120
+json_org,json_eg4.json,3,3468,saving,105938
+json_org,json_eg4.json,3,3468,writing,60368
+json_org,json_eg2.json,5,242,reading json,590865
+json_org,json_eg2.json,5,242,inodes,75217
+json_org,json_eg2.json,5,242,saving,29094
+json_org,json_eg2.json,5,242,writing,18328
+fda,tobacco_products.json,7,2345,reading json,3119163
+fda,tobacco_products.json,7,2345,inodes,88794
+fda,tobacco_products.json,7,2345,saving,68350
+fda,tobacco_products.json,7,2345,writing,41735
+penguin,grisham.json,2,22488,reading json,30398828
+penguin,grisham.json,2,22488,inodes,845451
+penguin,grisham.json,2,22488,saving,899179
+penguin,grisham.json,2,22488,writing,649404
+ncdc,ncdc_datacategories.json,4,1075,reading json,1427814
+ncdc,ncdc_datacategories.json,4,1075,inodes,90455
+ncdc,ncdc_datacategories.json,4,1075,saving,75348
+ncdc,ncdc_datacategories.json,4,1075,writing,50670
+json_org,json_eg2.json,2,242,reading json,351845
+json_org,json_eg2.json,2,242,inodes,54723
+json_org,json_eg2.json,2,242,saving,37299
+json_org,json_eg2.json,2,242,writing,18331
+gov.uk,bank-holidays.json,7,15124,reading json,21284788
+gov.uk,bank-holidays.json,7,15124,inodes,643368
+gov.uk,bank-holidays.json,7,15124,saving,1075144
+gov.uk,bank-holidays.json,7,15124,writing,714734
+fda,recall100.json,10,2117776,reading json,2653337792
+fda,recall100.json,10,2117776,inodes,43185313
+fda,recall100.json,10,2117776,saving,24987782
+fda,recall100.json,10,2117776,writing,20388527
+rv,demons.json,2,194,reading json,310585
+rv,demons.json,2,194,inodes,52752
+rv,demons.json,2,194,saving,26255
+rv,demons.json,2,194,writing,19683
+fake,object_null.json,7,95,reading json,163677
+fake,object_null.json,7,95,inodes,26950
+fake,object_null.json,7,95,saving,25504
+fake,object_null.json,7,95,writing,11335
+ncdc,ncdc_locations.json,8,2808,reading json,3671383
+ncdc,ncdc_locations.json,8,2808,inodes,132590
+ncdc,ncdc_locations.json,8,2808,saving,113631
+ncdc,ncdc_locations.json,8,2808,writing,103382
+fake,obj_rename.json,8,69,reading json,139619
+fake,obj_rename.json,8,69,inodes,22845
+fake,obj_rename.json,8,69,saving,15446
+fake,obj_rename.json,8,69,writing,15821
+gh,gh_apache2.json,1,12591,reading json,16466627
+gh,gh_apache2.json,1,12591,inodes,66378
+gh,gh_apache2.json,1,12591,saving,44559
+gh,gh_apache2.json,1,12591,writing,87881
+fda,waterpipe.json,2,1955,reading json,2519948
+fda,waterpipe.json,2,1955,inodes,74380
+fda,waterpipe.json,2,1955,saving,54778
+fda,waterpipe.json,2,1955,writing,34881
+doi,doi_10.1000_1.json,7,369,reading json,533907
+doi,doi_10.1000_1.json,7,369,inodes,62515
+doi,doi_10.1000_1.json,7,369,saving,41516
+doi,doi_10.1000_1.json,7,369,writing,23712
+penguin,bsd.json,2,5415,reading json,7084083
+penguin,bsd.json,2,5415,inodes,121244
+penguin,bsd.json,2,5415,saving,97579
+penguin,bsd.json,2,5415,writing,64609
+ncdc,ncdc_07030.json,7,111,reading json,212123
+ncdc,ncdc_07030.json,7,111,inodes,40346
+ncdc,ncdc_07030.json,7,111,saving,23687
+ncdc,ncdc_07030.json,7,111,writing,24821
+json_org,json_eg1.json,8,583,reading json,797368
+json_org,json_eg1.json,8,583,inodes,58793
+json_org,json_eg1.json,8,583,saving,33707
+json_org,json_eg1.json,8,583,writing,27499
+penguin,linux.json,10,64401,reading json,84861867
+penguin,linux.json,10,64401,inodes,720097
+penguin,linux.json,10,64401,saving,700409
+penguin,linux.json,10,64401,writing,589106
+penguin,rust.json,4,161726,reading json,206283486
+penguin,rust.json,4,161726,inodes,779795
+penguin,rust.json,4,161726,saving,867423
+penguin,rust.json,4,161726,writing,772207
+gh,kmt.json,1,4979,reading json,6475521
+gh,kmt.json,1,4979,inodes,85935
+gh,kmt.json,1,4979,saving,140384
+gh,kmt.json,1,4979,writing,109672
+penguin,linux.json,4,64401,reading json,83987292
+penguin,linux.json,4,64401,inodes,639940
+penguin,linux.json,4,64401,saving,726302
+penguin,linux.json,4,64401,writing,593935
+penguin,linux.json,2,64401,reading json,83852759
+penguin,linux.json,2,64401,inodes,646522
+penguin,linux.json,2,64401,saving,726274
+penguin,linux.json,2,64401,writing,590427
+fda,event100.json,7,2945177,reading json,3697454204
+fda,event100.json,7,2945177,inodes,47399750
+fda,event100.json,7,2945177,saving,27434731
+fda,event100.json,7,2945177,writing,19931592
+fake,object_null.json,2,95,reading json,160406
+fake,object_null.json,2,95,inodes,49216
+fake,object_null.json,2,95,saving,26822
+fake,object_null.json,2,95,writing,12047
+gh,ffs_issues.json,7,38158,reading json,49817603
+gh,ffs_issues.json,7,38158,inodes,949687
+gh,ffs_issues.json,7,38158,saving,727744
+gh,ffs_issues.json,7,38158,writing,662379
+json_org,json_eg3.json,3,602,reading json,810519
+json_org,json_eg3.json,3,602,inodes,38217
+json_org,json_eg3.json,3,602,saving,36602
+json_org,json_eg3.json,3,602,writing,24282
+fda,registrationlisting.json,8,3228,reading json,4414506
+fda,registrationlisting.json,8,3228,inodes,97152
+fda,registrationlisting.json,8,3228,saving,73006
+fda,registrationlisting.json,8,3228,writing,44323
+fda,event.json,7,1819,reading json,2671550
+fda,event.json,7,1819,inodes,78795
+fda,event.json,7,1819,saving,46243
+fda,event.json,7,1819,writing,26858
+json_org,json_eg2.json,7,242,reading json,355962
+json_org,json_eg2.json,7,242,inodes,56284
+json_org,json_eg2.json,7,242,saving,31171
+json_org,json_eg2.json,7,242,writing,19301
+ncdc,ncdc_stations_big.json,1,200908,reading json,256990492
+ncdc,ncdc_stations_big.json,1,200908,inodes,6730000
+ncdc,ncdc_stations_big.json,1,200908,saving,5324167
+ncdc,ncdc_stations_big.json,1,200908,writing,4500358
+ncdc,ncdc_07030.json,4,111,reading json,184176
+ncdc,ncdc_07030.json,4,111,inodes,29035
+ncdc,ncdc_07030.json,4,111,saving,24253
+ncdc,ncdc_07030.json,4,111,writing,23475
+ncdc,ncdc_locationcategories.json,10,543,reading json,816540
+ncdc,ncdc_locationcategories.json,10,543,inodes,80568
+ncdc,ncdc_locationcategories.json,10,543,saving,54959
+ncdc,ncdc_locationcategories.json,10,543,writing,42446
+penguin,grisham.json,3,22488,reading json,31574496
+penguin,grisham.json,3,22488,inodes,986055
+penguin,grisham.json,3,22488,saving,932085
+penguin,grisham.json,3,22488,writing,654263
+doi,doi_smoosh.json,9,537,reading json,727991
+doi,doi_smoosh.json,9,537,inodes,65354
+doi,doi_smoosh.json,9,537,saving,44712
+doi,doi_smoosh.json,9,537,writing,26324
+penguin,dekeijzer.json,7,446,reading json,628526
+penguin,dekeijzer.json,7,446,inodes,30683
+penguin,dekeijzer.json,7,446,saving,30685
+penguin,dekeijzer.json,7,446,writing,34272
+penguin,dekeijzer.json,4,446,reading json,608968
+penguin,dekeijzer.json,4,446,inodes,30553
+penguin,dekeijzer.json,4,446,saving,33959
+penguin,dekeijzer.json,4,446,writing,18206
+fda,event100.json,3,2945177,reading json,3781310773
+fda,event100.json,3,2945177,inodes,48291940
+fda,event100.json,3,2945177,saving,26840580
+fda,event100.json,3,2945177,writing,19921932
+json_org,json_eg1.json,2,583,reading json,784147
+json_org,json_eg1.json,2,583,inodes,59484
+json_org,json_eg1.json,2,583,saving,25491
+json_org,json_eg1.json,2,583,writing,15207
+fake,list2.json,4,25,reading json,237726
+fake,list2.json,4,25,inodes,63358
+fake,list2.json,4,25,saving,22256
+fake,list2.json,4,25,writing,16889
+ncdc,ncdc_gsom_sample.json,9,2867,reading json,3746127
+ncdc,ncdc_gsom_sample.json,9,2867,inodes,125020
+ncdc,ncdc_gsom_sample.json,9,2867,saving,117307
+ncdc,ncdc_gsom_sample.json,9,2867,writing,107295
+fda,registrationlisting100.json,6,214459,reading json,274404379
+fda,registrationlisting100.json,6,214459,inodes,3782891
+fda,registrationlisting100.json,6,214459,saving,3868703
+fda,registrationlisting100.json,6,214459,writing,3075046
+fda,event.json,4,1819,reading json,2462236
+fda,event.json,4,1819,inodes,78446
+fda,event.json,4,1819,saving,71995
+fda,event.json,4,1819,writing,39121
+fda,tobacco_products.json,3,2345,reading json,3027547
+fda,tobacco_products.json,3,2345,inodes,84897
+fda,tobacco_products.json,3,2345,saving,68159
+fda,tobacco_products.json,3,2345,writing,42643
+json_org,json_eg1.json,5,583,reading json,791439
+json_org,json_eg1.json,5,583,inodes,57485
+json_org,json_eg1.json,5,583,saving,40011
+json_org,json_eg1.json,5,583,writing,20085
+fda,recall10.json,6,212061,reading json,268720501
+fda,recall10.json,6,212061,inodes,4693835
+fda,recall10.json,6,212061,saving,3087251
+fda,recall10.json,6,212061,writing,2586907
+rv,human_male.json,2,603912,reading json,777565372
+rv,human_male.json,2,603912,inodes,12726163
+rv,human_male.json,2,603912,saving,11366777
+rv,human_male.json,2,603912,writing,11523559
+fake,obj_rename.json,10,69,reading json,131905
+fake,obj_rename.json,10,69,inodes,23036
+fake,obj_rename.json,10,69,saving,18072
+fake,obj_rename.json,10,69,writing,10872
+fda,recall10.json,1,212061,reading json,268375735
+fda,recall10.json,1,212061,inodes,4228609
+fda,recall10.json,1,212061,saving,3308011
+fda,recall10.json,1,212061,writing,2746296
+gh,ffs.json,1,5089,reading json,6467367
+gh,ffs.json,1,5089,inodes,79641
+gh,ffs.json,1,5089,saving,100963
+gh,ffs.json,1,5089,writing,75208
+fda,event.json,9,1819,reading json,2467228
+fda,event.json,9,1819,inodes,77494
+fda,event.json,9,1819,saving,66015
+fda,event.json,9,1819,writing,37986
+fake,list2.json,2,25,reading json,58890
+fake,list2.json,2,25,inodes,51671
+fake,list2.json,2,25,saving,31709
+fake,list2.json,2,25,writing,24280
+fake,object.json,8,77,reading json,140588
+fake,object.json,8,77,inodes,26620
+fake,object.json,8,77,saving,27556
+fake,object.json,8,77,writing,12893
+gov.uk,bank-holidays.json,3,15124,reading json,20413923
+gov.uk,bank-holidays.json,3,15124,inodes,613239
+gov.uk,bank-holidays.json,3,15124,saving,564324
+gov.uk,bank-holidays.json,3,15124,writing,466322
+ncdc,ncdc_datasets.json,1,1625,reading json,2158763
+ncdc,ncdc_datasets.json,1,1625,inodes,98073
+ncdc,ncdc_datasets.json,1,1625,saving,68983
+ncdc,ncdc_datasets.json,1,1625,writing,65974
+fake,object.json,6,77,reading json,148134
+fake,object.json,6,77,inodes,28508
+fake,object.json,6,77,saving,35117
+fake,object.json,6,77,writing,15078
+ncdc,ncdc_07030_stations.json,6,1476,reading json,1912048
+ncdc,ncdc_07030_stations.json,6,1476,inodes,96921
+ncdc,ncdc_07030_stations.json,6,1476,saving,81157
+ncdc,ncdc_07030_stations.json,6,1476,writing,64884
+json_org,json_eg3.json,7,602,reading json,816710
+json_org,json_eg3.json,7,602,inodes,36845
+json_org,json_eg3.json,7,602,saving,39358
+json_org,json_eg3.json,7,602,writing,24557
+fda,tobacco.json,5,1144,reading json,1501863
+fda,tobacco.json,5,1144,inodes,64022
+fda,tobacco.json,5,1144,saving,43541
+fda,tobacco.json,5,1144,writing,22713
+gh,gh_gpl3.json,10,36979,reading json,50920462
+gh,gh_gpl3.json,10,36979,inodes,103377
+gh,gh_gpl3.json,10,36979,saving,62526
+gh,gh_gpl3.json,10,36979,writing,222822
+ncdc,ncdc_datasets.json,7,1625,reading json,2247555
+ncdc,ncdc_datasets.json,7,1625,inodes,123904
+ncdc,ncdc_datasets.json,7,1625,saving,75430
+ncdc,ncdc_datasets.json,7,1625,writing,66502
+gov.uk,bank-holidays.json,2,15124,reading json,20066996
+gov.uk,bank-holidays.json,2,15124,inodes,653143
+gov.uk,bank-holidays.json,2,15124,saving,541414
+gov.uk,bank-holidays.json,2,15124,writing,465848
+ncdc,ncdc_locations.json,4,2808,reading json,3601127
+ncdc,ncdc_locations.json,4,2808,inodes,131031
+ncdc,ncdc_locations.json,4,2808,saving,107726
+ncdc,ncdc_locations.json,4,2808,writing,100928
+fda,tobacco_products.json,1,2345,reading json,2994313
+fda,tobacco_products.json,1,2345,inodes,83188
+fda,tobacco_products.json,1,2345,saving,68510
+fda,tobacco_products.json,1,2345,writing,42389
+ncdc,ncdc_datatypes.json,10,4013,reading json,5476645
+ncdc,ncdc_datatypes.json,10,4013,inodes,128556
+ncdc,ncdc_datatypes.json,10,4013,saving,110566
+ncdc,ncdc_datatypes.json,10,4013,writing,103816
+gh,gh_emoji.json,2,173641,reading json,225697135
+gh,gh_emoji.json,2,173641,inodes,1399634
+gh,gh_emoji.json,2,173641,saving,2128318
+gh,gh_emoji.json,2,173641,writing,1373005
+ncdc,ncdc_locations.json,3,2808,reading json,3757285
+ncdc,ncdc_locations.json,3,2808,inodes,130553
+ncdc,ncdc_locations.json,3,2808,saving,111755
+ncdc,ncdc_locations.json,3,2808,writing,102916
+penguin,linux.json,6,64401,reading json,85490446
+penguin,linux.json,6,64401,inodes,740001
+penguin,linux.json,6,64401,saving,700788
+penguin,linux.json,6,64401,writing,590752
+gh,gh_licenses.json,9,2507,reading json,3459386
+gh,gh_licenses.json,9,2507,inodes,89850
+gh,gh_licenses.json,9,2507,saving,63194
+gh,gh_licenses.json,9,2507,writing,56434
+fda,registrationlisting100.json,7,214459,reading json,276035824
+fda,registrationlisting100.json,7,214459,inodes,3463703
+fda,registrationlisting100.json,7,214459,saving,3650487
+fda,registrationlisting100.json,7,214459,writing,2991871
+ncdc,ncdc_zips.json,5,2851,reading json,3910622
+ncdc,ncdc_zips.json,5,2851,inodes,129825
+ncdc,ncdc_zips.json,5,2851,saving,110580
+ncdc,ncdc_zips.json,5,2851,writing,103131
+ncdc,ncdc_07030_stations.json,2,1476,reading json,1967217
+ncdc,ncdc_07030_stations.json,2,1476,inodes,98011
+ncdc,ncdc_07030_stations.json,2,1476,saving,73810
+ncdc,ncdc_07030_stations.json,2,1476,writing,64880
+ncdc,ncdc_zips.json,8,2851,reading json,3803181
+ncdc,ncdc_zips.json,8,2851,inodes,131964
+ncdc,ncdc_zips.json,8,2851,saving,110438
+ncdc,ncdc_zips.json,8,2851,writing,103104
+fake,list2.json,8,25,reading json,64285
+fake,list2.json,8,25,inodes,61823
+fake,list2.json,8,25,saving,34113
+fake,list2.json,8,25,writing,13291
+gh,kmt.json,2,4979,reading json,6411548
+gh,kmt.json,2,4979,inodes,79848
+gh,kmt.json,2,4979,saving,103885
+gh,kmt.json,2,4979,writing,75490
+rv,agni.json,6,89267,reading json,116129508
+rv,agni.json,6,89267,inodes,1912072
+rv,agni.json,6,89267,saving,1862665
+rv,agni.json,6,89267,writing,1769325
+json_org,json_eg4.json,1,3468,reading json,5026244
+json_org,json_eg4.json,1,3468,inodes,125710
+json_org,json_eg4.json,1,3468,saving,102354
+json_org,json_eg4.json,1,3468,writing,59622
+rv,demons.json,7,194,reading json,294332
+rv,demons.json,7,194,inodes,55512
+rv,demons.json,7,194,saving,26966
+rv,demons.json,7,194,writing,17182
+fda,recall10.json,9,212061,reading json,266053483
+fda,recall10.json,9,212061,inodes,4232791
+fda,recall10.json,9,212061,saving,2933774
+fda,recall10.json,9,212061,writing,2547982
+ncdc,ncdc_datasets.json,6,1625,reading json,2161630
+ncdc,ncdc_datasets.json,6,1625,inodes,102209
+ncdc,ncdc_datasets.json,6,1625,saving,71429
+ncdc,ncdc_datasets.json,6,1625,writing,66514
+rv,human_male.json,10,603912,reading json,766424805
+rv,human_male.json,10,603912,inodes,12826142
+rv,human_male.json,10,603912,saving,11249248
+rv,human_male.json,10,603912,writing,11032624
+gh,gh_emoji.json,5,173641,reading json,221380227
+gh,gh_emoji.json,5,173641,inodes,1318232
+gh,gh_emoji.json,5,173641,saving,1981676
+gh,gh_emoji.json,5,173641,writing,1613362
+gov.uk,bank-holidays.json,5,15124,reading json,20401114
+gov.uk,bank-holidays.json,5,15124,inodes,612341
+gov.uk,bank-holidays.json,5,15124,saving,547407
+gov.uk,bank-holidays.json,5,15124,writing,474788
+fda,event100.json,2,2945177,reading json,3785301296
+fda,event100.json,2,2945177,inodes,46117747
+fda,event100.json,2,2945177,saving,25636337
+fda,event100.json,2,2945177,writing,20106989
+penguin,dekeijzer.json,5,446,reading json,601584
+penguin,dekeijzer.json,5,446,inodes,29282
+penguin,dekeijzer.json,5,446,saving,31460
+penguin,dekeijzer.json,5,446,writing,20500
+gh,ffs.json,7,5089,reading json,6535118
+gh,ffs.json,7,5089,inodes,133651
+gh,ffs.json,7,5089,saving,105686
+gh,ffs.json,7,5089,writing,74751
+fake,obj_rename.json,4,69,reading json,131371
+fake,obj_rename.json,4,69,inodes,22670
+fake,obj_rename.json,4,69,saving,19205
+fake,obj_rename.json,4,69,writing,10883
+penn,historic-20181028.json,4,1468638,reading json,1873658730
+penn,historic-20181028.json,4,1468638,inodes,35134105
+penn,historic-20181028.json,4,1468638,saving,28342263
+penn,historic-20181028.json,4,1468638,writing,21855994
+penguin,linux.json,8,64401,reading json,82284549
+penguin,linux.json,8,64401,inodes,663607
+penguin,linux.json,8,64401,saving,567510
+penguin,linux.json,8,64401,writing,423594
+gh,ffs_issues.json,5,38158,reading json,48923418
+gh,ffs_issues.json,5,38158,inodes,598521
+gh,ffs_issues.json,5,38158,saving,575656
+gh,ffs_issues.json,5,38158,writing,510738
+fda,event.json,10,1819,reading json,2378683
+fda,event.json,10,1819,inodes,76536
+fda,event.json,10,1819,saving,65611
+fda,event.json,10,1819,writing,43031
+rv,human_male.json,1,603912,reading json,774784926
+rv,human_male.json,1,603912,inodes,12678622
+rv,human_male.json,1,603912,saving,11277225
+rv,human_male.json,1,603912,writing,10695230
+rv,agni.json,7,89267,reading json,117529205
+rv,agni.json,7,89267,inodes,1964326
+rv,agni.json,7,89267,saving,1278928
+rv,agni.json,7,89267,writing,1645396
+fda,waterpipe.json,8,1955,reading json,2555458
+fda,waterpipe.json,8,1955,inodes,75307
+fda,waterpipe.json,8,1955,saving,54603
+fda,waterpipe.json,8,1955,writing,35769
+ncdc,ncdc_datasets.json,2,1625,reading json,2142044
+ncdc,ncdc_datasets.json,2,1625,inodes,97515
+ncdc,ncdc_datasets.json,2,1625,saving,76664
+ncdc,ncdc_datasets.json,2,1625,writing,64160
+penguin,bsd.json,10,5415,reading json,6764104
+penguin,bsd.json,10,5415,inodes,177413
+penguin,bsd.json,10,5415,saving,70155
+penguin,bsd.json,10,5415,writing,46486
+doi,doi_10.1000_1.json,3,369,reading json,541293
+doi,doi_10.1000_1.json,3,369,inodes,65239
+doi,doi_10.1000_1.json,3,369,saving,40456
+doi,doi_10.1000_1.json,3,369,writing,24035
+gh,gh_mgree_events.json,4,168832,reading json,215467212
+gh,gh_mgree_events.json,4,168832,inodes,1844610
+gh,gh_mgree_events.json,4,168832,saving,2260752
+gh,gh_mgree_events.json,4,168832,writing,1895299
+gh,mgree_repos.json,1,159905,reading json,203159189
+gh,mgree_repos.json,1,159905,inodes,1798682
+gh,mgree_repos.json,1,159905,saving,1968604
+gh,mgree_repos.json,1,159905,writing,1806478
+json_org,json_eg2.json,9,242,reading json,358744
+json_org,json_eg2.json,9,242,inodes,56646
+json_org,json_eg2.json,9,242,saving,28434
+json_org,json_eg2.json,9,242,writing,19780
+doi,doi_10.1000_1.json,1,369,reading json,512775
+doi,doi_10.1000_1.json,1,369,inodes,60739
+doi,doi_10.1000_1.json,1,369,saving,41074
+doi,doi_10.1000_1.json,1,369,writing,20229
+ncdc,ncdc_stations_big.json,7,200908,reading json,261558415
+ncdc,ncdc_stations_big.json,7,200908,inodes,6015351
+ncdc,ncdc_stations_big.json,7,200908,saving,5415147
+ncdc,ncdc_stations_big.json,7,200908,writing,4471083
+rv,animal.json,8,7051,reading json,9282603
+rv,animal.json,8,7051,inodes,205713
+rv,animal.json,8,7051,saving,169656
+rv,animal.json,8,7051,writing,154318
+ncdc,ncdc_datacategories.json,1,1075,reading json,1556958
+ncdc,ncdc_datacategories.json,1,1075,inodes,101232
+ncdc,ncdc_datacategories.json,1,1075,saving,79992
+ncdc,ncdc_datacategories.json,1,1075,writing,49776
+fake,object.json,1,77,reading json,141324
+fake,object.json,1,77,inodes,25910
+fake,object.json,1,77,saving,16298
+fake,object.json,1,77,writing,11402
+ncdc,ncdc_07030.json,5,111,reading json,191567
+ncdc,ncdc_07030.json,5,111,inodes,29645
+ncdc,ncdc_07030.json,5,111,saving,24096
+ncdc,ncdc_07030.json,5,111,writing,21953
+fda,recall100.json,3,2117776,reading json,2673197586
+fda,recall100.json,3,2117776,inodes,42045823
+fda,recall100.json,3,2117776,saving,23466903
+fda,recall100.json,3,2117776,writing,21062419
+fda,recall100.json,8,2117776,reading json,2652910651
+fda,recall100.json,8,2117776,inodes,43484238
+fda,recall100.json,8,2117776,saving,24356898
+fda,recall100.json,8,2117776,writing,20425277
+fake,list2.json,6,25,reading json,58318
+fake,list2.json,6,25,inodes,51049
+fake,list2.json,6,25,saving,21592
+fake,list2.json,6,25,writing,17027
+gh,mgree_repos.json,2,159905,reading json,205725107
+gh,mgree_repos.json,2,159905,inodes,1695170
+gh,mgree_repos.json,2,159905,saving,1442174
+gh,mgree_repos.json,2,159905,writing,1334905
+rv,animal.json,2,7051,reading json,9171786
+rv,animal.json,2,7051,inodes,213022
+rv,animal.json,2,7051,saving,180048
+rv,animal.json,2,7051,writing,154274
+fake,object_null.json,5,95,reading json,163080
+fake,object_null.json,5,95,inodes,28457
+fake,object_null.json,5,95,saving,21839
+fake,object_null.json,5,95,writing,14339
+rv,demons.json,8,194,reading json,365655
+rv,demons.json,8,194,inodes,70012
+rv,demons.json,8,194,saving,33021
+rv,demons.json,8,194,writing,13149
+json_org,json_eg3.json,2,602,reading json,806814
+json_org,json_eg3.json,2,602,inodes,36130
+json_org,json_eg3.json,2,602,saving,38192
+json_org,json_eg3.json,2,602,writing,23861
+fda,waterpipe.json,5,1955,reading json,2729616
+fda,waterpipe.json,5,1955,inodes,87169
+fda,waterpipe.json,5,1955,saving,54410
+fda,waterpipe.json,5,1955,writing,33529
+fda,event100.json,4,2945177,reading json,3691025014
+fda,event100.json,4,2945177,inodes,45752801
+fda,event100.json,4,2945177,saving,26359499
+fda,event100.json,4,2945177,writing,19427475
+fda,tobacco100.json,5,63634,reading json,85612509
+fda,tobacco100.json,5,63634,inodes,1067609
+fda,tobacco100.json,5,63634,saving,790052
+fda,tobacco100.json,5,63634,writing,681869
+penguin,grisham.json,10,22488,reading json,30489617
+penguin,grisham.json,10,22488,inodes,971290
+penguin,grisham.json,10,22488,saving,1014596
+penguin,grisham.json,10,22488,writing,700224
+ncdc,ncdc_07030.json,2,111,reading json,180028
+ncdc,ncdc_07030.json,2,111,inodes,27054
+ncdc,ncdc_07030.json,2,111,saving,20996
+ncdc,ncdc_07030.json,2,111,writing,21553
+ncdc,ncdc_ewr_station.json,9,191,reading json,300284
+ncdc,ncdc_ewr_station.json,9,191,inodes,31967
+ncdc,ncdc_ewr_station.json,9,191,saving,27472
+ncdc,ncdc_ewr_station.json,9,191,writing,23089
+json_org,json_eg1.json,10,583,reading json,776334
+json_org,json_eg1.json,10,583,inodes,56543
+json_org,json_eg1.json,10,583,saving,32267
+json_org,json_eg1.json,10,583,writing,18290
+penguin,bsd.json,7,5415,reading json,6928776
+penguin,bsd.json,7,5415,inodes,95190
+penguin,bsd.json,7,5415,saving,93753
+penguin,bsd.json,7,5415,writing,66914
+penn,historic-20181028.json,2,1468638,reading json,1878006492
+penn,historic-20181028.json,2,1468638,inodes,34026136
+penn,historic-20181028.json,2,1468638,saving,28562006
+penn,historic-20181028.json,2,1468638,writing,18722934
+doi,doi_smoosh.json,6,537,reading json,758309
+doi,doi_smoosh.json,6,537,inodes,64516
+doi,doi_smoosh.json,6,537,saving,46931
+doi,doi_smoosh.json,6,537,writing,25725
+ncdc,ncdc_07030_stations.json,1,1476,reading json,1902523
+ncdc,ncdc_07030_stations.json,1,1476,inodes,99733
+ncdc,ncdc_07030_stations.json,1,1476,saving,72309
+ncdc,ncdc_07030_stations.json,1,1476,writing,77294
+fake,obj_rename.json,7,69,reading json,129320
+fake,obj_rename.json,7,69,inodes,22000
+fake,obj_rename.json,7,69,saving,15640
+fake,obj_rename.json,7,69,writing,14205
+rv,demons.json,4,194,reading json,290102
+rv,demons.json,4,194,inodes,54384
+rv,demons.json,4,194,saving,32876
+rv,demons.json,4,194,writing,15136
+json_org,json_eg3.json,10,602,reading json,816590
+json_org,json_eg3.json,10,602,inodes,36929
+json_org,json_eg3.json,10,602,saving,41630
+json_org,json_eg3.json,10,602,writing,23369
+fda,registrationlisting.json,5,3228,reading json,4106090
+fda,registrationlisting.json,5,3228,inodes,94152
+fda,registrationlisting.json,5,3228,saving,90170
+fda,registrationlisting.json,5,3228,writing,59747
+ncdc,ncdc_gsom_sample.json,10,2867,reading json,3642623
+ncdc,ncdc_gsom_sample.json,10,2867,inodes,122817
+ncdc,ncdc_gsom_sample.json,10,2867,saving,109897
+ncdc,ncdc_gsom_sample.json,10,2867,writing,102905
+gh,kmt.json,4,4979,reading json,6363962
+gh,kmt.json,4,4979,inodes,88544
+gh,kmt.json,4,4979,saving,106750
+gh,kmt.json,4,4979,writing,75532
+gh,kmt.json,5,4979,reading json,7212238
+gh,kmt.json,5,4979,inodes,97461
+gh,kmt.json,5,4979,saving,101594
+gh,kmt.json,5,4979,writing,74650
+gh,mgree_repos.json,3,159905,reading json,203095084
+gh,mgree_repos.json,3,159905,inodes,1979027
+gh,mgree_repos.json,3,159905,saving,2027444
+gh,mgree_repos.json,3,159905,writing,1957503
+gh,ffs.json,8,5089,reading json,6437697
+gh,ffs.json,8,5089,inodes,76053
+gh,ffs.json,8,5089,saving,109576
+gh,ffs.json,8,5089,writing,75066
+ncdc,ncdc_locations.json,9,2808,reading json,3658022
+ncdc,ncdc_locations.json,9,2808,inodes,127291
+ncdc,ncdc_locations.json,9,2808,saving,109301
+ncdc,ncdc_locations.json,9,2808,writing,102049
+penguin,rust.json,10,161726,reading json,204218577
+penguin,rust.json,10,161726,inodes,797318
+penguin,rust.json,10,161726,saving,640339
+penguin,rust.json,10,161726,writing,555777
+rv,demons.json,9,194,reading json,287426
+rv,demons.json,9,194,inodes,52823
+rv,demons.json,9,194,saving,29638
+rv,demons.json,9,194,writing,15086
+fda,event.json,3,1819,reading json,2329223
+fda,event.json,3,1819,inodes,76649
+fda,event.json,3,1819,saving,76625
+fda,event.json,3,1819,writing,37230
+gh,mgree.json,8,1331,reading json,1675000
+gh,mgree.json,8,1331,inodes,40762
+gh,mgree.json,8,1331,saving,56610
+gh,mgree.json,8,1331,writing,30621
+json_org,json_eg4.json,4,3468,reading json,4476004
+json_org,json_eg4.json,4,3468,inodes,101150
+json_org,json_eg4.json,4,3468,saving,82577
+json_org,json_eg4.json,4,3468,writing,44099
+ncdc,ncdc_locations.json,10,2808,reading json,3715281
+ncdc,ncdc_locations.json,10,2808,inodes,133683
+ncdc,ncdc_locations.json,10,2808,saving,101389
+ncdc,ncdc_locations.json,10,2808,writing,80886
+fake,object_null.json,6,95,reading json,166601
+fake,object_null.json,6,95,inodes,27988
+fake,object_null.json,6,95,saving,25145
+fake,object_null.json,6,95,writing,13383
+penguin,grisham.json,8,22488,reading json,30294347
+penguin,grisham.json,8,22488,inodes,892949
+penguin,grisham.json,8,22488,saving,882202
+penguin,grisham.json,8,22488,writing,647781
+rv,agni.json,10,89267,reading json,113236537
+rv,agni.json,10,89267,inodes,1883509
+rv,agni.json,10,89267,saving,1832334
+rv,agni.json,10,89267,writing,1733773
+doi,doi_smoosh.json,4,537,reading json,777245
+doi,doi_smoosh.json,4,537,inodes,65563
+doi,doi_smoosh.json,4,537,saving,47206
+doi,doi_smoosh.json,4,537,writing,27740
+gh,mgree_repos.json,8,159905,reading json,197395728
+gh,mgree_repos.json,8,159905,inodes,1785115
+gh,mgree_repos.json,8,159905,saving,1819420
+gh,mgree_repos.json,8,159905,writing,1740093
+gh,ffs_issues.json,4,38158,reading json,49866395
+gh,ffs_issues.json,4,38158,inodes,665625
+gh,ffs_issues.json,4,38158,saving,540455
+gh,ffs_issues.json,4,38158,writing,515929
+ncdc,ncdc_locationcategories.json,3,543,reading json,743613
+ncdc,ncdc_locationcategories.json,3,543,inodes,69364
+ncdc,ncdc_locationcategories.json,3,543,saving,51484
+ncdc,ncdc_locationcategories.json,3,543,writing,31321
+fda,registrationlisting100.json,2,214459,reading json,266204695
+fda,registrationlisting100.json,2,214459,inodes,3174560
+fda,registrationlisting100.json,2,214459,saving,4084696
+fda,registrationlisting100.json,2,214459,writing,3204732
+fda,recall.json,5,22475,reading json,29761849
+fda,recall.json,5,22475,inodes,529828
+fda,recall.json,5,22475,saving,357661
+fda,recall.json,5,22475,writing,302391
+fda,registrationlisting100.json,8,214459,reading json,279496908
+fda,registrationlisting100.json,8,214459,inodes,3834935
+fda,registrationlisting100.json,8,214459,saving,3262617
+fda,registrationlisting100.json,8,214459,writing,2631535
+penguin,grisham.json,5,22488,reading json,30279682
+penguin,grisham.json,5,22488,inodes,897899
+penguin,grisham.json,5,22488,saving,795862
+penguin,grisham.json,5,22488,writing,583652
+fda,recall50.json,6,1049501,reading json,1312283019
+fda,recall50.json,6,1049501,inodes,22020402
+fda,recall50.json,6,1049501,saving,12810356
+fda,recall50.json,6,1049501,writing,12100480
+gh,gh_mgree_events.json,1,168832,reading json,215049302
+gh,gh_mgree_events.json,1,168832,inodes,2105364
+gh,gh_mgree_events.json,1,168832,saving,2326648
+gh,gh_mgree_events.json,1,168832,writing,1972475
+fda,tobacco.json,10,1144,reading json,1461294
+fda,tobacco.json,10,1144,inodes,63584
+fda,tobacco.json,10,1144,saving,45066
+fda,tobacco.json,10,1144,writing,30294
+penguin,rust.json,7,161726,reading json,206172145
+penguin,rust.json,7,161726,inodes,806156
+penguin,rust.json,7,161726,saving,904195
+penguin,rust.json,7,161726,writing,800851
+gov.uk,bank-holidays.json,9,15124,reading json,19700482
+gov.uk,bank-holidays.json,9,15124,inodes,679460
+gov.uk,bank-holidays.json,9,15124,saving,750210
+gov.uk,bank-holidays.json,9,15124,writing,664794
+gh,gh_licenses.json,6,2507,reading json,3195701
+gh,gh_licenses.json,6,2507,inodes,85460
+gh,gh_licenses.json,6,2507,saving,57819
+gh,gh_licenses.json,6,2507,writing,51951
+fda,tobacco.json,7,1144,reading json,1510986
+fda,tobacco.json,7,1144,inodes,64212
+fda,tobacco.json,7,1144,saving,37807
+fda,tobacco.json,7,1144,writing,23376
+gh,ffs_issues.json,1,38158,reading json,49168752
+gh,ffs_issues.json,1,38158,inodes,573214
+gh,ffs_issues.json,1,38158,saving,405448
+gh,ffs_issues.json,1,38158,writing,379162
+fda,tobacco_products.json,9,2345,reading json,2996723
+fda,tobacco_products.json,9,2345,inodes,99518
+fda,tobacco_products.json,9,2345,saving,65826
+fda,tobacco_products.json,9,2345,writing,41381
+fda,registrationlisting100.json,10,214459,reading json,272748516
+fda,registrationlisting100.json,10,214459,inodes,3337086
+fda,registrationlisting100.json,10,214459,saving,3558771
+fda,registrationlisting100.json,10,214459,writing,3013594
+fda,tobacco10.json,3,6567,reading json,8749636
+fda,tobacco10.json,3,6567,inodes,161714
+fda,tobacco10.json,3,6567,saving,111642
+fda,tobacco10.json,3,6567,writing,83770
+ncdc,ncdc_stations_big.json,9,200908,reading json,259040137
+ncdc,ncdc_stations_big.json,9,200908,inodes,7205986
+ncdc,ncdc_stations_big.json,9,200908,saving,5307249
+ncdc,ncdc_stations_big.json,9,200908,writing,5212292
+ncdc,ncdc_datacategories.json,2,1075,reading json,1389450
+ncdc,ncdc_datacategories.json,2,1075,inodes,92233
+ncdc,ncdc_datacategories.json,2,1075,saving,83590
+ncdc,ncdc_datacategories.json,2,1075,writing,50171
+fake,obj_rename.json,5,69,reading json,127546
+fake,obj_rename.json,5,69,inodes,22329
+fake,obj_rename.json,5,69,saving,19857
+fake,obj_rename.json,5,69,writing,11282
+doi,doi_10.1000_1.json,2,369,reading json,514232
+doi,doi_10.1000_1.json,2,369,inodes,60546
+doi,doi_10.1000_1.json,2,369,saving,40170
+doi,doi_10.1000_1.json,2,369,writing,24702
+ncdc,ncdc_ewr_station.json,10,191,reading json,293010
+ncdc,ncdc_ewr_station.json,10,191,inodes,31839
+ncdc,ncdc_ewr_station.json,10,191,saving,23234
+ncdc,ncdc_ewr_station.json,10,191,writing,26695
+rv,animal.json,6,7051,reading json,8929812
+rv,animal.json,6,7051,inodes,166122
+rv,animal.json,6,7051,saving,180732
+rv,animal.json,6,7051,writing,159118
+ncdc,ncdc_datatypes.json,2,4013,reading json,5177266
+ncdc,ncdc_datatypes.json,2,4013,inodes,130618
+ncdc,ncdc_datatypes.json,2,4013,saving,115117
+ncdc,ncdc_datatypes.json,2,4013,writing,105391
+fake,list2.json,10,25,reading json,57256
+fake,list2.json,10,25,inodes,49857
+fake,list2.json,10,25,saving,23488
+fake,list2.json,10,25,writing,16532
+json_org,json_eg4.json,9,3468,reading json,4469911
+json_org,json_eg4.json,9,3468,inodes,101725
+json_org,json_eg4.json,9,3468,saving,107952
+json_org,json_eg4.json,9,3468,writing,59488
+rv,demons.json,3,194,reading json,281874
+rv,demons.json,3,194,inodes,54456
+rv,demons.json,3,194,saving,36951
+rv,demons.json,3,194,writing,16217
+gh,gh_apache2.json,10,12591,reading json,16370924
+gh,gh_apache2.json,10,12591,inodes,69434
+gh,gh_apache2.json,10,12591,saving,43822
+gh,gh_apache2.json,10,12591,writing,63656
+fda,tobacco.json,4,1144,reading json,1490353
+fda,tobacco.json,4,1144,inodes,64945
+fda,tobacco.json,4,1144,saving,62039
+fda,tobacco.json,4,1144,writing,29382
+fda,recall10.json,8,212061,reading json,274700601
+fda,recall10.json,8,212061,inodes,4385064
+fda,recall10.json,8,212061,saving,3803729
+fda,recall10.json,8,212061,writing,3812531
+ncdc,ncdc_ewr_station.json,5,191,reading json,284746
+ncdc,ncdc_ewr_station.json,5,191,inodes,31231
+ncdc,ncdc_ewr_station.json,5,191,saving,23138
+ncdc,ncdc_ewr_station.json,5,191,writing,25767
+penguin,bsd.json,9,5415,reading json,6797143
+penguin,bsd.json,9,5415,inodes,108453
+penguin,bsd.json,9,5415,saving,92372
+penguin,bsd.json,9,5415,writing,65415
+gh,mgree.json,4,1331,reading json,1667376
+gh,mgree.json,4,1331,inodes,47645
+gh,mgree.json,4,1331,saving,47369
+gh,mgree.json,4,1331,writing,27575
+rv,animal.json,3,7051,reading json,9174311
+rv,animal.json,3,7051,inodes,181473
+rv,animal.json,3,7051,saving,202207
+rv,animal.json,3,7051,writing,138261
+json_org,json_eg2.json,4,242,reading json,346622
+json_org,json_eg2.json,4,242,inodes,53500
+json_org,json_eg2.json,4,242,saving,31962
+json_org,json_eg2.json,4,242,writing,19107
+fda,waterpipe.json,10,1955,reading json,2514186
+fda,waterpipe.json,10,1955,inodes,73513
+fda,waterpipe.json,10,1955,saving,56810
+fda,waterpipe.json,10,1955,writing,31177
+ncdc,ncdc_07030_stations.json,9,1476,reading json,1922947
+ncdc,ncdc_07030_stations.json,9,1476,inodes,91327
+ncdc,ncdc_07030_stations.json,9,1476,saving,75134
+ncdc,ncdc_07030_stations.json,9,1476,writing,64811
+rv,demons.json,6,194,reading json,294483
+rv,demons.json,6,194,inodes,53780
+rv,demons.json,6,194,saving,32555
+rv,demons.json,6,194,writing,12869
+ncdc,ncdc_stations_big.json,10,200908,reading json,259255585
+ncdc,ncdc_stations_big.json,10,200908,inodes,6097836
+ncdc,ncdc_stations_big.json,10,200908,saving,5307309
+ncdc,ncdc_stations_big.json,10,200908,writing,4539535
+fda,tobacco.json,3,1144,reading json,1494580
+fda,tobacco.json,3,1144,inodes,65185
+fda,tobacco.json,3,1144,saving,41482
+fda,tobacco.json,3,1144,writing,23008
+gh,ffs.json,4,5089,reading json,6676847
+gh,ffs.json,4,5089,inodes,115086
+gh,ffs.json,4,5089,saving,108961
+gh,ffs.json,4,5089,writing,74917
+json_org,json_eg2.json,10,242,reading json,349848
+json_org,json_eg2.json,10,242,inodes,55497
+json_org,json_eg2.json,10,242,saving,30028
+json_org,json_eg2.json,10,242,writing,18243
+ncdc,ncdc_zips.json,6,2851,reading json,3616600
+ncdc,ncdc_zips.json,6,2851,inodes,130678
+ncdc,ncdc_zips.json,6,2851,saving,119420
+ncdc,ncdc_zips.json,6,2851,writing,103396
+doi,doi_10.1000_1.json,5,369,reading json,507601
+doi,doi_10.1000_1.json,5,369,inodes,61211
+doi,doi_10.1000_1.json,5,369,saving,38391
+doi,doi_10.1000_1.json,5,369,writing,23736
+fake,list2.json,7,25,reading json,59368
+fake,list2.json,7,25,inodes,51394
+fake,list2.json,7,25,saving,22128
+fake,list2.json,7,25,writing,15947
+ncdc,ncdc_locationcategories.json,5,543,reading json,780773
+ncdc,ncdc_locationcategories.json,5,543,inodes,70385
+ncdc,ncdc_locationcategories.json,5,543,saving,54553
+ncdc,ncdc_locationcategories.json,5,543,writing,30784
+ncdc,ncdc_07030.json,8,111,reading json,190557
+ncdc,ncdc_07030.json,8,111,inodes,29153
+ncdc,ncdc_07030.json,8,111,saving,19850
+ncdc,ncdc_07030.json,8,111,writing,23732
+json_org,json_eg2.json,6,242,reading json,355220
+json_org,json_eg2.json,6,242,inodes,55158
+json_org,json_eg2.json,6,242,saving,31779
+json_org,json_eg2.json,6,242,writing,17785
+gh,ffs_issues.json,3,38158,reading json,50507384
+gh,ffs_issues.json,3,38158,inodes,577503
+gh,ffs_issues.json,3,38158,saving,545580
+gh,ffs_issues.json,3,38158,writing,513023
+penguin,rust.json,2,161726,reading json,207889357
+penguin,rust.json,2,161726,inodes,805643
+penguin,rust.json,2,161726,saving,806242
+penguin,rust.json,2,161726,writing,769105
+gh,gh_events.json,2,54778,reading json,71824829
+gh,gh_events.json,2,54778,inodes,729301
+gh,gh_events.json,2,54778,saving,754393
+gh,gh_events.json,2,54778,writing,637757
+rv,agni.json,9,89267,reading json,116046050
+rv,agni.json,9,89267,inodes,1849102
+rv,agni.json,9,89267,saving,1947719
+rv,agni.json,9,89267,writing,1759635
+rv,animal.json,1,7051,reading json,9051916
+rv,animal.json,1,7051,inodes,167729
+rv,animal.json,1,7051,saving,179076
+rv,animal.json,1,7051,writing,154440
+ncdc,ncdc_ewr_station.json,2,191,reading json,288466
+ncdc,ncdc_ewr_station.json,2,191,inodes,32294
+ncdc,ncdc_ewr_station.json,2,191,saving,25101
+ncdc,ncdc_ewr_station.json,2,191,writing,25619
+gh,gh_mgree_events.json,8,168832,reading json,212358187
+gh,gh_mgree_events.json,8,168832,inodes,1907431
+gh,gh_mgree_events.json,8,168832,saving,2227413
+gh,gh_mgree_events.json,8,168832,writing,1878197
+fda,recall.json,8,22475,reading json,29516009
+fda,recall.json,8,22475,inodes,529637
+fda,recall.json,8,22475,saving,361877
+fda,recall.json,8,22475,writing,301227
+json_org,json_eg5.json,2,873,reading json,1172907
+json_org,json_eg5.json,2,873,inodes,76679
+json_org,json_eg5.json,2,873,saving,61952
+json_org,json_eg5.json,2,873,writing,35679
+gh,mgree.json,2,1331,reading json,1725859
+gh,mgree.json,2,1331,inodes,41691
+gh,mgree.json,2,1331,saving,54975
+gh,mgree.json,2,1331,writing,30483
+fda,recall.json,3,22475,reading json,29884413
+fda,recall.json,3,22475,inodes,549722
+fda,recall.json,3,22475,saving,346997
+fda,recall.json,3,22475,writing,303057
+gh,kmt.json,9,4979,reading json,6252490
+gh,kmt.json,9,4979,inodes,77047
+gh,kmt.json,9,4979,saving,101814
+gh,kmt.json,9,4979,writing,74662
+gh,gh_mgree_events.json,7,168832,reading json,214504531
+gh,gh_mgree_events.json,7,168832,inodes,1964005
+gh,gh_mgree_events.json,7,168832,saving,2206777
+gh,gh_mgree_events.json,7,168832,writing,2159900
+fda,event100.json,6,2945177,reading json,3765914276
+fda,event100.json,6,2945177,inodes,48589748
+fda,event100.json,6,2945177,saving,26452213
+fda,event100.json,6,2945177,writing,19486095
+gh,gh_mgree_events.json,5,168832,reading json,219809450
+gh,gh_mgree_events.json,5,168832,inodes,2089299
+gh,gh_mgree_events.json,5,168832,saving,2279976
+gh,gh_mgree_events.json,5,168832,writing,1884201
+ncdc,ncdc_datatypes.json,7,4013,reading json,5006684
+ncdc,ncdc_datatypes.json,7,4013,inodes,128728
+ncdc,ncdc_datatypes.json,7,4013,saving,114378
+ncdc,ncdc_datatypes.json,7,4013,writing,104304
+gh,mgree_repos.json,5,159905,reading json,204430770
+gh,mgree_repos.json,5,159905,inodes,1766825
+gh,mgree_repos.json,5,159905,saving,1969918
+gh,mgree_repos.json,5,159905,writing,1735378
+penguin,linux.json,3,64401,reading json,82789546
+penguin,linux.json,3,64401,inodes,653681
+penguin,linux.json,3,64401,saving,760260
+penguin,linux.json,3,64401,writing,589807
+rv,human_male.json,6,603912,reading json,788459397
+rv,human_male.json,6,603912,inodes,13200530
+rv,human_male.json,6,603912,saving,11347431
+rv,human_male.json,6,603912,writing,10616130
+penguin,dekeijzer.json,3,446,reading json,600666
+penguin,dekeijzer.json,3,446,inodes,29165
+penguin,dekeijzer.json,3,446,saving,30413
+penguin,dekeijzer.json,3,446,writing,21320
+fda,event.json,5,1819,reading json,2424035
+fda,event.json,5,1819,inodes,84854
+fda,event.json,5,1819,saving,58791
+fda,event.json,5,1819,writing,33334
+fake,object.json,2,77,reading json,146200
+fake,object.json,2,77,inodes,28144
+fake,object.json,2,77,saving,33438
+fake,object.json,2,77,writing,10507
+fda,tobacco10.json,5,6567,reading json,8079168
+fda,tobacco10.json,5,6567,inodes,130256
+fda,tobacco10.json,5,6567,saving,130083
+fda,tobacco10.json,5,6567,writing,83553
+ncdc,ncdc_07030_stations.json,4,1476,reading json,1885615
+ncdc,ncdc_07030_stations.json,4,1476,inodes,96648
+ncdc,ncdc_07030_stations.json,4,1476,saving,72861
+ncdc,ncdc_07030_stations.json,4,1476,writing,64685
+json_org,json_eg5.json,5,873,reading json,1184404
+json_org,json_eg5.json,5,873,inodes,86088
+json_org,json_eg5.json,5,873,saving,56411
+json_org,json_eg5.json,5,873,writing,34648
+fda,waterpipe.json,1,1955,reading json,2662418
+fda,waterpipe.json,1,1955,inodes,84458
+fda,waterpipe.json,1,1955,saving,54130
+fda,waterpipe.json,1,1955,writing,52688
+ncdc,ncdc_datasets.json,3,1625,reading json,2140822
+ncdc,ncdc_datasets.json,3,1625,inodes,96313
+ncdc,ncdc_datasets.json,3,1625,saving,69572
+ncdc,ncdc_datasets.json,3,1625,writing,67139
+fake,object_null.json,9,95,reading json,163120
+fake,object_null.json,9,95,inodes,27529
+fake,object_null.json,9,95,saving,22571
+fake,object_null.json,9,95,writing,13911
+gh,gh_apache2.json,7,12591,reading json,16195499
+gh,gh_apache2.json,7,12591,inodes,64406
+gh,gh_apache2.json,7,12591,saving,56252
+gh,gh_apache2.json,7,12591,writing,89028
+penguin,dekeijzer.json,2,446,reading json,619820
+penguin,dekeijzer.json,2,446,inodes,29122
+penguin,dekeijzer.json,2,446,saving,27942
+penguin,dekeijzer.json,2,446,writing,21644
+json_org,json_eg2.json,3,242,reading json,346661
+json_org,json_eg2.json,3,242,inodes,54845
+json_org,json_eg2.json,3,242,saving,30523
+json_org,json_eg2.json,3,242,writing,17726
+ncdc,ncdc_locationcategories.json,9,543,reading json,783896
+ncdc,ncdc_locationcategories.json,9,543,inodes,71424
+ncdc,ncdc_locationcategories.json,9,543,saving,57812
+ncdc,ncdc_locationcategories.json,9,543,writing,27837
+fda,tobacco.json,8,1144,reading json,1501677
+fda,tobacco.json,8,1144,inodes,65396
+fda,tobacco.json,8,1144,saving,42343
+fda,tobacco.json,8,1144,writing,25352
+ncdc,ncdc_ewr_station.json,4,191,reading json,293537
+ncdc,ncdc_ewr_station.json,4,191,inodes,33085
+ncdc,ncdc_ewr_station.json,4,191,saving,25213
+ncdc,ncdc_ewr_station.json,4,191,writing,27909
+fda,event.json,1,1819,reading json,2309723
+fda,event.json,1,1819,inodes,105859
+fda,event.json,1,1819,saving,73124
+fda,event.json,1,1819,writing,38633
+fake,object.json,10,77,reading json,178531
+fake,object.json,10,77,inodes,32287
+fake,object.json,10,77,saving,20041
+fake,object.json,10,77,writing,13948
+ncdc,ncdc_datatypes.json,3,4013,reading json,5184253
+ncdc,ncdc_datatypes.json,3,4013,inodes,149915
+ncdc,ncdc_datatypes.json,3,4013,saving,114387
+ncdc,ncdc_datatypes.json,3,4013,writing,117565
+ncdc,ncdc_gsom_sample.json,2,2867,reading json,3630387
+ncdc,ncdc_gsom_sample.json,2,2867,inodes,120417
+ncdc,ncdc_gsom_sample.json,2,2867,saving,125812
+ncdc,ncdc_gsom_sample.json,2,2867,writing,101101
+fda,recall100.json,1,2117776,reading json,2680551585
+fda,recall100.json,1,2117776,inodes,43525807
+fda,recall100.json,1,2117776,saving,24768979
+fda,recall100.json,1,2117776,writing,20957050
+fda,recall10.json,5,212061,reading json,269569480
+fda,recall10.json,5,212061,inodes,4393300
+fda,recall10.json,5,212061,saving,2926962
+fda,recall10.json,5,212061,writing,2561199
+fda,tobacco100.json,1,63634,reading json,82752708
+fda,tobacco100.json,1,63634,inodes,1034327
+fda,tobacco100.json,1,63634,saving,803722
+fda,tobacco100.json,1,63634,writing,683383
+penguin,rust.json,3,161726,reading json,204865676
+penguin,rust.json,3,161726,inodes,747707
+penguin,rust.json,3,161726,saving,832213
+penguin,rust.json,3,161726,writing,773271
+ncdc,ncdc_locations.json,1,2808,reading json,3742964
+ncdc,ncdc_locations.json,1,2808,inodes,146423
+ncdc,ncdc_locations.json,1,2808,saving,113278
+ncdc,ncdc_locations.json,1,2808,writing,101384
+gh,ffs_issues.json,6,38158,reading json,50523946
+gh,ffs_issues.json,6,38158,inodes,599470
+gh,ffs_issues.json,6,38158,saving,562545
+gh,ffs_issues.json,6,38158,writing,512337
+gh,mgree_repos.json,6,159905,reading json,206759598
+gh,mgree_repos.json,6,159905,inodes,1915492
+gh,mgree_repos.json,6,159905,saving,2017326
+gh,mgree_repos.json,6,159905,writing,1762023
+gh,kmt.json,7,4979,reading json,6264324
+gh,kmt.json,7,4979,inodes,124793
+gh,kmt.json,7,4979,saving,107830
+gh,kmt.json,7,4979,writing,74898
+ncdc,ncdc_datasets.json,8,1625,reading json,2167290
+ncdc,ncdc_datasets.json,8,1625,inodes,97738
+ncdc,ncdc_datasets.json,8,1625,saving,71376
+ncdc,ncdc_datasets.json,8,1625,writing,63512
+ncdc,ncdc_gsom_sample.json,1,2867,reading json,3621734
+ncdc,ncdc_gsom_sample.json,1,2867,inodes,124012
+ncdc,ncdc_gsom_sample.json,1,2867,saving,119621
+ncdc,ncdc_gsom_sample.json,1,2867,writing,100865
+gh,kmt.json,3,4979,reading json,6393497
+gh,kmt.json,3,4979,inodes,76158
+gh,kmt.json,3,4979,saving,105709
+gh,kmt.json,3,4979,writing,74320
+fda,tobacco10.json,10,6567,reading json,8482328
+fda,tobacco10.json,10,6567,inodes,126158
+fda,tobacco10.json,10,6567,saving,115491
+fda,tobacco10.json,10,6567,writing,85447
+fake,object.json,5,77,reading json,144505
+fake,object.json,5,77,inodes,26285
+fake,object.json,5,77,saving,28419
+fake,object.json,5,77,writing,13264
+json_org,json_eg5.json,10,873,reading json,1165768
+json_org,json_eg5.json,10,873,inodes,74869
+json_org,json_eg5.json,10,873,saving,53393
+json_org,json_eg5.json,10,873,writing,34250
+fake,obj_rename.json,6,69,reading json,127771
+fake,obj_rename.json,6,69,inodes,21977
+fake,obj_rename.json,6,69,saving,18844
+fake,obj_rename.json,6,69,writing,10644
+gh,gh_gpl3.json,6,36979,reading json,50068908
+gh,gh_gpl3.json,6,36979,inodes,66267
+gh,gh_gpl3.json,6,36979,saving,68600
+gh,gh_gpl3.json,6,36979,writing,224373
+fake,obj_rename.json,2,69,reading json,132433
+fake,obj_rename.json,2,69,inodes,23041
+fake,obj_rename.json,2,69,saving,18402
+fake,obj_rename.json,2,69,writing,11373
+gh,kmt.json,10,4979,reading json,6193914
+gh,kmt.json,10,4979,inodes,76288
+gh,kmt.json,10,4979,saving,77880
+gh,kmt.json,10,4979,writing,53080
+gh,gh_gpl3.json,8,36979,reading json,49577026
+gh,gh_gpl3.json,8,36979,inodes,69148
+gh,gh_gpl3.json,8,36979,saving,48688
+gh,gh_gpl3.json,8,36979,writing,155519
+fda,recall50.json,1,1049501,reading json,1355821961
+fda,recall50.json,1,1049501,inodes,22185732
+fda,recall50.json,1,1049501,saving,12971428
+fda,recall50.json,1,1049501,writing,12341736
+fda,recall10.json,7,212061,reading json,271547555
+fda,recall10.json,7,212061,inodes,4332686
+fda,recall10.json,7,212061,saving,2263324
+fda,recall10.json,7,212061,writing,2313513
+gov.uk,bank-holidays.json,10,15124,reading json,19649696
+gov.uk,bank-holidays.json,10,15124,inodes,587117
+gov.uk,bank-holidays.json,10,15124,saving,573018
+gov.uk,bank-holidays.json,10,15124,writing,464723
+ncdc,ncdc_locations.json,7,2808,reading json,3648636
+ncdc,ncdc_locations.json,7,2808,inodes,127609
+ncdc,ncdc_locations.json,7,2808,saving,110442
+ncdc,ncdc_locations.json,7,2808,writing,125129
+rv,animal.json,5,7051,reading json,8795820
+rv,animal.json,5,7051,inodes,168020
+rv,animal.json,5,7051,saving,170187
+rv,animal.json,5,7051,writing,154517
+json_org,json_eg4.json,5,3468,reading json,4705424
+json_org,json_eg4.json,5,3468,inodes,112280
+json_org,json_eg4.json,5,3468,saving,99952
+json_org,json_eg4.json,5,3468,writing,60394
+rv,human_male.json,7,603912,reading json,755447341
+rv,human_male.json,7,603912,inodes,13084056
+rv,human_male.json,7,603912,saving,12006334
+rv,human_male.json,7,603912,writing,11679958
+penguin,dekeijzer.json,9,446,reading json,623366
+penguin,dekeijzer.json,9,446,inodes,30094
+penguin,dekeijzer.json,9,446,saving,27939
+penguin,dekeijzer.json,9,446,writing,20064
+penn,historic-20181028.json,3,1468638,reading json,1884299973
+penn,historic-20181028.json,3,1468638,inodes,34613720
+penn,historic-20181028.json,3,1468638,saving,27043940
+penn,historic-20181028.json,3,1468638,writing,21003020
+json_org,json_eg4.json,6,3468,reading json,4350422
+json_org,json_eg4.json,6,3468,inodes,101425
+json_org,json_eg4.json,6,3468,saving,111618
+json_org,json_eg4.json,6,3468,writing,60649
+gh,gh_mgree_events.json,10,168832,reading json,214411505
+gh,gh_mgree_events.json,10,168832,inodes,2124866
+gh,gh_mgree_events.json,10,168832,saving,2246505
+gh,gh_mgree_events.json,10,168832,writing,1937595
+rv,agni.json,1,89267,reading json,115838736
+rv,agni.json,1,89267,inodes,1862276
+rv,agni.json,1,89267,saving,1853211
+rv,agni.json,1,89267,writing,1853939
+ncdc,ncdc_gsom_sample.json,8,2867,reading json,3764872
+ncdc,ncdc_gsom_sample.json,8,2867,inodes,162737
+ncdc,ncdc_gsom_sample.json,8,2867,saving,112367
+ncdc,ncdc_gsom_sample.json,8,2867,writing,100764
+rv,animal.json,4,7051,reading json,9146344
+rv,animal.json,4,7051,inodes,201933
+rv,animal.json,4,7051,saving,173584
+rv,animal.json,4,7051,writing,154447
+gh,mgree.json,1,1331,reading json,1727474
+gh,mgree.json,1,1331,inodes,43354
+gh,mgree.json,1,1331,saving,59672
+gh,mgree.json,1,1331,writing,31316
+gh,gh_gpl3.json,9,36979,reading json,50990885
+gh,gh_gpl3.json,9,36979,inodes,68518
+gh,gh_gpl3.json,9,36979,saving,66239
+gh,gh_gpl3.json,9,36979,writing,223875
+doi,doi_smoosh.json,2,537,reading json,738971
+doi,doi_smoosh.json,2,537,inodes,66855
+doi,doi_smoosh.json,2,537,saving,46294
+doi,doi_smoosh.json,2,537,writing,24033
+fda,registrationlisting.json,10,3228,reading json,4369762
+fda,registrationlisting.json,10,3228,inodes,111773
+fda,registrationlisting.json,10,3228,saving,91042
+fda,registrationlisting.json,10,3228,writing,57096
+gh,mgree.json,6,1331,reading json,1932565
+gh,mgree.json,6,1331,inodes,53251
+gh,mgree.json,6,1331,saving,53502
+gh,mgree.json,6,1331,writing,31008
+ncdc,ncdc_locationcategories.json,6,543,reading json,732144
+ncdc,ncdc_locationcategories.json,6,543,inodes,69521
+ncdc,ncdc_locationcategories.json,6,543,saving,51158
+ncdc,ncdc_locationcategories.json,6,543,writing,31714
+gh,kmt.json,6,4979,reading json,6519139
+gh,kmt.json,6,4979,inodes,105003
+gh,kmt.json,6,4979,saving,108656
+gh,kmt.json,6,4979,writing,74829
+doi,doi_smoosh.json,3,537,reading json,743561
+doi,doi_smoosh.json,3,537,inodes,70682
+doi,doi_smoosh.json,3,537,saving,44356
+doi,doi_smoosh.json,3,537,writing,28400
+fake,obj_rename.json,9,69,reading json,128803
+fake,obj_rename.json,9,69,inodes,21976
+fake,obj_rename.json,9,69,saving,17007
+fake,obj_rename.json,9,69,writing,14016
+fda,registrationlisting.json,2,3228,reading json,4248130
+fda,registrationlisting.json,2,3228,inodes,111900
+fda,registrationlisting.json,2,3228,saving,92208
+fda,registrationlisting.json,2,3228,writing,57511
+gh,gh_emoji.json,6,173641,reading json,219114481
+gh,gh_emoji.json,6,173641,inodes,1504265
+gh,gh_emoji.json,6,173641,saving,2038685
+gh,gh_emoji.json,6,173641,writing,1428993
+json_org,json_eg5.json,8,873,reading json,1134254
+json_org,json_eg5.json,8,873,inodes,73836
+json_org,json_eg5.json,8,873,saving,55304
+json_org,json_eg5.json,8,873,writing,33138
+penn,historic-20181028.json,7,1468638,reading json,1863425135
+penn,historic-20181028.json,7,1468638,inodes,33913738
+penn,historic-20181028.json,7,1468638,saving,24120184
+penn,historic-20181028.json,7,1468638,writing,18173562
+rv,animal.json,9,7051,reading json,9231592
+rv,animal.json,9,7051,inodes,202610
+rv,animal.json,9,7051,saving,140573
+rv,animal.json,9,7051,writing,126580
+penguin,rust.json,6,161726,reading json,203859794
+penguin,rust.json,6,161726,inodes,777103
+penguin,rust.json,6,161726,saving,874407
+penguin,rust.json,6,161726,writing,768126
+json_org,json_eg5.json,9,873,reading json,1121867
+json_org,json_eg5.json,9,873,inodes,73712
+json_org,json_eg5.json,9,873,saving,58645
+json_org,json_eg5.json,9,873,writing,33413
+ncdc,ncdc_zips.json,1,2851,reading json,3721321
+ncdc,ncdc_zips.json,1,2851,inodes,149656
+ncdc,ncdc_zips.json,1,2851,saving,106884
+ncdc,ncdc_zips.json,1,2851,writing,101752
+fda,tobacco10.json,4,6567,reading json,8413647
+fda,tobacco10.json,4,6567,inodes,127952
+fda,tobacco10.json,4,6567,saving,116182
+fda,tobacco10.json,4,6567,writing,84647
+gh,gh_mgree_events.json,6,168832,reading json,215723445
+gh,gh_mgree_events.json,6,168832,inodes,2149483
+gh,gh_mgree_events.json,6,168832,saving,2265157
+gh,gh_mgree_events.json,6,168832,writing,1924927
+fda,tobacco100.json,2,63634,reading json,81916040
+fda,tobacco100.json,2,63634,inodes,1050112
+fda,tobacco100.json,2,63634,saving,796027
+fda,tobacco100.json,2,63634,writing,687219
+fda,tobacco10.json,2,6567,reading json,8461989
+fda,tobacco10.json,2,6567,inodes,183769
+fda,tobacco10.json,2,6567,saving,109075
+fda,tobacco10.json,2,6567,writing,81564
+doi,doi_10.1000_1.json,6,369,reading json,508075
+doi,doi_10.1000_1.json,6,369,inodes,61609
+doi,doi_10.1000_1.json,6,369,saving,36454
+doi,doi_10.1000_1.json,6,369,writing,27970
+gh,mgree.json,3,1331,reading json,1713839
+gh,mgree.json,3,1331,inodes,42689
+gh,mgree.json,3,1331,saving,48023
+gh,mgree.json,3,1331,writing,27338
+gh,gh_apache2.json,2,12591,reading json,16189228
+gh,gh_apache2.json,2,12591,inodes,69430
+gh,gh_apache2.json,2,12591,saving,39379
+gh,gh_apache2.json,2,12591,writing,65699
+gh,ffs_issues.json,8,38158,reading json,50666493
+gh,ffs_issues.json,8,38158,inodes,568261
+gh,ffs_issues.json,8,38158,saving,594719
+gh,ffs_issues.json,8,38158,writing,511812
+fake,list2.json,5,25,reading json,59061
+fake,list2.json,5,25,inodes,49976
+fake,list2.json,5,25,saving,22196
+fake,list2.json,5,25,writing,15842
+ncdc,ncdc_zips.json,4,2851,reading json,3650420
+ncdc,ncdc_zips.json,4,2851,inodes,126580
+ncdc,ncdc_zips.json,4,2851,saving,107992
+ncdc,ncdc_zips.json,4,2851,writing,101003
+json_org,json_eg5.json,1,873,reading json,1163482
+json_org,json_eg5.json,1,873,inodes,74466
+json_org,json_eg5.json,1,873,saving,61263
+json_org,json_eg5.json,1,873,writing,33923
+fda,recall.json,2,22475,reading json,29506347
+fda,recall.json,2,22475,inodes,440605
+fda,recall.json,2,22475,saving,348181
+fda,recall.json,2,22475,writing,302557
+penguin,dekeijzer.json,10,446,reading json,618037
+penguin,dekeijzer.json,10,446,inodes,30288
+penguin,dekeijzer.json,10,446,saving,28341
+penguin,dekeijzer.json,10,446,writing,17746
+json_org,json_eg4.json,10,3468,reading json,4477480
+json_org,json_eg4.json,10,3468,inodes,101401
+json_org,json_eg4.json,10,3468,saving,95999
+json_org,json_eg4.json,10,3468,writing,59711
+fda,event100.json,1,2945177,reading json,3692394727
+fda,event100.json,1,2945177,inodes,47264357
+fda,event100.json,1,2945177,saving,27502255
+fda,event100.json,1,2945177,writing,20035105
+ncdc,ncdc_gsom_sample.json,3,2867,reading json,3601789
+ncdc,ncdc_gsom_sample.json,3,2867,inodes,121764
+ncdc,ncdc_gsom_sample.json,3,2867,saving,114019
+ncdc,ncdc_gsom_sample.json,3,2867,writing,101491
+rv,demons.json,5,194,reading json,327632
+rv,demons.json,5,194,inodes,53226
+rv,demons.json,5,194,saving,26514
+rv,demons.json,5,194,writing,15285
+fda,tobacco100.json,10,63634,reading json,82660670
+fda,tobacco100.json,10,63634,inodes,1044796
+fda,tobacco100.json,10,63634,saving,805714
+fda,tobacco100.json,10,63634,writing,683874
+ncdc,ncdc_07030.json,3,111,reading json,190989
+ncdc,ncdc_07030.json,3,111,inodes,28794
+ncdc,ncdc_07030.json,3,111,saving,19116
+ncdc,ncdc_07030.json,3,111,writing,23528
+gh,mgree.json,9,1331,reading json,1710170
+gh,mgree.json,9,1331,inodes,41574
+gh,mgree.json,9,1331,saving,44052
+gh,mgree.json,9,1331,writing,30408
+gh,ffs.json,5,5089,reading json,6380448
+gh,ffs.json,5,5089,inodes,76324
+gh,ffs.json,5,5089,saving,112359
+gh,ffs.json,5,5089,writing,75092
+fda,tobacco.json,9,1144,reading json,1471188
+fda,tobacco.json,9,1144,inodes,63931
+fda,tobacco.json,9,1144,saving,38062
+fda,tobacco.json,9,1144,writing,22625
+doi,doi_smoosh.json,10,537,reading json,761612
+doi,doi_smoosh.json,10,537,inodes,65998
+doi,doi_smoosh.json,10,537,saving,43978
+doi,doi_smoosh.json,10,537,writing,24391
+fda,tobacco10.json,6,6567,reading json,8403800
+fda,tobacco10.json,6,6567,inodes,159233
+fda,tobacco10.json,6,6567,saving,108191
+fda,tobacco10.json,6,6567,writing,80903
+penn,historic-20181028.json,5,1468638,reading json,1854297731
+penn,historic-20181028.json,5,1468638,inodes,33724452
+penn,historic-20181028.json,5,1468638,saving,25224908
+penn,historic-20181028.json,5,1468638,writing,18849211
+fda,recall50.json,8,1049501,reading json,1324024012
+fda,recall50.json,8,1049501,inodes,21203429
+fda,recall50.json,8,1049501,saving,12388267
+fda,recall50.json,8,1049501,writing,12073982
+ncdc,ncdc_zips.json,3,2851,reading json,3756411
+ncdc,ncdc_zips.json,3,2851,inodes,145041
+ncdc,ncdc_zips.json,3,2851,saving,112110
+ncdc,ncdc_zips.json,3,2851,writing,102760
+fake,list2.json,3,25,reading json,59469
+fake,list2.json,3,25,inodes,51534
+fake,list2.json,3,25,saving,17480
+fake,list2.json,3,25,writing,12313
+doi,doi_10.1000_1.json,10,369,reading json,527170
+doi,doi_10.1000_1.json,10,369,inodes,64065
+doi,doi_10.1000_1.json,10,369,saving,51886
+doi,doi_10.1000_1.json,10,369,writing,16787
+penguin,linux.json,1,64401,reading json,84829241
+penguin,linux.json,1,64401,inodes,664228
+penguin,linux.json,1,64401,saving,624466
+penguin,linux.json,1,64401,writing,484437
+gh,gh_licenses.json,1,2507,reading json,3143845
+gh,gh_licenses.json,1,2507,inodes,86764
+gh,gh_licenses.json,1,2507,saving,66467
+gh,gh_licenses.json,1,2507,writing,56364
+json_org,json_eg2.json,1,242,reading json,347624
+json_org,json_eg2.json,1,242,inodes,54976
+json_org,json_eg2.json,1,242,saving,29766
+json_org,json_eg2.json,1,242,writing,15740
+gh,gh_events.json,3,54778,reading json,72521131
+gh,gh_events.json,3,54778,inodes,798406
+gh,gh_events.json,3,54778,saving,799270
+gh,gh_events.json,3,54778,writing,718686
+penguin,grisham.json,7,22488,reading json,30442959
+penguin,grisham.json,7,22488,inodes,936024
+penguin,grisham.json,7,22488,saving,853134
+penguin,grisham.json,7,22488,writing,646622
+fda,recall100.json,5,2117776,reading json,2718649987
+fda,recall100.json,5,2117776,inodes,45090966
+fda,recall100.json,5,2117776,saving,25108305
+fda,recall100.json,5,2117776,writing,20997080
+gh,gh_apache2.json,4,12591,reading json,16226706
+gh,gh_apache2.json,4,12591,inodes,76129
+gh,gh_apache2.json,4,12591,saving,49017
+gh,gh_apache2.json,4,12591,writing,87796
+gh,ffs_issues.json,10,38158,reading json,50186520
+gh,ffs_issues.json,10,38158,inodes,602210
+gh,ffs_issues.json,10,38158,saving,566409
+gh,ffs_issues.json,10,38158,writing,513275
+fda,recall50.json,7,1049501,reading json,1323606499
+fda,recall50.json,7,1049501,inodes,21594541
+fda,recall50.json,7,1049501,saving,12228203
+fda,recall50.json,7,1049501,writing,11723390
+fake,object_null.json,10,95,reading json,160165
+fake,object_null.json,10,95,inodes,28016
+fake,object_null.json,10,95,saving,21026
+fake,object_null.json,10,95,writing,14601
+gh,ffs.json,6,5089,reading json,6389949
+gh,ffs.json,6,5089,inodes,94712
+gh,ffs.json,6,5089,saving,111138
+gh,ffs.json,6,5089,writing,77310
+fda,registrationlisting100.json,4,214459,reading json,278468182
+fda,registrationlisting100.json,4,214459,inodes,3369181
+fda,registrationlisting100.json,4,214459,saving,2841044
+fda,registrationlisting100.json,4,214459,writing,2377850
+json_org,json_eg4.json,7,3468,reading json,4419215
+json_org,json_eg4.json,7,3468,inodes,104769
+json_org,json_eg4.json,7,3468,saving,104212
+json_org,json_eg4.json,7,3468,writing,59854
+rv,animal.json,10,7051,reading json,9664704
+rv,animal.json,10,7051,inodes,189279
+rv,animal.json,10,7051,saving,178749
+rv,animal.json,10,7051,writing,155476
+fda,recall50.json,4,1049501,reading json,1342292633
+fda,recall50.json,4,1049501,inodes,22141343
+fda,recall50.json,4,1049501,saving,12199733
+fda,recall50.json,4,1049501,writing,11963346
+fake,object.json,7,77,reading json,138687
+fake,object.json,7,77,inodes,25965
+fake,object.json,7,77,saving,21746
+fake,object.json,7,77,writing,15063
+gov.uk,bank-holidays.json,1,15124,reading json,19790737
+gov.uk,bank-holidays.json,1,15124,inodes,707478
+gov.uk,bank-holidays.json,1,15124,saving,528581
+gov.uk,bank-holidays.json,1,15124,writing,464695
+penguin,rust.json,8,161726,reading json,204954083
+penguin,rust.json,8,161726,inodes,710651
+penguin,rust.json,8,161726,saving,814531
+penguin,rust.json,8,161726,writing,832588
+ncdc,ncdc_ewr_station.json,6,191,reading json,285008
+ncdc,ncdc_ewr_station.json,6,191,inodes,30931
+ncdc,ncdc_ewr_station.json,6,191,saving,22516
+ncdc,ncdc_ewr_station.json,6,191,writing,26524
+gh,gh_events.json,10,54778,reading json,70745604
+gh,gh_events.json,10,54778,inodes,992765
+gh,gh_events.json,10,54778,saving,853863
+gh,gh_events.json,10,54778,writing,713668
+ncdc,ncdc_locationcategories.json,2,543,reading json,742832
+ncdc,ncdc_locationcategories.json,2,543,inodes,69916
+ncdc,ncdc_locationcategories.json,2,543,saving,54523
+ncdc,ncdc_locationcategories.json,2,543,writing,31170
+rv,human_male.json,8,603912,reading json,757579156
+rv,human_male.json,8,603912,inodes,12774926
+rv,human_male.json,8,603912,saving,12441413
+rv,human_male.json,8,603912,writing,10958374
+gh,gh_licenses.json,7,2507,reading json,3260060
+gh,gh_licenses.json,7,2507,inodes,89100
+gh,gh_licenses.json,7,2507,saving,57531
+gh,gh_licenses.json,7,2507,writing,45494
+ncdc,ncdc_locationcategories.json,7,543,reading json,746360
+ncdc,ncdc_locationcategories.json,7,543,inodes,72428
+ncdc,ncdc_locationcategories.json,7,543,saving,50516
+ncdc,ncdc_locationcategories.json,7,543,writing,21735
+penn,historic-20181028.json,1,1468638,reading json,1854641948
+penn,historic-20181028.json,1,1468638,inodes,34564199
+penn,historic-20181028.json,1,1468638,saving,24120866
+penn,historic-20181028.json,1,1468638,writing,17723108
+fda,recall.json,10,22475,reading json,29023660
+fda,recall.json,10,22475,inodes,516651
+fda,recall.json,10,22475,saving,349790
+fda,recall.json,10,22475,writing,300837
+ncdc,ncdc_datasets.json,5,1625,reading json,2146446
+ncdc,ncdc_datasets.json,5,1625,inodes,98017
+ncdc,ncdc_datasets.json,5,1625,saving,74263
+ncdc,ncdc_datasets.json,5,1625,writing,64621
+ncdc,ncdc_datatypes.json,6,4013,reading json,5247147
+ncdc,ncdc_datatypes.json,6,4013,inodes,133183
+ncdc,ncdc_datatypes.json,6,4013,saving,126388
+ncdc,ncdc_datatypes.json,6,4013,writing,103702
+ncdc,ncdc_datacategories.json,9,1075,reading json,1394218
+ncdc,ncdc_datacategories.json,9,1075,inodes,93803
+ncdc,ncdc_datacategories.json,9,1075,saving,81008
+ncdc,ncdc_datacategories.json,9,1075,writing,51038
+fda,registrationlisting100.json,9,214459,reading json,271914753
+fda,registrationlisting100.json,9,214459,inodes,3688057
+fda,registrationlisting100.json,9,214459,saving,3571689
+fda,registrationlisting100.json,9,214459,writing,2912439
+ncdc,ncdc_zips.json,9,2851,reading json,3588571
+ncdc,ncdc_zips.json,9,2851,inodes,130356
+ncdc,ncdc_zips.json,9,2851,saving,119527
+ncdc,ncdc_zips.json,9,2851,writing,99242
+rv,agni.json,8,89267,reading json,114656258
+rv,agni.json,8,89267,inodes,2024641
+rv,agni.json,8,89267,saving,1793894
+rv,agni.json,8,89267,writing,1804198
+gh,ffs.json,9,5089,reading json,6631016
+gh,ffs.json,9,5089,inodes,76689
+gh,ffs.json,9,5089,saving,106005
+gh,ffs.json,9,5089,writing,74646
+ncdc,ncdc_stations_big.json,4,200908,reading json,258059734
+ncdc,ncdc_stations_big.json,4,200908,inodes,6227678
+ncdc,ncdc_stations_big.json,4,200908,saving,5375127
+ncdc,ncdc_stations_big.json,4,200908,writing,4619073
+gh,mgree_repos.json,4,159905,reading json,207218533
+gh,mgree_repos.json,4,159905,inodes,2159495
+gh,mgree_repos.json,4,159905,saving,1988854
+gh,mgree_repos.json,4,159905,writing,1793483
+gh,gh_gpl3.json,7,36979,reading json,49671828
+gh,gh_gpl3.json,7,36979,inodes,65494
+gh,gh_gpl3.json,7,36979,saving,64557
+gh,gh_gpl3.json,7,36979,writing,224294
+penguin,dekeijzer.json,8,446,reading json,605889
+penguin,dekeijzer.json,8,446,inodes,31764
+penguin,dekeijzer.json,8,446,saving,27380
+penguin,dekeijzer.json,8,446,writing,15647
+penguin,bsd.json,3,5415,reading json,7016877
+penguin,bsd.json,3,5415,inodes,163774
+penguin,bsd.json,3,5415,saving,72574
+penguin,bsd.json,3,5415,writing,48878
+fda,event.json,2,1819,reading json,2417304
+fda,event.json,2,1819,inodes,76834
+fda,event.json,2,1819,saving,69249
+fda,event.json,2,1819,writing,33014
+gh,gh_licenses.json,5,2507,reading json,3432605
+gh,gh_licenses.json,5,2507,inodes,90136
+gh,gh_licenses.json,5,2507,saving,65097
+gh,gh_licenses.json,5,2507,writing,53301
+gh,mgree_repos.json,10,159905,reading json,199830081
+gh,mgree_repos.json,10,159905,inodes,2238941
+gh,mgree_repos.json,10,159905,saving,2501703
+gh,mgree_repos.json,10,159905,writing,1402367
+fda,event.json,6,1819,reading json,2274446
+fda,event.json,6,1819,inodes,75459
+fda,event.json,6,1819,saving,63169
+fda,event.json,6,1819,writing,36589
+fda,waterpipe.json,9,1955,reading json,2505291
+fda,waterpipe.json,9,1955,inodes,79548
+fda,waterpipe.json,9,1955,saving,55036
+fda,waterpipe.json,9,1955,writing,37640
+fda,recall100.json,7,2117776,reading json,2646940170
+fda,recall100.json,7,2117776,inodes,42995043
+fda,recall100.json,7,2117776,saving,25514856
+fda,recall100.json,7,2117776,writing,21474877
+ncdc,ncdc_datacategories.json,8,1075,reading json,1390180
+ncdc,ncdc_datacategories.json,8,1075,inodes,89756
+ncdc,ncdc_datacategories.json,8,1075,saving,83175
+ncdc,ncdc_datacategories.json,8,1075,writing,49704
+rv,human_male.json,9,603912,reading json,756989602
+rv,human_male.json,9,603912,inodes,12540645
+rv,human_male.json,9,603912,saving,11148980
+rv,human_male.json,9,603912,writing,10783878
+fda,recall100.json,6,2117776,reading json,2669873400
+fda,recall100.json,6,2117776,inodes,43239303
+fda,recall100.json,6,2117776,saving,24982002
+fda,recall100.json,6,2117776,writing,20731554
+ncdc,ncdc_datasets.json,4,1625,reading json,2278700
+ncdc,ncdc_datasets.json,4,1625,inodes,168082
+ncdc,ncdc_datasets.json,4,1625,saving,76951
+ncdc,ncdc_datasets.json,4,1625,writing,68507
+penguin,linux.json,9,64401,reading json,83912915
+penguin,linux.json,9,64401,inodes,686662
+penguin,linux.json,9,64401,saving,698559
+penguin,linux.json,9,64401,writing,592212
+ncdc,ncdc_gsom_sample.json,5,2867,reading json,3638263
+ncdc,ncdc_gsom_sample.json,5,2867,inodes,168514
+ncdc,ncdc_gsom_sample.json,5,2867,saving,117867
+ncdc,ncdc_gsom_sample.json,5,2867,writing,101654
+gh,gh_events.json,6,54778,reading json,72799412
+gh,gh_events.json,6,54778,inodes,802397
+gh,gh_events.json,6,54778,saving,831702
+gh,gh_events.json,6,54778,writing,756306
+fda,tobacco_products.json,2,2345,reading json,2995910
+fda,tobacco_products.json,2,2345,inodes,82589
+fda,tobacco_products.json,2,2345,saving,71142
+fda,tobacco_products.json,2,2345,writing,42814
+json_org,json_eg1.json,7,583,reading json,779402
+json_org,json_eg1.json,7,583,inodes,56300
+json_org,json_eg1.json,7,583,saving,31811
+json_org,json_eg1.json,7,583,writing,21608
+fake,object.json,4,77,reading json,179718
+fake,object.json,4,77,inodes,32895
+fake,object.json,4,77,saving,23369
+fake,object.json,4,77,writing,12873
+gh,gh_apache2.json,8,12591,reading json,16935315
+gh,gh_apache2.json,8,12591,inodes,79283
+gh,gh_apache2.json,8,12591,saving,78074
+gh,gh_apache2.json,8,12591,writing,127739
+json_org,json_eg5.json,6,873,reading json,1118502
+json_org,json_eg5.json,6,873,inodes,73112
+json_org,json_eg5.json,6,873,saving,53476
+json_org,json_eg5.json,6,873,writing,34864
+ncdc,ncdc_datacategories.json,7,1075,reading json,1395456
+ncdc,ncdc_datacategories.json,7,1075,inodes,92661
+ncdc,ncdc_datacategories.json,7,1075,saving,90970
+ncdc,ncdc_datacategories.json,7,1075,writing,50910
+gh,gh_emoji.json,10,173641,reading json,221556747
+gh,gh_emoji.json,10,173641,inodes,1328866
+gh,gh_emoji.json,10,173641,saving,1983069
+gh,gh_emoji.json,10,173641,writing,1446218
+rv,human_male.json,5,603912,reading json,755889254
+rv,human_male.json,5,603912,inodes,12432319
+rv,human_male.json,5,603912,saving,10806957
+rv,human_male.json,5,603912,writing,10543830
+fda,recall50.json,2,1049501,reading json,1336159243
+fda,recall50.json,2,1049501,inodes,22172499
+fda,recall50.json,2,1049501,saving,13046809
+fda,recall50.json,2,1049501,writing,11950496
+rv,demons.json,1,194,reading json,284174
+rv,demons.json,1,194,inodes,54505
+rv,demons.json,1,194,saving,29667
+rv,demons.json,1,194,writing,17117
+gh,gh_licenses.json,2,2507,reading json,3200476
+gh,gh_licenses.json,2,2507,inodes,85300
+gh,gh_licenses.json,2,2507,saving,62037
+gh,gh_licenses.json,2,2507,writing,56357
+fda,registrationlisting.json,3,3228,reading json,4035176
+fda,registrationlisting.json,3,3228,inodes,107212
+fda,registrationlisting.json,3,3228,saving,97286
+fda,registrationlisting.json,3,3228,writing,57820
+gh,gh_events.json,5,54778,reading json,71924771
+gh,gh_events.json,5,54778,inodes,936371
+gh,gh_events.json,5,54778,saving,816840
+gh,gh_events.json,5,54778,writing,725121
+gh,gh_emoji.json,9,173641,reading json,219835672
+gh,gh_emoji.json,9,173641,inodes,1377961
+gh,gh_emoji.json,9,173641,saving,2080643
+gh,gh_emoji.json,9,173641,writing,1406105
+fake,object_null.json,1,95,reading json,161954
+fake,object_null.json,1,95,inodes,28447
+fake,object_null.json,1,95,saving,26026
+fake,object_null.json,1,95,writing,11703
+fda,recall.json,4,22475,reading json,29657173
+fda,recall.json,4,22475,inodes,555935
+fda,recall.json,4,22475,saving,348422
+fda,recall.json,4,22475,writing,313958
+gh,gh_gpl3.json,3,36979,reading json,49320688
+gh,gh_gpl3.json,3,36979,inodes,174007
+gh,gh_gpl3.json,3,36979,saving,68048
+gh,gh_gpl3.json,3,36979,writing,222578
+fda,registrationlisting100.json,1,214459,reading json,273544427
+fda,registrationlisting100.json,1,214459,inodes,3882286
+fda,registrationlisting100.json,1,214459,saving,3460588
+fda,registrationlisting100.json,1,214459,writing,2837693
+rv,human_male.json,3,603912,reading json,763180020
+rv,human_male.json,3,603912,inodes,13043166
+rv,human_male.json,3,603912,saving,10928739
+rv,human_male.json,3,603912,writing,10268341
+json_org,json_eg1.json,9,583,reading json,796310
+json_org,json_eg1.json,9,583,inodes,58501
+json_org,json_eg1.json,9,583,saving,27124
+json_org,json_eg1.json,9,583,writing,16458
+json_org,json_eg5.json,4,873,reading json,1151291
+json_org,json_eg5.json,4,873,inodes,73630
+json_org,json_eg5.json,4,873,saving,54992
+json_org,json_eg5.json,4,873,writing,33780
+rv,human_male.json,4,603912,reading json,774883821
+rv,human_male.json,4,603912,inodes,12741542
+rv,human_male.json,4,603912,saving,11328899
+rv,human_male.json,4,603912,writing,10804509
+ncdc,ncdc_datacategories.json,3,1075,reading json,1376812
+ncdc,ncdc_datacategories.json,3,1075,inodes,93635
+ncdc,ncdc_datacategories.json,3,1075,saving,77557
+ncdc,ncdc_datacategories.json,3,1075,writing,50456
+fda,recall50.json,9,1049501,reading json,1291797399
+fda,recall50.json,9,1049501,inodes,21893430
+fda,recall50.json,9,1049501,saving,12789127
+fda,recall50.json,9,1049501,writing,11966726
+ncdc,ncdc_stations_big.json,3,200908,reading json,264776175
+ncdc,ncdc_stations_big.json,3,200908,inodes,6402459
+ncdc,ncdc_stations_big.json,3,200908,saving,5153400
+ncdc,ncdc_stations_big.json,3,200908,writing,4275381
+fda,recall10.json,10,212061,reading json,266275701
+fda,recall10.json,10,212061,inodes,4213636
+fda,recall10.json,10,212061,saving,2729122
+fda,recall10.json,10,212061,writing,3868240
+fda,tobacco100.json,4,63634,reading json,83054056
+fda,tobacco100.json,4,63634,inodes,1163851
+fda,tobacco100.json,4,63634,saving,807580
+fda,tobacco100.json,4,63634,writing,684782
+fda,event100.json,9,2945177,reading json,3658379945
+fda,event100.json,9,2945177,inodes,46502051
+fda,event100.json,9,2945177,saving,26855225
+fda,event100.json,9,2945177,writing,20026993
+fda,recall.json,7,22475,reading json,29334226
+fda,recall.json,7,22475,inodes,533225
+fda,recall.json,7,22475,saving,341263
+fda,recall.json,7,22475,writing,301545
+fake,object_null.json,8,95,reading json,162432
+fake,object_null.json,8,95,inodes,26742
+fake,object_null.json,8,95,saving,21096
+fake,object_null.json,8,95,writing,13288
+gh,gh_gpl3.json,2,36979,reading json,49344142
+gh,gh_gpl3.json,2,36979,inodes,86178
+gh,gh_gpl3.json,2,36979,saving,66911
+gh,gh_gpl3.json,2,36979,writing,222900
+fda,registrationlisting.json,7,3228,reading json,4137833
+fda,registrationlisting.json,7,3228,inodes,96058
+fda,registrationlisting.json,7,3228,saving,86733
+fda,registrationlisting.json,7,3228,writing,57376
+gh,ffs_issues.json,9,38158,reading json,49924830
+gh,ffs_issues.json,9,38158,inodes,582285
+gh,ffs_issues.json,9,38158,saving,545152
+gh,ffs_issues.json,9,38158,writing,511245
+gh,gh_apache2.json,9,12591,reading json,16769573
+gh,gh_apache2.json,9,12591,inodes,75520
+gh,gh_apache2.json,9,12591,saving,44412
+gh,gh_apache2.json,9,12591,writing,87919
+fda,tobacco.json,2,1144,reading json,1526930
+fda,tobacco.json,2,1144,inodes,69535
+fda,tobacco.json,2,1144,saving,48701
+fda,tobacco.json,2,1144,writing,23417
+gh,mgree_repos.json,7,159905,reading json,203781528
+gh,mgree_repos.json,7,159905,inodes,1827731
+gh,mgree_repos.json,7,159905,saving,2273663
+gh,mgree_repos.json,7,159905,writing,1904159
+gov.uk,bank-holidays.json,4,15124,reading json,19602733
+gov.uk,bank-holidays.json,4,15124,inodes,634630
+gov.uk,bank-holidays.json,4,15124,saving,587002
+gov.uk,bank-holidays.json,4,15124,writing,481250
+fda,recall50.json,10,1049501,reading json,1317961790
+fda,recall50.json,10,1049501,inodes,22280077
+fda,recall50.json,10,1049501,saving,12583555
+fda,recall50.json,10,1049501,writing,11882161
+fda,recall10.json,3,212061,reading json,269144616
+fda,recall10.json,3,212061,inodes,4084009
+fda,recall10.json,3,212061,saving,2881314
+fda,recall10.json,3,212061,writing,2952877
+ncdc,ncdc_zips.json,2,2851,reading json,3814525
+ncdc,ncdc_zips.json,2,2851,inodes,133616
+ncdc,ncdc_zips.json,2,2851,saving,106237
+ncdc,ncdc_zips.json,2,2851,writing,102658
+fda,tobacco10.json,9,6567,reading json,8507169
+fda,tobacco10.json,9,6567,inodes,161635
+fda,tobacco10.json,9,6567,saving,104993
+fda,tobacco10.json,9,6567,writing,70793
+fake,list2.json,1,25,reading json,57958
+fake,list2.json,1,25,inodes,49479
+fake,list2.json,1,25,saving,21513
+fake,list2.json,1,25,writing,14104
+doi,doi_smoosh.json,8,537,reading json,764307
+doi,doi_smoosh.json,8,537,inodes,65859
+doi,doi_smoosh.json,8,537,saving,36985
+doi,doi_smoosh.json,8,537,writing,19219
+rv,agni.json,2,89267,reading json,115578818
+rv,agni.json,2,89267,inodes,1920169
+rv,agni.json,2,89267,saving,1807893
+rv,agni.json,2,89267,writing,1738423
+gh,gh_gpl3.json,1,36979,reading json,48033142
+gh,gh_gpl3.json,1,36979,inodes,68202
+gh,gh_gpl3.json,1,36979,saving,58453
+gh,gh_gpl3.json,1,36979,writing,221720
+ncdc,ncdc_07030_stations.json,5,1476,reading json,1958180
+ncdc,ncdc_07030_stations.json,5,1476,inodes,100260
+ncdc,ncdc_07030_stations.json,5,1476,saving,58185
+ncdc,ncdc_07030_stations.json,5,1476,writing,50682
+fda,tobacco.json,6,1144,reading json,1498661
+fda,tobacco.json,6,1144,inodes,63145
+fda,tobacco.json,6,1144,saving,42136
+fda,tobacco.json,6,1144,writing,23370
+fda,event100.json,10,2945177,reading json,3668967781
+fda,event100.json,10,2945177,inodes,48182309
+fda,event100.json,10,2945177,saving,27151135
+fda,event100.json,10,2945177,writing,20305513
+ncdc,ncdc_datatypes.json,4,4013,reading json,5426362
+ncdc,ncdc_datatypes.json,4,4013,inodes,129096
+ncdc,ncdc_datatypes.json,4,4013,saving,110423
+ncdc,ncdc_datatypes.json,4,4013,writing,104641
+ncdc,ncdc_datacategories.json,10,1075,reading json,1415461
+ncdc,ncdc_datacategories.json,10,1075,inodes,90775
+ncdc,ncdc_datacategories.json,10,1075,saving,81844
+ncdc,ncdc_datacategories.json,10,1075,writing,49815
+fda,recall.json,1,22475,reading json,30069364
+fda,recall.json,1,22475,inodes,442615
+fda,recall.json,1,22475,saving,349386
+fda,recall.json,1,22475,writing,301575
+fda,event100.json,8,2945177,reading json,3688389706
+fda,event100.json,8,2945177,inodes,45278639
+fda,event100.json,8,2945177,saving,26860635
+fda,event100.json,8,2945177,writing,20265087
+gh,gh_events.json,9,54778,reading json,71646634
+gh,gh_events.json,9,54778,inodes,1063033
+gh,gh_events.json,9,54778,saving,786479
+gh,gh_events.json,9,54778,writing,721578
+ncdc,ncdc_07030_stations.json,10,1476,reading json,1962493
+ncdc,ncdc_07030_stations.json,10,1476,inodes,98278
+ncdc,ncdc_07030_stations.json,10,1476,saving,77742
+ncdc,ncdc_07030_stations.json,10,1476,writing,63963
+fda,tobacco_products.json,10,2345,reading json,2876555
+fda,tobacco_products.json,10,2345,inodes,80322
+fda,tobacco_products.json,10,2345,saving,64467
+fda,tobacco_products.json,10,2345,writing,41570
+ncdc,ncdc_gsom_sample.json,4,2867,reading json,3703747
+ncdc,ncdc_gsom_sample.json,4,2867,inodes,142617
+ncdc,ncdc_gsom_sample.json,4,2867,saving,114147
+ncdc,ncdc_gsom_sample.json,4,2867,writing,101530
+json_org,json_eg4.json,2,3468,reading json,4468522
+json_org,json_eg4.json,2,3468,inodes,101780
+json_org,json_eg4.json,2,3468,saving,98862
+json_org,json_eg4.json,2,3468,writing,60465
+gh,gh_mgree_events.json,2,168832,reading json,212937128
+gh,gh_mgree_events.json,2,168832,inodes,1797603
+gh,gh_mgree_events.json,2,168832,saving,2360318
+gh,gh_mgree_events.json,2,168832,writing,2032543
+gh,gh_emoji.json,4,173641,reading json,221746956
+gh,gh_emoji.json,4,173641,inodes,1330057
+gh,gh_emoji.json,4,173641,saving,2126737
+gh,gh_emoji.json,4,173641,writing,1311800
+gh,ffs.json,3,5089,reading json,6434530
+gh,ffs.json,3,5089,inodes,77337
+gh,ffs.json,3,5089,saving,125368
+gh,ffs.json,3,5089,writing,74822
+fake,list2.json,9,25,reading json,57809
+fake,list2.json,9,25,inodes,50059
+fake,list2.json,9,25,saving,22423
+fake,list2.json,9,25,writing,17287
+fda,registrationlisting.json,9,3228,reading json,4253029
+fda,registrationlisting.json,9,3228,inodes,99044
+fda,registrationlisting.json,9,3228,saving,88777
+fda,registrationlisting.json,9,3228,writing,57651
+rv,agni.json,3,89267,reading json,113133871
+rv,agni.json,3,89267,inodes,1884689
+rv,agni.json,3,89267,saving,1793759
+rv,agni.json,3,89267,writing,1795064
+ncdc,ncdc_locations.json,2,2808,reading json,3623580
+ncdc,ncdc_locations.json,2,2808,inodes,129883
+ncdc,ncdc_locations.json,2,2808,saving,114990
+ncdc,ncdc_locations.json,2,2808,writing,75415
+ncdc,ncdc_07030_stations.json,3,1476,reading json,2117783
+ncdc,ncdc_07030_stations.json,3,1476,inodes,101288
+ncdc,ncdc_07030_stations.json,3,1476,saving,68090
+ncdc,ncdc_07030_stations.json,3,1476,writing,57246
+gh,gh_licenses.json,8,2507,reading json,3248183
+gh,gh_licenses.json,8,2507,inodes,90293
+gh,gh_licenses.json,8,2507,saving,58706
+gh,gh_licenses.json,8,2507,writing,50301
+json_org,json_eg5.json,3,873,reading json,1149647
+json_org,json_eg5.json,3,873,inodes,81955
+json_org,json_eg5.json,3,873,saving,50837
+json_org,json_eg5.json,3,873,writing,31497
+ncdc,ncdc_gsom_sample.json,7,2867,reading json,3787889
+ncdc,ncdc_gsom_sample.json,7,2867,inodes,120297
+ncdc,ncdc_gsom_sample.json,7,2867,saving,111728
+ncdc,ncdc_gsom_sample.json,7,2867,writing,101555
+gov.uk,bank-holidays.json,6,15124,reading json,19540595
+gov.uk,bank-holidays.json,6,15124,inodes,609947
+gov.uk,bank-holidays.json,6,15124,saving,550158
+gov.uk,bank-holidays.json,6,15124,writing,512301
+fda,tobacco100.json,3,63634,reading json,81667615
+fda,tobacco100.json,3,63634,inodes,1249853
+fda,tobacco100.json,3,63634,saving,752847
+fda,tobacco100.json,3,63634,writing,671201
+ncdc,ncdc_locations.json,5,2808,reading json,3701257
+ncdc,ncdc_locations.json,5,2808,inodes,188879
+ncdc,ncdc_locations.json,5,2808,saving,117824
+ncdc,ncdc_locations.json,5,2808,writing,102546
+json_org,json_eg3.json,8,602,reading json,805286
+json_org,json_eg3.json,8,602,inodes,35110
+json_org,json_eg3.json,8,602,saving,39421
+json_org,json_eg3.json,8,602,writing,23238
+gh,gh_gpl3.json,4,36979,reading json,48885370
+gh,gh_gpl3.json,4,36979,inodes,73878
+gh,gh_gpl3.json,4,36979,saving,60629
+gh,gh_gpl3.json,4,36979,writing,225200
+penn,historic-20181028.json,8,1468638,reading json,1868416454
+penn,historic-20181028.json,8,1468638,inodes,33401969
+penn,historic-20181028.json,8,1468638,saving,30780746
+penn,historic-20181028.json,8,1468638,writing,18719491
+fda,waterpipe.json,6,1955,reading json,2562875
+fda,waterpipe.json,6,1955,inodes,74728
+fda,waterpipe.json,6,1955,saving,54929
+fda,waterpipe.json,6,1955,writing,33612
+gh,gh_apache2.json,3,12591,reading json,16231950
+gh,gh_apache2.json,3,12591,inodes,80760
+gh,gh_apache2.json,3,12591,saving,45924
+gh,gh_apache2.json,3,12591,writing,88032
+gh,gh_apache2.json,6,12591,reading json,16016372
+gh,gh_apache2.json,6,12591,inodes,86639
+gh,gh_apache2.json,6,12591,saving,48310
+gh,gh_apache2.json,6,12591,writing,88278
+json_org,json_eg2.json,8,242,reading json,354591
+json_org,json_eg2.json,8,242,inodes,55637
+json_org,json_eg2.json,8,242,saving,29938
+json_org,json_eg2.json,8,242,writing,17575
+ncdc,ncdc_ewr_station.json,3,191,reading json,291338
+ncdc,ncdc_ewr_station.json,3,191,inodes,32098
+ncdc,ncdc_ewr_station.json,3,191,saving,23623
+ncdc,ncdc_ewr_station.json,3,191,writing,27898
+fda,registrationlisting.json,4,3228,reading json,4023473
+fda,registrationlisting.json,4,3228,inodes,96689
+fda,registrationlisting.json,4,3228,saving,66183
+fda,registrationlisting.json,4,3228,writing,40781
+doi,doi_10.1000_1.json,9,369,reading json,548671
+doi,doi_10.1000_1.json,9,369,inodes,88655
+doi,doi_10.1000_1.json,9,369,saving,37170
+doi,doi_10.1000_1.json,9,369,writing,19930
+ncdc,ncdc_stations_big.json,5,200908,reading json,271292959
+ncdc,ncdc_stations_big.json,5,200908,inodes,6551084
+ncdc,ncdc_stations_big.json,5,200908,saving,5147111
+ncdc,ncdc_stations_big.json,5,200908,writing,4401807
+fda,waterpipe.json,7,1955,reading json,2432963
+fda,waterpipe.json,7,1955,inodes,96078
+fda,waterpipe.json,7,1955,saving,52878
+fda,waterpipe.json,7,1955,writing,34812
+json_org,json_eg1.json,3,583,reading json,794458
+json_org,json_eg1.json,3,583,inodes,57483
+json_org,json_eg1.json,3,583,saving,35843
+json_org,json_eg1.json,3,583,writing,22641
+fda,recall10.json,4,212061,reading json,273611972
+fda,recall10.json,4,212061,inodes,4372192
+fda,recall10.json,4,212061,saving,2925987
+fda,recall10.json,4,212061,writing,2572572
+gh,gh_licenses.json,10,2507,reading json,3154167
+gh,gh_licenses.json,10,2507,inodes,89737
+gh,gh_licenses.json,10,2507,saving,63822
+gh,gh_licenses.json,10,2507,writing,55824
+fda,registrationlisting100.json,3,214459,reading json,274480112
+fda,registrationlisting100.json,3,214459,inodes,3520281
+fda,registrationlisting100.json,3,214459,saving,3543585
+fda,registrationlisting100.json,3,214459,writing,2962172
+fda,tobacco_products.json,5,2345,reading json,2974275
+fda,tobacco_products.json,5,2345,inodes,81278
+fda,tobacco_products.json,5,2345,saving,67992
+fda,tobacco_products.json,5,2345,writing,43492
+gh,gh_events.json,7,54778,reading json,71347301
+gh,gh_events.json,7,54778,inodes,793002
+gh,gh_events.json,7,54778,saving,636431
+gh,gh_events.json,7,54778,writing,512981
+fda,recall.json,6,22475,reading json,29679403
+fda,recall.json,6,22475,inodes,538924
+fda,recall.json,6,22475,saving,350890
+fda,recall.json,6,22475,writing,301583
+ncdc,ncdc_locationcategories.json,1,543,reading json,751228
+ncdc,ncdc_locationcategories.json,1,543,inodes,71511
+ncdc,ncdc_locationcategories.json,1,543,saving,53618
+ncdc,ncdc_locationcategories.json,1,543,writing,28004
+ncdc,ncdc_zips.json,10,2851,reading json,3708766
+ncdc,ncdc_zips.json,10,2851,inodes,127807
+ncdc,ncdc_zips.json,10,2851,saving,111448
+ncdc,ncdc_zips.json,10,2851,writing,102544
+fda,recall100.json,4,2117776,reading json,2689263701
+fda,recall100.json,4,2117776,inodes,43075081
+fda,recall100.json,4,2117776,saving,25112238
+fda,recall100.json,4,2117776,writing,20759298
+gh,ffs.json,2,5089,reading json,6401970
+gh,ffs.json,2,5089,inodes,93407
+gh,ffs.json,2,5089,saving,95904
+gh,ffs.json,2,5089,writing,70123

@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+    "terms": "https://open.fda.gov/terms/",
+    "license": "https://open.fda.gov/license/",
+    "last_updated": "2021-04-30"
+  },
+  "results": [
+    {
+      "term": "Electronic cigarette, electronic nicotine or vaping product (E-cigarette, e-cigars, e-hookahs, e-pipes, vape pens, hookah pens, and personal vaporizers; E-liquids, e-juice or vape juice)",
+      "count": 810
+    },
+    {
+      "term": "Electronic cigarette or vaping product (also known as E-cigarette, vape pen, hookah pen, mod, e-cigar, e-hookah, and e-pipe; E-liquid (also known as \"e-juice\" or \"vape juice\"))",
+      "count": 77
+    },
+    {
+      "term": "Cigarette",
+      "count": 68
+    },
+    {
+      "term": "Other",
+      "count": 48
+    },
+    {
+      "term": "Snuff (dry or moist for use in nose or mouth)",
+      "count": 14
+    },
+    {
+      "term": "Roll-your-own cigarette",
+      "count": 10
+    },
+    {
+      "term": "Pipe or pipe tobacco",
+      "count": 8
+    },
+    {
+      "term": "Chewing tobacco (loose leaf chew, plug, twist/roll)",
+      "count": 6
+    },
+    {
+      "term": "Small Cigar, Little Cigar or Cigarillo",
+      "count": 4
+    },
+    {
+      "term": "Tobacco Heating System (heats tobacco leaf not liquid)",
+      "count": 4
+    },
+    {
+      "term": "Snus (pouches or loose)",
+      "count": 3
+    },
+    {
+      "term": "Cigar (large or premium)",
+      "count": 2
+    },
+    {
+      "term": "Heated Tobacco Product (also known as \"Heat not Burn\"; heats dry or moist tobacco)",
+      "count": 2
+    },
+    {
+      "term": "Waterpipe (also known as hookah, narghile, shisha, or goza)",
+      "count": 2
+    },
+    {
+      "term": "Dissolvable (for example, strips, sticks, orbs)",
+      "count": 1
+    },
+    {
+      "term": "Gutka (or Gutkha), Betel Quid with Tobacco",
+      "count": 1
+    },
+    {
+      "term": "Mixture of tobacco with spices, herbs, nuts, fruit, plant leaves, etc. (used for chewing)",
+      "count": 1
+    },
+    {
+      "term": "Nicotine Lotions or Gels (applied to the skin)",
+      "count": 1
+    }
+  ]
+}

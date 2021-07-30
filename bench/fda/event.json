@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+    "terms": "https://open.fda.gov/terms/",
+    "license": "https://open.fda.gov/license/",
+    "last_updated": "2021-05-10",
+    "results": {
+      "skip": 0,
+      "limit": 1,
+      "total": 13306102
+    }
+  },
+  "results": [
+    {
+      "receiptdateformat": "102",
+      "receiver": null,
+      "seriousnessdeath": "1",
+      "companynumb": "JACAN16471",
+      "receivedateformat": "102",
+      "primarysource": {
+        "reportercountry": "CANADA",
+        "qualification": "3"
+      },
+      "transmissiondateformat": "102",
+      "fulfillexpeditecriteria": "1",
+      "safetyreportid": "5801206-7",
+      "sender": {
+        "senderorganization": "FDA-Public Use"
+      },
+      "receivedate": "20080707",
+      "patient": {
+        "patientonsetage": "26",
+        "patientonsetageunit": "801",
+        "patientsex": "1",
+        "patientdeath": {
+          "patientdeathdateformat": null,
+          "patientdeathdate": null
+        },
+        "reaction": [
+          {
+            "reactionmeddrapt": "DRUG ADMINISTRATION ERROR"
+          },
+          {
+            "reactionmeddrapt": "OVERDOSE"
+          }
+        ],
+        "drug": [
+          {
+            "drugcharacterization": "1",
+            "medicinalproduct": "DURAGESIC-100",
+            "drugauthorizationnumb": "019813",
+            "drugadministrationroute": "041",
+            "drugindication": "DRUG ABUSE"
+          }
+        ]
+      },
+      "transmissiondate": "20090109",
+      "serious": "1",
+      "receiptdate": "20080625"
+    }
+  ]
+}

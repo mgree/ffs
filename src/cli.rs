@@ -26,6 +26,11 @@ pub fn app() -> App<'static, 'static> {
                 .overrides_with("DEBUG")
         )
         .arg(
+            Arg::with_name("TIMING")
+                .help("Emit timing information on stderr in an 'event,time' format; time is in nanoseconds")
+                .long("time")
+        )
+        .arg(
             Arg::with_name("DEBUG")
                 .help("Give debug output on stderr")
                 .long("debug")

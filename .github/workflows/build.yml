@@ -32,9 +32,71 @@ jobs:
 
       - name: Build ffs and run unit tests
         run: |
-          cargo build --verbose --all
+          cargo build --verbose --all --release
           cargo test
         
       - name: Integration tests
-        run: PATH="$(pwd)/target/debug:$PATH" ./run_tests.sh
+        run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
+
+      - name: Install R
+        uses: r-lib/actions/setup-r@v1
+        
+      - name: Benchmarks
+        run: |
+          Rscript -e "install.packages('ggplot2', repos = 'https://cloud.r-project.org/')"
+          PATH="$(pwd)/target/release:$PATH" ./run_bench.sh -n 3
+          mkdir data
+          for x in *.log *.png
+          do
+            mv $x data/${x##*_}
+          done
+          
+      - name: Upload macOS release build
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.os == 'macos-latest' }}
+        with:
+          name: ffs.macos
+          path: target/release/ffs
+
+      - name: Upload Linux release build
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        with:
+          name: ffs.linux
+          path: target/release/ffs            
+
+      - name: Upload macOS benchmark data
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.os == 'macos-latest' }}
+        with:
+          name: benchmarks.macos
+          path: data
+            
+      - name: Upload Linux benchmark data
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        with:
+          name: benchmarks.linux
+          path: data
+            
+  prerelease:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
       
+    steps:
+      - name: Download binaries
+        uses: actions/download-artifact@v2
+
+      - name: Deploy 'latest' release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Latest development build"
+          files: |
+            ffs.linux/ffs.linux
+            ffs.macos/ffs.macos
+
+        
+        

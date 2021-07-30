@@ -34,6 +34,7 @@ _ffs() {
 '(-i --in-place -s --source -o --output)--new=[Mounts an empty filesystem, inferring a mountpoint and output format]' \
 '-q[Quiet mode (turns off all errors and warnings, enables `--no-output`)]' \
 '--quiet[Quiet mode (turns off all errors and warnings, enables `--no-output`)]' \
+'--time[Emit timing information on stderr in an '\''event,time'\'' format; time is in nanoseconds]' \
 '-d[Give debug output on stderr]' \
 '--debug[Give debug output on stderr]' \
 '--exact[Don'\''t add newlines to the end of values that don'\''t already have them (or strip them when loading)]' \

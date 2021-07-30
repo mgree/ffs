@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "disclaimer": "Do not rely on openFDA to make decisions regarding medical care. While we make every effort to ensure that data is accurate, you should assume all results are unvalidated. We may limit or otherwise restrict your access to the API in line with our Terms of Service.",
+    "terms": "https://open.fda.gov/terms/",
+    "license": "https://open.fda.gov/license/",
+    "last_updated": "2021-04-30",
+    "results": {
+      "skip": 0,
+      "limit": 100,
+      "total": 2
+    }
+  },
+  "results": [
+    {
+      "date_submitted": "09/12/2019",
+      "nonuser_affected": "No",
+      "reported_health_problems": [
+        "No information provided"
+      ],
+      "number_tobacco_products": 1,
+      "number_health_problems": 0,
+      "report_id": 1128,
+      "reported_product_problems": [
+        "Other",
+        "Damaged, broken, or defective product"
+      ],
+      "tobacco_products": [
+        "Waterpipe (also known as hookah, narghile, shisha, or goza)"
+      ],
+      "number_product_problems": 2
+    },
+    {
+      "date_submitted": "09/28/2017",
+      "nonuser_affected": "No",
+      "reported_health_problems": [
+        "Other",
+        "Acute migraine"
+      ],
+      "number_tobacco_products": 3,
+      "number_health_problems": 2,
+      "reported_product_problems": [
+        "Damaged, broken or defective product, part, accessory, or package",
+        "Appearance, look, smell, or taste issue",
+        "Label or instruction issue",
+        "Other",
+        "Foreign material (something in the product that does not belong)"
+      ],
+      "tobacco_products": [
+        "Waterpipe (also known as hookah, narghile, shisha, or goza)",
+        "Pipe or pipe tobacco",
+        "Electronic cigarette, electronic nicotine or vaping product (E-cigarette, e-cigars, e-hookahs, e-pipes, vape pens, hookah pens, and personal vaporizers; E-liquids, e-juice or vape juice)"
+      ],
+      "number_product_problems": 5
+    }
+  ]
+}

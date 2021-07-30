@@ -20,7 +20,7 @@ _ffs() {
 
     case "${cmd}" in
         ffs)
-            opts=" -q -d -i -h -V -u -g -o -s -t -m  --quiet --debug --exact --no-xattr --keep-macos-xattr --unpadded --readonly --no-output --in-place --pretty --help --version --completions --uid --gid --mode --dirmode --munge --output --source --target --mount --new  <INPUT> "
+            opts=" -q -d -i -h -V -u -g -o -s -t -m  --quiet --time --debug --exact --no-xattr --keep-macos-xattr --unpadded --readonly --no-output --in-place --pretty --help --version --completions --uid --gid --mode --dirmode --munge --output --source --target --mount --new  <INPUT> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
