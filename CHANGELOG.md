@@ -6,6 +6,8 @@
   code.
 * Revise exit codes: 0 means success, 1 means FS error, 2 means CLI
   error.
+* `--time` flag for emitting timing information on STDERR.
+* Basic startup/shutdown benchmarking, with microbenchmarks.
 
 ## 0.1.1 - 2021-07-15
 
