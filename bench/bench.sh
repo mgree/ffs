@@ -176,7 +176,8 @@ do
     fi
 
     tempfile log
-    $FFS --time -m $mnt $path >/dev/null 2>$log &
+    tempfile out
+    $FFS --time -m $mnt -o $out -t json $path 2>$log &
     PID=$!
     PIDS="$PIDS $PID"
     count=0
