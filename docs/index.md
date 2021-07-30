@@ -94,7 +94,7 @@ volume is unmounted, the resulting output will be written back to
 
 On Linux you need [FUSE](https://github.com/libfuse/libfuse); on
 macOS, you need [macFUSE](https://osxfuse.github.io/). You can then
-download a single executable. These are the latest builds:
+download a single executable. These are the [latest development builds](https://github.com/mgree/ffs/releases/tag/latest):
 
  - [Linux]({{ site.github.linux_url }})
  - [macOS]({{ site.github.macos_url }})
