@@ -80,6 +80,7 @@ jobs:
           path: data
             
   prerelease:
+    needs: build
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
       
