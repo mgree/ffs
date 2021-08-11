@@ -2,8 +2,8 @@
 [![Main workflow](https://github.com/mgree/ffs/actions/workflows/build.yml/badge.svg)](https://github.com/mgree/ffs/actions/workflows/build.yml)
 [![Crates.io](https://img.shields.io/crates/v/ffs.svg)](https://crates.io/crates/ffs)
 
-ffs, the **f**ile **f**ile**s**sytem, let's you mount semi-structured
-data as a fileystem---a tree structure you already know how to work with!
+ffs, the **f**ile **f**ile**s**ystem, let's you mount semi-structured
+data as a filesystem---a tree structure you already know how to work with!
 
 Working with semi-structured data using command-line tools is hard.
 Tools like [jq](https://github.com/stedolan/jq) help a lot, but
