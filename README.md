@@ -13,7 +13,7 @@ know.
 
 # Example
 
-Run `ffs [file]` to mount `file.blah` at the mountpoint `file`. The
+Run `ffs [file.blah]` to mount `file.blah` at the mountpoint `file`. The
 final, updated version of the file will be outputted on stdout.
 
 ```shell-session
