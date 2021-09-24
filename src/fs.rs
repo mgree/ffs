@@ -169,7 +169,7 @@ impl FS {
     ///
     ///   - if `self.config.output == Output::Stdout` and `last_sync == false`,
     ///     nothing will happen (to prevent redundant writes to STDOUT)
-    #[instrument(level = "debug", skip(self), fields(synced = self.dirty.get(), dirty = self.dirty.get()))]
+    #[instrument(level = "debug", skip(self), fields(synced = self.synced.get(), dirty = self.dirty.get()))]
     pub fn sync(&self, last_sync: bool) {
         info!("called");
         trace!("{:?}", self.inodes);
@@ -344,6 +344,16 @@ impl FromStr for DirType {
         } else {
             Err(())
         }
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl Drop for FS {
+    /// Synchronizes the `FS`, calling `FS::sync` with `last_sync == true`.
+    #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
+    fn drop(&mut self) {
+        info!("called");
+        self.sync(true); // last sync
     }
 }
 
