@@ -100,7 +100,7 @@ download a single executable. These are the [latest development builds](https://
  - [macOS]({{ site.github.macos_url }})
 
 See the [release page](https://github.com/mgree/ffs/releases) for
-particular releases; the current version is 0.1.1. You can also build
+particular releases; the current version is 0.1.2. You can also build
 ffs from [source](https://github.com/mgree/ffs).
 
 # Related tools
