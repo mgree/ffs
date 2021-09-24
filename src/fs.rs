@@ -364,6 +364,7 @@ const ENOATTR: i32 = libc::ENODATA;
 const ENOATTR: i32 = libc::ENOATTR;
 
 impl Filesystem for FS {
+    #[cfg(target_os = "macos")]
     #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
     fn destroy(&mut self) {
         info!("called");
