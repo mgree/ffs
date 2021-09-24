@@ -347,7 +347,6 @@ impl FromStr for DirType {
     }
 }
 
-#[cfg(target_os = "linux")]
 impl Drop for FS {
     /// Synchronizes the `FS`, calling `FS::sync` with `last_sync == true`.
     #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
@@ -364,11 +363,9 @@ const ENOATTR: i32 = libc::ENODATA;
 const ENOATTR: i32 = libc::ENOATTR;
 
 impl Filesystem for FS {
-    #[cfg(target_os = "macos")]
     #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
     fn destroy(&mut self) {
         info!("called");
-        self.sync(true); // last sync
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
