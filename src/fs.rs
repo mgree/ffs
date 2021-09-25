@@ -352,7 +352,7 @@ impl Drop for FS {
     #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
     fn drop(&mut self) {
         info!("called");
-        self.sync(true); // last sync
+//        self.sync(true); // last sync
     }
 }
 
@@ -366,6 +366,7 @@ impl Filesystem for FS {
     #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
     fn destroy(&mut self) {
         info!("called");
+        self.sync(true);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
