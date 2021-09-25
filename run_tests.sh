@@ -43,12 +43,17 @@ do
         printf "========== PASSED: $tname\n"
     else
         printf "========== FAILED: $tname (ec=$(cat $LOG/$tname.ec))\n"
+        : $((FAILED += 1))
+    fi
+
+    # just always capture output in the CI logs
+    if [ "$(cat $LOG/$tname.ec)" -ne 0 ] || [ "$CI" ]
+    then
         printf "<<<<<<<<<< STDOUT\n"
         cat $LOG/$tname.out
         printf "<<<<<<<<<< STDERR\n"
         cat $LOG/$tname.err
         printf "\n"
-        : $((FAILED += 1))
     fi
 done
 
