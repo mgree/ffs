@@ -23,7 +23,7 @@ for test in *.sh
 do
     tname="$(basename ${test%*.sh})"
     printf "========== STARTING TEST: $tname\n"
-    (RUST_LOG="ffs=debug"; export RUST_LOG; ./${test} >$LOG/$tname.out 2>$LOG/$tname.err; echo $?>$LOG/$tname.ec) &
+    (RUST_LOG="ffs=debug,fuser=debug"; export RUST_LOG; ./${test} >$LOG/$tname.out 2>$LOG/$tname.err; echo $?>$LOG/$tname.ec) &
     : $((TOTAL += 1))
 
     # don't slam 'em
