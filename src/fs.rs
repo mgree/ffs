@@ -169,7 +169,7 @@ impl FS {
     ///
     ///   - if `self.config.output == Output::Stdout` and `last_sync == false`,
     ///     nothing will happen (to prevent redundant writes to STDOUT)
-    #[instrument(level = "debug", skip(self), fields(synced = self.dirty.get(), dirty = self.dirty.get()))]
+    #[instrument(level = "debug", skip(self), fields(synced = self.synced.get(), dirty = self.dirty.get()))]
     pub fn sync(&self, last_sync: bool) {
         info!("called");
         trace!("{:?}", self.inodes);
@@ -347,14 +347,6 @@ impl FromStr for DirType {
     }
 }
 
-impl Drop for FS {
-    /// Synchronizes the `FS`, calling `FS::sync` with `last_sync == true`.
-    #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
-    fn drop(&mut self) {
-        self.sync(true); // last sync
-    }
-}
-
 // ENOATTR is deprecated on Linux, so we should use ENODATA
 #[cfg(target_os = "linux")]
 const ENOATTR: i32 = libc::ENODATA;
@@ -362,14 +354,11 @@ const ENOATTR: i32 = libc::ENODATA;
 const ENOATTR: i32 = libc::ENOATTR;
 
 impl Filesystem for FS {
-    #[instrument(level = "debug", skip(self, _req), fields(dirty = self.dirty.get()))]
-    fn destroy(&mut self, _req: &Request) {
+    /// Synchronizes the `FS`, calling `FS::sync` with `last_sync == true`.
+    #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
+    fn destroy(&mut self) {
         info!("called");
-        // It WOULD make sense to call `sync` here, but this function doesn't
-        // seem to be called on Linux... so we call `self.sync(true)` in
-        // `Drop::drop`, instead.
-        //
-        // See https://github.com/cberner/fuser/issues/153
+        self.sync(true);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
