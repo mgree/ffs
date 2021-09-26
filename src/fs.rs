@@ -347,15 +347,6 @@ impl FromStr for DirType {
     }
 }
 
-impl Drop for FS {
-    /// Synchronizes the `FS`, calling `FS::sync` with `last_sync == true`.
-    #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
-    fn drop(&mut self) {
-        info!("called");
-//        self.sync(true); // last sync
-    }
-}
-
 // ENOATTR is deprecated on Linux, so we should use ENODATA
 #[cfg(target_os = "linux")]
 const ENOATTR: i32 = libc::ENODATA;
@@ -363,6 +354,7 @@ const ENOATTR: i32 = libc::ENODATA;
 const ENOATTR: i32 = libc::ENOATTR;
 
 impl Filesystem for FS {
+    /// Synchronizes the `FS`, calling `FS::sync` with `last_sync == true`.
     #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
     fn destroy(&mut self) {
         info!("called");

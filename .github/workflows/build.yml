@@ -20,7 +20,6 @@ jobs:
         run: |
           if [ "$RUNNER_OS" = "Linux" ]; then
             sudo apt-get install fuse libfuse-dev pkg-config attr
-            cat /etc/fuse.conf
           elif [ "$RUNNER_OS" = "macOS" ]; then
             brew install macfuse pkg-config
           else

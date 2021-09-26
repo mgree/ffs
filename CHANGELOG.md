@@ -1,6 +1,6 @@
 # ffs - Changelog
 
-## 0.?.? - UNRELEASED
+## 0.1.2 - 2021-09-26
 
 * Handle failed mounts better, with an appropriate message and error
   code.
@@ -8,6 +8,8 @@
   error.
 * `--time` flag for emitting timing information on STDERR.
 * Basic startup/shutdown benchmarking, with microbenchmarks.
+* Upgrade to fuser 0.9.1. Concomitant bugfixes turn off AutoUnmount.
+* Improvements/bugfixes in regression tests.
 
 ## 0.1.1 - 2021-07-15
 

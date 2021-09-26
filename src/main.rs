@@ -12,7 +12,6 @@ use fuser::MountOption;
 fn main() {
     let config = Config::from_args();
     let mut options = vec![
-//        MountOption::AutoUnmount,
         MountOption::FSName(format!("{}", config.input)),
     ];
     if config.read_only {
