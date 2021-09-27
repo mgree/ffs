@@ -11,10 +11,27 @@ use super::fs::{DirEntry, DirType, Entry, Inode, FS};
 
 use ::toml as serde_toml;
 
+#[macro_export]
+macro_rules! time_ns {
+    ($msg:expr, $e:expr, $timing:expr) => {{
+        let start = std::time::Instant::now();
+        let v = $e;
+
+        let msg = $msg;
+        let elapsed = start.elapsed().as_nanos();
+        if $timing {
+            eprintln!("{},{}", msg, elapsed);
+        } else {
+            info!("{} ({}ns)", msg, elapsed);
+        }
+        v
+    }};
+}
+
 /// The possible formats.
 ///
 /// When extending, don't forget to also extend `cli::POSSIBLE_FORMATS`.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Format {
     Json,
     Toml,
@@ -182,10 +199,8 @@ impl Format {
 
         match self {
             Format::Json => {
-                let v: serde_json::Value = time_ns!(
-                    "reading",
-                    serde_json::from_reader(reader).expect("JSON")
-                );
+                let v: serde_json::Value =
+                    time_ns!("reading", serde_json::from_reader(reader).expect("JSON"));
                 time_ns!("loading", fs_from_value(v, &config, &mut inodes));
             }
             Format::Toml => {
@@ -207,22 +222,6 @@ impl Format {
     /// NB there is no check that `self == fs.config.output_format`!
     #[instrument(level = "info", skip(fs))]
     pub fn save(&self, fs: &FS) {
-        macro_rules! time_ns {
-            ($msg:expr, $e:expr) => {{
-                let start = std::time::Instant::now();
-                let v = $e;
-
-                let msg = $msg;
-                let elapsed = start.elapsed().as_nanos();
-                if fs.config.timing {
-                    eprintln!("{},{}", msg, elapsed);
-                } else {
-                    info!("{} ({}ns)", msg, elapsed);
-                }
-                v
-            }};
-        }
-
         let writer: Box<dyn std::io::Write> = match &fs.config.output {
             Output::Stdout => {
                 debug!("outputting on STDOUT");
@@ -240,8 +239,11 @@ impl Format {
 
         match self {
             Format::Json => {
-                let v: serde_json::Value =
-                    time_ns!("saving", value_from_fs(fs, fuser::FUSE_ROOT_ID));
+                let v: serde_json::Value = time_ns!(
+                    "saving",
+                    value_from_fs(fs, fuser::FUSE_ROOT_ID),
+                    fs.config.timing
+                );
                 debug!("outputting {}", v);
                 time_ns!(
                     "writing",
@@ -249,12 +251,16 @@ impl Format {
                         serde_json::to_writer_pretty(writer, &v).unwrap();
                     } else {
                         serde_json::to_writer(writer, &v).unwrap();
-                    }
+                    },
+                    fs.config.timing
                 );
             }
             Format::Toml => {
-                let v: serde_toml::Value =
-                    time_ns!("saving", value_from_fs(fs, fuser::FUSE_ROOT_ID));
+                let v: toml::Value = time_ns!(
+                    "saving",
+                    value_from_fs(fs, fuser::FUSE_ROOT_ID),
+                    fs.config.timing
+                );
                 debug!("outputting {}", v);
                 time_ns!(
                     "writing",
@@ -262,19 +268,30 @@ impl Format {
                         toml::to_writer_pretty(writer, &v).unwrap();
                     } else {
                         toml::to_writer(writer, &v).unwrap();
-                    }
+                    },
+                    fs.config.timing
                 );
             }
             Format::Yaml => {
-                let v: yaml::Value = time_ns!("saving", value_from_fs(fs, fuser::FUSE_ROOT_ID));
+                let v: yaml::Value = time_ns!(
+                    "saving",
+                    value_from_fs(fs, fuser::FUSE_ROOT_ID),
+                    fs.config.timing
+                );
                 debug!("outputting {}", v);
-                time_ns!("writing", yaml::to_writer(writer, &v).unwrap());
+                time_ns!(
+                    "writing",
+                    yaml::to_writer(writer, &v).unwrap(),
+                    fs.config.timing
+                );
             }
         }
     }
 }
 
-enum Node<V> {
+/// The ffs data model; it represents just one layer---lists and maps are
+/// parameterized over the underlying value type V.
+pub enum Node<V> {
     String(Typ, String),
     Bytes(Vec<u8>),
 
@@ -289,9 +306,9 @@ enum Node<V> {
 
 /// Values that can be converted to a `Node`, which can be in turn processed by
 /// the worklist algorithm
-trait Nodelike
+pub trait Nodelike
 where
-    Self: Sized,
+    Self: Clone + std::fmt::Debug + Default + std::fmt::Display + Sized,
 {
     /// Number of "nodes" in the given value. This should correspond to the
     /// number of inodes needed to accommodate the value.
@@ -317,6 +334,12 @@ where
     fn from_string(typ: Typ, v: String, config: &Config) -> Self;
     fn from_list_dir(files: Vec<Self>, config: &Config) -> Self;
     fn from_named_dir(files: HashMap<String, Self>, config: &Config) -> Self;
+
+    /// Loading
+    fn from_reader(reader: Box<dyn std::io::Read>) -> Self;
+
+    /// Saving, with optional pretty printing
+    fn to_writer(&self, writer: Box<dyn std::io::Write>, pretty: bool);
 }
 
 /// Given a `Nodelike` value `v`, initializes the vector `inodes` of (nullable)
@@ -511,9 +534,9 @@ where
     }
 }
 
-mod json {
+pub mod json {
     use super::*;
-    use serde_json::Value;
+    pub use serde_json::Value;
 
     impl Nodelike for Value {
         /// `Value::Object` and `Value::Array` map to directories; everything else is a
@@ -623,12 +646,26 @@ mod json {
         fn from_named_dir(files: HashMap<String, Self>, _config: &Config) -> Self {
             Value::Object(files.into_iter().collect())
         }
+
+        fn to_writer(&self, writer: Box<dyn std::io::Write>, pretty: bool) {
+            if pretty {
+                serde_json::to_writer_pretty(writer, self).unwrap();
+            } else {
+                serde_json::to_writer(writer, self).unwrap();
+            }
+        }
+        fn from_reader(reader: std::boxed::Box<dyn std::io::Read>) -> Self {
+            serde_json::from_reader(reader).expect("JSON")
+        }
     }
 }
 
-mod toml {
+pub mod toml {
     use super::*;
-    use serde_toml::Value;
+    use serde_toml::Value as Toml;
+
+    #[derive(Clone, Debug)]
+    pub struct Value(serde_toml::Value);
 
     #[derive(Debug)]
     pub enum Error<E> {
@@ -641,14 +678,14 @@ mod toml {
     ) -> Result<Value, Error<serde_toml::de::Error>> {
         let mut text = String::new();
         let _len = reader.read_to_string(&mut text).map_err(Error::Io)?;
-        serde_toml::from_str(&text).map_err(Error::Toml)
+        serde_toml::from_str(&text).map_err(Error::Toml).map(Value)
     }
 
     pub fn to_writer(
         mut writer: Box<dyn std::io::Write>,
         v: &Value,
     ) -> Result<(), Error<serde_toml::ser::Error>> {
-        let text = serde_toml::to_string(v).map_err(Error::Toml)?;
+        let text = serde_toml::to_string(&v.0).map_err(Error::Toml)?;
         writer.write_all(text.as_bytes()).map_err(Error::Io)
     }
 
@@ -656,39 +693,55 @@ mod toml {
         mut writer: Box<dyn std::io::Write>,
         v: &Value,
     ) -> Result<(), Error<serde_toml::ser::Error>> {
-        let text = serde_toml::to_string_pretty(v).map_err(Error::Toml)?;
+        let text = serde_toml::to_string_pretty(&v.0).map_err(Error::Toml)?;
         writer.write_all(text.as_bytes()).map_err(Error::Io)
+    }
+
+    impl std::fmt::Display for Value {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+            self.0.fmt(f)
+        }
+    }
+
+    impl Default for Value {
+        fn default() -> Self {
+            Value(Toml::String("".into()))
+        }
+    }
+
+    fn toml_size(v: &Toml) -> usize {
+        match v {
+            Toml::Boolean(_)
+            | Toml::Datetime(_)
+            | Toml::Float(_)
+            | Toml::Integer(_)
+            | Toml::String(_) => 1,
+            Toml::Array(vs) => vs.iter().map(|v| toml_size(v)).sum::<usize>() + 1,
+            Toml::Table(fvs) => fvs.iter().map(|(_, v)| toml_size(v)).sum::<usize>() + 1,
+        }
     }
 
     impl Nodelike for Value {
         fn kind(&self) -> FileType {
-            match self {
-                Value::Table(_) | Value::Array(_) => FileType::Directory,
+            match self.0 {
+                Toml::Table(_) | Toml::Array(_) => FileType::Directory,
                 _ => FileType::RegularFile,
             }
         }
 
         fn size(&self) -> usize {
-            match self {
-                Value::Boolean(_)
-                | Value::Datetime(_)
-                | Value::Float(_)
-                | Value::Integer(_)
-                | Value::String(_) => 1,
-                Value::Array(vs) => vs.iter().map(|v| v.size()).sum::<usize>() + 1,
-                Value::Table(fvs) => fvs.iter().map(|(_, v)| v.size()).sum::<usize>() + 1,
-            }
+            toml_size(&self.0)
         }
 
         fn node(self, config: &Config) -> Node<Self> {
             let nl = if config.add_newlines { "\n" } else { "" };
 
-            match self {
-                Value::Boolean(b) => Node::String(Typ::Boolean, format!("{}{}", b, nl)),
-                Value::Datetime(s) => Node::String(Typ::Datetime, s.to_string()),
-                Value::Float(n) => Node::String(Typ::Float, format!("{}{}", n, nl)),
-                Value::Integer(n) => Node::String(Typ::Integer, format!("{}{}", n, nl)),
-                Value::String(s) => {
+            match self.0 {
+                Toml::Boolean(b) => Node::String(Typ::Boolean, format!("{}{}", b, nl)),
+                Toml::Datetime(s) => Node::String(Typ::Datetime, s.to_string()),
+                Toml::Float(n) => Node::String(Typ::Float, format!("{}{}", n, nl)),
+                Toml::Integer(n) => Node::String(Typ::Integer, format!("{}{}", n, nl)),
+                Toml::String(s) => {
                     if config.try_decode_base64 {
                         if let Ok(bytes) = base64::decode_config(&s, config.base64) {
                             return Node::Bytes(bytes);
@@ -697,95 +750,116 @@ mod toml {
 
                     Node::String(Typ::String, if s.ends_with('\n') { s } else { s + nl })
                 }
-                Value::Array(vs) => Node::List(vs),
-                Value::Table(fvs) => Node::Map(fvs.into_iter().collect()),
+                Toml::Array(vs) => Node::List(vs.into_iter().map(Value).collect()),
+                Toml::Table(fvs) => {
+                    Node::Map(fvs.into_iter().map(|(f, v)| (f, Value(v))).collect())
+                }
             }
         }
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
-            match typ {
+            let v = match typ {
                 Typ::Auto => {
                     if contents == "true" {
-                        Value::Boolean(true)
+                        Toml::Boolean(true)
                     } else if contents == "false" {
-                        Value::Boolean(false)
+                        Toml::Boolean(false)
                     } else if let Ok(n) = i64::from_str(&contents) {
-                        Value::Integer(n)
+                        Toml::Integer(n)
                     } else if let Ok(n) = f64::from_str(&contents) {
-                        Value::Float(n)
+                        Toml::Float(n)
                     } else if let Ok(datetime) = str::parse(&contents) {
-                        Value::Datetime(datetime)
+                        Toml::Datetime(datetime)
                     } else {
-                        Value::String(contents)
+                        Toml::String(contents)
                     }
                 }
                 Typ::Boolean => {
                     if contents == "true" {
-                        Value::Boolean(true)
+                        Toml::Boolean(true)
                     } else if contents == "false" {
-                        Value::Boolean(false)
+                        Toml::Boolean(false)
                     } else {
                         debug!("string '{}' tagged as boolean", contents);
-                        Value::String(contents)
+                        Toml::String(contents)
                     }
                 }
                 Typ::Bytes => panic!("from_string called at typ::bytes"),
                 Typ::Datetime => match str::parse(&contents) {
-                    Ok(datetime) => Value::Datetime(datetime),
+                    Ok(datetime) => Toml::Datetime(datetime),
                     Err(e) => {
                         debug!(
                             "string '{}' tagged as datetime, didn't parse: {}",
                             contents, e
                         );
-                        Value::String(contents)
+                        Toml::String(contents)
                     }
                 },
                 Typ::Float => {
                     if let Ok(n) = f64::from_str(&contents) {
-                        Value::Float(n)
+                        Toml::Float(n)
                     } else {
                         debug!("string '{}' tagged as float", contents);
-                        Value::String(contents)
+                        Toml::String(contents)
                     }
                 }
                 Typ::Integer => {
                     if let Ok(n) = i64::from_str(&contents) {
-                        Value::Integer(n)
+                        Toml::Integer(n)
                     } else {
                         debug!("string '{}' tagged as float", contents);
-                        Value::String(contents)
+                        Toml::String(contents)
                     }
                 }
                 Typ::Null => {
                     if contents.is_empty() {
-                        Value::String(contents)
+                        Toml::String(contents)
                     } else {
                         debug!("string '{}' tagged as null", contents);
-                        Value::String(contents)
+                        Toml::String(contents)
                     }
                 }
-                Typ::String => Value::String(contents),
-            }
+                Typ::String => Toml::String(contents),
+            };
+
+            Value(v)
         }
 
         fn from_bytes<T>(contents: T, config: &Config) -> Self
         where
             T: AsRef<[u8]>,
         {
-            Value::String(base64::encode_config(contents, config.base64))
+            Value(Toml::String(base64::encode_config(contents, config.base64)))
         }
 
         fn from_list_dir(files: Vec<Self>, _config: &Config) -> Self {
-            Value::Array(files)
+            Value(Toml::Array(files.into_iter().map(|v| v.0).collect()))
         }
 
         fn from_named_dir(files: HashMap<String, Self>, _config: &Config) -> Self {
-            Value::Table(files.into_iter().collect())
+            Value(Toml::Table(
+                files.into_iter().map(|(f, v)| (f, v.0)).collect(),
+            ))
+        }
+
+        fn from_reader(mut reader: Box<dyn std::io::Read>) -> Self {
+            let mut text = String::new();
+            let _len = reader.read_to_string(&mut text).unwrap();
+            Value(serde_toml::from_str(&text).expect("TOML"))
+        }
+
+        fn to_writer(&self, mut writer: Box<dyn std::io::Write>, pretty: bool) {
+            let text = if pretty {
+                serde_toml::to_string_pretty(&self.0).unwrap()
+            } else {
+                serde_toml::to_string(&self.0).map_err(Error::Toml).unwrap()
+            };
+            writer.write_all(text.as_bytes()).unwrap();
         }
     }
 }
 
-mod yaml {
+pub mod yaml {
     use super::*;
     use std::hash::{Hash, Hasher};
     use yaml_rust::{EmitError, ScanError, Yaml};
@@ -813,6 +887,7 @@ mod yaml {
             .map_err(Error::Yaml)
     }
 
+    // XXX drop these
     pub fn to_writer(
         mut writer: Box<dyn std::io::Write>,
         v: &Value,
@@ -832,6 +907,12 @@ mod yaml {
                     panic!("unrecoverable YAML display error: BadHashmapKey")
                 }
             })
+        }
+    }
+
+    impl Default for Value {
+        fn default() -> Self {
+            Value(Yaml::Null)
         }
     }
 
@@ -986,6 +1067,27 @@ mod yaml {
                     .map(|(k, v)| (Value::from_string(Typ::String, k, config).0, v.0))
                     .collect(),
             ))
+        }
+
+        fn from_reader(mut reader: Box<dyn std::io::Read>) -> Self {
+            let mut text = String::new();
+            let _len = reader.read_to_string(&mut text).unwrap();
+            yaml_rust::YamlLoader::load_from_str(&text)
+                .map(|vs| {
+                    Value(if vs.len() == 1 {
+                        vs.into_iter().next().unwrap()
+                    } else {
+                        Yaml::Array(vs)
+                    })
+                })
+                .expect("YAML")
+        }
+
+        fn to_writer(&self, mut writer: Box<dyn std::io::Write>, _pretty: bool) {
+            let mut text = String::new();
+            let mut emitter = yaml_rust::YamlEmitter::new(&mut text);
+            emitter.dump(&self.0).unwrap();
+            writer.write_all(text.as_bytes()).unwrap();
         }
     }
 }

@@ -26,6 +26,7 @@ pub const ERROR_STATUS_CLI: i32 = 2;
 pub struct Config {
     pub input_format: Format,
     pub output_format: Format,
+    pub lazy: bool,
     pub uid: u32,
     pub gid: u32,
     pub filemode: u16,
@@ -63,7 +64,7 @@ impl std::fmt::Display for Input {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Output {
     Quiet,
     Stdout,
@@ -104,12 +105,10 @@ impl FromStr for Munge {
 impl Config {
     /// Parses arguments from `std::env::Args`, via `cli::app().get_matches()`
     pub fn from_args() -> Self {
-        let args = cli::app()
-            .get_matches_safe()
-            .unwrap_or_else(|e| {
-                eprintln!("{}", e.message);
-                std::process::exit(ERROR_STATUS_CLI)
-            });
+        let args = cli::app().get_matches_safe().unwrap_or_else(|e| {
+            eprintln!("{}", e.message);
+            std::process::exit(ERROR_STATUS_CLI)
+        });
 
         let mut config = Config::default();
         // generate completions?
@@ -528,6 +527,16 @@ impl Config {
             )
         }
 
+        if config.lazy
+            && config.output != Output::Quiet
+            && config.input_format != config.output_format
+        {
+            warn!(
+                "Lazy operation is only supported when the input and output formats are the same or in quiet mode; turning off lazy mode."
+            );
+            config.lazy = false;
+        }
+
         config
     }
 
@@ -580,6 +589,7 @@ impl Default for Config {
         Config {
             input_format: Format::Json,
             output_format: Format::Json,
+            lazy: true,
             uid: 501,
             gid: 501,
             filemode: 0o644,
