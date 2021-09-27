@@ -153,7 +153,6 @@ where
         };
         let uid = inode.uid;
         let gid = inode.gid;
-        let mode = inode.mode as u32;
 
         let (entry, new_nodes) = match v.node(&self.config) {
             Node::Bytes(b) => (Entry::File(Typ::Bytes, b), Option::None),
@@ -174,7 +173,13 @@ where
                     };
 
                     let kind = child.kind();
-                    let child_id = self.fresh_inode(inum, Entry::Lazy(child), uid, gid, mode);
+                    let child_id = self.fresh_inode(
+                        inum,
+                        Entry::Lazy(child),
+                        uid,
+                        gid,
+                        self.config.mode(kind) as u32,
+                    );
 
                     children.insert(
                         name,
@@ -222,7 +227,13 @@ where
                     };
 
                     let kind = child.kind();
-                    let child_id = self.fresh_inode(inum, Entry::Lazy(child), uid, gid, mode);
+                    let child_id = self.fresh_inode(
+                        inum,
+                        Entry::Lazy(child),
+                        uid,
+                        gid,
+                        self.config.mode(kind) as u32,
+                    );
                     let original_name = if original != nfield {
                         info!(
                             "renamed {} to {} (inode {} with parent {})",
