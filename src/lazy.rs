@@ -368,6 +368,10 @@ where
         };
 
         let v = time_ns!("reading", V::from_reader(reader), config.timing);
+        if v.kind() != FileType::Directory {
+            error!("The root of the filesystem must be a directory, but '{}' only generates a single file.", v);
+            std::process::exit(ERROR_STATUS_FUSE);
+        }
 
         inodes[fuser::FUSE_ROOT_ID as usize] = Option::Some(Inode::new(
             fuser::FUSE_ROOT_ID,
