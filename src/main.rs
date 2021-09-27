@@ -4,6 +4,7 @@ mod cli;
 mod config;
 mod format;
 mod fs;
+mod lazy;
 
 use config::{Config, ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
 
