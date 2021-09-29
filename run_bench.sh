@@ -35,28 +35,40 @@ shift $((OPTIND - 1))
 
 cd bench
 
+mkdir ${TIMESTAMP}
+
 ./mk_micro.sh
 MICRO_RAW=$(mktemp)
 
 printf "BENCHMARKING LAZY MODE\n"
 
-BENCH_LAZY="../${TIMESTAMP}_lazy_bench.log"
+BENCH_LAZY="${TIMESTAMP}/lazy_bench.log"
 ./bench.sh $ARGS >"$BENCH_LAZY"
 
 ./bench.sh -d micro $ARGS >"$MICRO_RAW"
-MICRO_LAZY="../${TIMESTAMP}_lazy_micro.log"
+MICRO_LAZY="${TIMESTAMP}/lazy_micro.log"
 ./fixup_micro.sh "$MICRO_RAW" >"$MICRO_LAZY"
+
+printf "BENCHMARKING FORCE MODE\n"
+
+BENCH_FORCE="${TIMESTAMP}/force_bench.log"
+FFS_ARGS="--force-early" ./bench.sh $ARGS >"$BENCH_FORCE"
+
+FFS_ARGS="--force-early" ./bench.sh -d micro $ARGS >"$MICRO_RAW"
+MICRO_FORCE="${TIMESTAMP}/force_micro.log"
+./fixup_micro.sh "$MICRO_RAW" >"$MICRO_FORCE"
 
 printf "BENCHMARKING EAGER MODE\n"
 
-BENCH_EAGER="../${TIMESTAMP}_eager_bench.log"
+BENCH_EAGER="${TIMESTAMP}/eager_bench.log"
 FFS_ARGS="--eager" ./bench.sh $ARGS >"$BENCH_EAGER"
 
 FFS_ARGS="--eager" ./bench.sh -d micro $ARGS >"$MICRO_RAW"
-MICRO_EAGER="../${TIMESTAMP}_eager_micro.log"
+MICRO_EAGER="${TIMESTAMP}/eager_micro.log"
 ./fixup_micro.sh "$MICRO_RAW" >"$MICRO_EAGER"
 
 rm "$MICRO_RAW"
 
 ./generate_charts.R "$BENCH_LAZY"  "$MICRO_LAZY"
+./generate_charts.R "$BENCH_FORCE"  "$MICRO_FORCE"
 ./generate_charts.R "$BENCH_EAGER" "$MICRO_EAGER"

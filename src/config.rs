@@ -28,6 +28,7 @@ pub struct Config {
     pub input_format: Format,
     pub output_format: Format,
     pub lazy: bool,
+    pub force_early: bool,
     pub uid: u32,
     pub gid: u32,
     pub filemode: u16,
@@ -149,6 +150,7 @@ impl Config {
         // simple flags
         config.timing = args.is_present("TIMING");
         config.lazy = !args.is_present("EAGER");
+        config.force_early = args.is_present("FORCEEARLY");
         config.add_newlines = !args.is_present("EXACT");
         config.pad_element_names = !args.is_present("UNPADDED");
         config.read_only = args.is_present("READONLY");
@@ -630,6 +632,7 @@ impl Default for Config {
             input_format: Format::Json,
             output_format: Format::Json,
             lazy: true,
+            force_early: false,
             uid: 501,
             gid: 501,
             filemode: 0o644,

@@ -141,8 +141,8 @@ where
             return Err(FSError::NoSuchInode(inum));
         }
 
-        let inode = match self.inodes.get_mut(idx) {
-            Some(Some(inode)) => inode,
+        let inode = match &mut self.inodes[idx] {
+            Some(inode) => inode,
             _ => return Err(FSError::InvalidInode(inum)),
         };
 
@@ -263,8 +263,8 @@ where
             }
         };
 
-        let inode = match self.inodes.get_mut(idx) {
-            Some(Some(inode)) => inode,
+        let inode = match &mut self.inodes[idx] {
+            Some(inode) => inode,
             _ => return Err(FSError::InvalidInode(inum)),
         };
         inode.entry = entry;
@@ -274,6 +274,21 @@ where
         }
 
         Ok(new_nodes)
+    }
+
+    fn resolve_nodes_transitively(&mut self, inum: u64) -> Result<(), FSError> {
+        let mut worklist = match self.resolve_node(inum)? {
+            Some(nodes) => nodes,
+            None => return Ok(()),
+        };
+        while !worklist.is_empty() {
+            let node = worklist.pop().unwrap();
+            if let Some(nodes) = self.resolve_node(node)? {
+                worklist.extend(nodes);
+            }
+        }
+
+        Ok(())
     }
 
     fn check_access(&self, req: &Request) -> bool {
@@ -392,11 +407,17 @@ where
                     &fs.config,
                 ));
 
-                // kick start the root directory
-                fs.resolve_node(fuser::FUSE_ROOT_ID).expect("resolve_node");
+                if fs.config.force_early {
+                    fs.resolve_nodes_transitively(fuser::FUSE_ROOT_ID)
+                        .expect("resolve_nodes_transitively");
+                } else {
+                    // kick start the root directory
+                    fs.resolve_node(fuser::FUSE_ROOT_ID).expect("resolve_node");
+                }
             },
             fs.config.timing
         );
+
         fs
     }
 

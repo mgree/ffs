@@ -42,6 +42,12 @@ pub fn app() -> App<'static, 'static> {
                 .long("eager")
         )
         .arg(
+            Arg::with_name("FORCE-EARLY")
+                .help("When in lazy mode, resolve everything early (for internal testing only)")
+                .long("force-early")
+                .conflicts_with("EAGER")
+        )
+        .arg(
             Arg::with_name("UID")
                 .help("Sets the user id of the generated filesystem (defaults to current effective user id)")
                 .short("u")
