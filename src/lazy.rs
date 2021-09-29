@@ -135,6 +135,8 @@ where
     where
         V: Nodelike + std::fmt::Display + Default,
     {
+        debug!("called");
+
         let idx = inum as usize;
 
         if idx >= self.inodes.len() || idx == 0 {
@@ -281,6 +283,7 @@ where
             Some(nodes) => nodes,
             None => return Ok(()),
         };
+
         while !worklist.is_empty() {
             let node = worklist.pop().unwrap();
             if let Some(nodes) = self.resolve_node(node)? {

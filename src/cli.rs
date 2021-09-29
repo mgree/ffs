@@ -42,7 +42,7 @@ pub fn app() -> App<'static, 'static> {
                 .long("eager")
         )
         .arg(
-            Arg::with_name("FORCE-EARLY")
+            Arg::with_name("FORCEEARLY")
                 .help("When in lazy mode, resolve everything early (for internal testing only)")
                 .long("force-early")
                 .conflicts_with("EAGER")
