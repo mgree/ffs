@@ -148,6 +148,7 @@ impl Config {
 
         // simple flags
         config.timing = args.is_present("TIMING");
+        config.lazy = !args.is_present("EAGER");
         config.add_newlines = !args.is_present("EXACT");
         config.pad_element_names = !args.is_present("UNPADDED");
         config.read_only = args.is_present("READONLY");

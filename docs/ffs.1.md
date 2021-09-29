@@ -31,6 +31,11 @@ installed on your system to use *ffs*.
 
 : Give debug output on stderr
 
+--eager
+
+: Eagerly load all data on startup. *ffs*'s default behavior is to lazily load
+  data on startup, which avoids preparing data that won't be read or written.
+
 --exact
 
 : Don't add newlines to the end of values that don't already have them

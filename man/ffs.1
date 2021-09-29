@@ -39,6 +39,11 @@ installed on your system to use \f[I]ffs\f[R].
 -d, --debug
 Give debug output on stderr
 .TP
+--eager
+Eagerly load all data on startup.
+\f[I]ffs\f[R]\[aq]s default behavior is to lazily load data on startup,
+which avoids preparing data that won\[aq]t be read or written.
+.TP
 --exact
 Don\[aq]t add newlines to the end of values that don\[aq]t already have
 them (or strip them when loading)

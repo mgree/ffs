@@ -375,13 +375,6 @@ where
             std::process::exit(ERROR_STATUS_FUSE);
         }
 
-        inodes[fuser::FUSE_ROOT_ID as usize] = Option::Some(Inode::new(
-            fuser::FUSE_ROOT_ID,
-            fuser::FUSE_ROOT_ID,
-            Entry::Lazy(v),
-            &config,
-        ));
-
         let mut fs = FS {
             inodes,
             config,
@@ -389,9 +382,21 @@ where
             synced: Cell::new(false),
         };
 
-        // kick start the root directory
-        fs.resolve_node(fuser::FUSE_ROOT_ID).expect("resolve_node");
+        time_ns!(
+            "loading",
+            {
+                fs.inodes[fuser::FUSE_ROOT_ID as usize] = Option::Some(Inode::new(
+                    fuser::FUSE_ROOT_ID,
+                    fuser::FUSE_ROOT_ID,
+                    Entry::Lazy(v),
+                    &fs.config,
+                ));
 
+                // kick start the root directory
+                fs.resolve_node(fuser::FUSE_ROOT_ID).expect("resolve_node");
+            },
+            fs.config.timing
+        );
         fs
     }
 

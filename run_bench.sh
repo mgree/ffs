@@ -4,6 +4,7 @@ set -e
 
 TIMESTAMP=$(date +"%Y%m%d_%H:%M:%S")
 
+NUM_RUNS_DEFAULT=10
 usage() {
     exec >&2
     printf "Usage: %s [-n NUM_RUNS]\n\n" "$(basename $0)"
@@ -34,14 +35,28 @@ shift $((OPTIND - 1))
 
 cd bench
 
-BENCH="../${TIMESTAMP}_bench.log"
-./bench.sh $ARGS >"$BENCH"
-
 ./mk_micro.sh
 MICRO_RAW=$(mktemp)
+
+printf "BENCHMARKING LAZY MODE\n"
+
+BENCH_LAZY="../${TIMESTAMP}_lazy_bench.log"
+./bench.sh $ARGS >"$BENCH_LAZY"
+
 ./bench.sh -d micro $ARGS >"$MICRO_RAW"
-MICRO="../${TIMESTAMP}_micro.log"
-./fixup_micro.sh "$MICRO_RAW" >"$MICRO"
+MICRO_LAZY="../${TIMESTAMP}_lazy_micro.log"
+./fixup_micro.sh "$MICRO_RAW" >"$MICRO_LAZY"
+
+printf "BENCHMARKING EAGER MODE\n"
+
+BENCH_EAGER="../${TIMESTAMP}_eager_bench.log"
+FFS_ARGS="--eager" ./bench.sh $ARGS >"$BENCH_EAGER"
+
+FFS_ARGS="--eager" ./bench.sh -d micro $ARGS >"$MICRO_RAW"
+MICRO_EAGER="../${TIMESTAMP}_eager_micro.log"
+./fixup_micro.sh "$MICRO_RAW" >"$MICRO_EAGER"
+
 rm "$MICRO_RAW"
 
-./generate_charts.R "$BENCH" "$MICRO"
+./generate_charts.R "$BENCH_LAZY"  "$MICRO_LAZY"
+./generate_charts.R "$BENCH_EAGER" "$MICRO_EAGER"

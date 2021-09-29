@@ -177,7 +177,7 @@ do
 
     tempfile log
     tempfile out
-    $FFS --time -m $mnt -o $out -t json $path 2>$log &
+    $FFS $FFS_ARGS --time -m $mnt -o $out -t json $path 2>$log &
     PID=$!
     PIDS="$PIDS $PID"
     count=0
