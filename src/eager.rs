@@ -14,10 +14,13 @@ use fuser::{
 #[cfg(target_os = "macos")]
 use fuser::ReplyXTimes;
 
-use tracing::{info, instrument, trace, warn};
+use tracing::{debug, error, info, instrument, trace, warn};
 
-use super::config::{Config, Output};
-use super::format::Typ;
+use super::config::{Config, Munge, Output, ERROR_STATUS_FUSE};
+use super::format;
+use super::format::{Format, Node, Nodelike, Typ};
+
+use crate::time_ns;
 
 /// A filesystem `FS` is just a vector of nullable inodes, where the index is
 /// the inode number.
@@ -108,13 +111,191 @@ pub enum FSError {
 }
 
 impl FS {
-    pub fn new(inodes: Vec<Option<Inode>>, config: Config) -> Self {
+    /// Generates a filesystem `fs`, reading from `reader` according to a
+    /// particular `Config`.
+
+    #[instrument(level = "info", skip(config))]
+    pub fn new(config: Config) -> Self {
+        info!("loading");
+
+        let mut inodes: Vec<Option<Inode>> = Vec::new();
+
+        let reader = match config.input_reader() {
+            Some(reader) => reader,
+            None => {
+                // create an empty directory
+                let contents = HashMap::with_capacity(16);
+                inodes[1] = Some(Inode::new(
+                    fuser::FUSE_ROOT_ID,
+                    fuser::FUSE_ROOT_ID,
+                    Entry::Directory(DirType::Named, contents),
+                    &config,
+                ));
+                return FS {
+                    inodes,
+                    config,
+                    dirty: Cell::new(false),
+                    synced: Cell::new(false),
+                };
+            }
+        };
+
+        let timing = config.timing;
+        let format = config.input_format;
+        let mut fs = FS::mk(inodes, config);
+
+        match format {
+            Format::Json => {
+                let v = time_ns!("reading", format::json::Value::from_reader(reader), timing);
+                time_ns!("loading", fs.from_value(v), timing);
+            }
+            Format::Toml => {
+                let v = time_ns!("reading", format::toml::Value::from_reader(reader), timing);
+                time_ns!("loading", fs.from_value(v), timing);
+            }
+            Format::Yaml => {
+                let v = time_ns!("reading", format::yaml::Value::from_reader(reader), timing);
+                time_ns!("loading", fs.from_value(v), timing);
+            }
+        }
+
+        fs
+    }
+
+    fn mk(inodes: Vec<Option<Inode>>, config: Config) -> Self {
         FS {
             inodes,
             config,
             dirty: Cell::new(false),
             synced: Cell::new(false),
         }
+    }
+
+    /// Given a `Nodelike` value `v`, initializes the vector `inodes` of (nullable)
+    /// `Inodes` according to a given `config`.
+    ///
+    /// The current implementation is eager: it preallocates enough inodes and then
+    /// fills them in using a depth-first traversal.
+    ///
+    /// Invariant: the index in the vector is the inode number. Inode 0 is invalid,
+    /// and is left empty.
+    fn from_value<V>(&mut self, v: V)
+    where
+        V: Nodelike + std::fmt::Display,
+    {
+        // reserve space for everyone else
+        // won't work with streaming or lazy generation, but avoids having to resize the vector midway through
+        self.inodes.resize_with(v.size() + 1, || None);
+        info!("allocated {} inodes", self.inodes.len());
+
+        if v.kind() != FileType::Directory {
+            error!("The root of the filesystem must be a directory, but '{}' only generates a single file.", v);
+            std::process::exit(ERROR_STATUS_FUSE);
+        }
+
+        let mut filtered = 0;
+        let mut next_id = fuser::FUSE_ROOT_ID;
+        // parent inum, inum, value
+        let mut worklist: Vec<(u64, u64, V)> = vec![(next_id, next_id, v)];
+
+        next_id += 1;
+
+        while !worklist.is_empty() {
+            let (parent, inum, v) = worklist.pop().unwrap();
+
+            let entry = match v.node(&self.config) {
+                Node::Bytes(b) => Entry::File(Typ::Bytes, b),
+                Node::String(t, s) => Entry::File(t, s.into_bytes()),
+                Node::List(vs) => {
+                    let mut children = HashMap::new();
+                    children.reserve(vs.len());
+
+                    let num_elts = vs.len() as f64;
+                    let width = num_elts.log10().ceil() as usize;
+
+                    for (i, child) in vs.into_iter().enumerate() {
+                        // TODO 2021-06-08 ability to add prefixes
+                        let name = if self.config.pad_element_names {
+                            format!("{:0width$}", i, width = width)
+                        } else {
+                            format!("{}", i)
+                        };
+
+                        children.insert(
+                            name,
+                            DirEntry {
+                                kind: child.kind(),
+                                original_name: None,
+                                inum: next_id,
+                            },
+                        );
+                        worklist.push((inum, next_id, child));
+                        next_id += 1;
+                    }
+
+                    Entry::Directory(DirType::List, children)
+                }
+                Node::Map(fvs) => {
+                    let mut children = HashMap::new();
+                    children.reserve(fvs.len());
+
+                    for (field, child) in fvs.into_iter() {
+                        let original = field.clone();
+
+                        let nfield = if !self.config.valid_name(&original) {
+                            match self.config.munge {
+                                Munge::Rename => {
+                                    let mut nfield = self.config.normalize_name(field);
+
+                                    // TODO 2021-07-08 could be better to check fvs, but it's a vec now... :/
+                                    while children.contains_key(&nfield) {
+                                        nfield.push('_');
+                                    }
+
+                                    nfield
+                                }
+                                Munge::Filter => {
+                                    warn!("skipping '{}'", field);
+                                    filtered += child.size();
+                                    continue;
+                                }
+                            }
+                        } else {
+                            field
+                        };
+
+                        let original_name = if original != nfield {
+                            info!(
+                                "renamed {} to {} (inode {} with parent {})",
+                                original, nfield, next_id, parent
+                            );
+                            Some(original)
+                        } else {
+                            assert!(self.config.valid_name(&original));
+                            None
+                        };
+
+                        children.insert(
+                            nfield,
+                            DirEntry {
+                                kind: child.kind(),
+                                original_name,
+                                inum: next_id,
+                            },
+                        );
+
+                        worklist.push((inum, next_id, child));
+                        next_id += 1;
+                    }
+
+                    Entry::Directory(DirType::Named, children)
+                }
+            };
+
+            self.inodes[inum as usize] = Some(Inode::new(parent, inum, entry, &self.config));
+        }
+
+        assert_eq!((self.inodes.len() - filtered) as u64, next_id);
     }
 
     fn fresh_inode(&mut self, parent: u64, entry: Entry, uid: u32, gid: u32, mode: u32) -> u64 {
@@ -187,9 +368,118 @@ impl FS {
             _ => (),
         };
 
-        self.config.output_format.save(self);
+        self.save();
         self.dirty.set(false);
         self.synced.set(true);
+    }
+
+    /// Given a filesystem `fs`, it outputs a file in the appropriate format,
+    /// following `fs.config`.
+    fn save(&self) {
+        let writer = match self.config.output_writer() {
+            Some(writer) => writer,
+            None => return,
+        };
+
+        match self.config.output_format {
+            Format::Json => {
+                let v: format::json::Value = time_ns!(
+                    "saving",
+                    self.as_value(fuser::FUSE_ROOT_ID),
+                    self.config.timing
+                );
+                debug!("outputting {}", v);
+                time_ns!(
+                    "writing",
+                    v.to_writer(writer, self.config.pretty),
+                    self.config.timing
+                );
+            }
+            Format::Toml => {
+                let v: format::toml::Value = time_ns!(
+                    "saving",
+                    self.as_value(fuser::FUSE_ROOT_ID),
+                    self.config.timing
+                );
+                debug!("outputting {}", v);
+                time_ns!(
+                    "writing",
+                    v.to_writer(writer, self.config.pretty),
+                    self.config.timing
+                );
+            }
+            Format::Yaml => {
+                let v: format::yaml::Value = time_ns!(
+                    "saving",
+                    self.as_value(fuser::FUSE_ROOT_ID),
+                    self.config.timing
+                );
+                debug!("outputting {}", v);
+                time_ns!(
+                    "writing",
+                    v.to_writer(writer, self.config.pretty),
+                    self.config.timing
+                );
+            }
+        }
+    }
+
+    /// Walks `fs` starting at the inode with number `inum`, producing an
+    /// appropriate value.
+    fn as_value<V>(&self, inum: u64) -> V
+    where
+        V: Nodelike,
+    {
+        match &self.inodes[inum as usize].as_ref().unwrap().entry {
+            Entry::File(typ, contents) => {
+                // TODO 2021-07-01 use _t to try to force the type
+                match String::from_utf8(contents.clone()) {
+                    Ok(mut contents) if typ != &Typ::Bytes => {
+                        if self.config.add_newlines && contents.ends_with('\n') {
+                            contents.truncate(contents.len() - 1);
+                        }
+                        // TODO 2021-06-24 trim?
+                        V::from_string(*typ, contents, &self.config)
+                    }
+                    Ok(_) | Err(_) => V::from_bytes(contents, &self.config),
+                }
+            }
+            Entry::Directory(DirType::List, files) => {
+                let mut entries = Vec::with_capacity(files.len());
+                let mut files = files.iter().collect::<Vec<_>>();
+                files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
+                for (name, DirEntry { inum, .. }) in files.iter() {
+                    if self.config.ignored_file(name) {
+                        warn!("skipping ignored file '{}'", name);
+                        continue;
+                    }
+                    let v = self.as_value(*inum);
+                    entries.push(v);
+                }
+                V::from_list_dir(entries, &self.config)
+            }
+            Entry::Directory(DirType::Named, files) => {
+                let mut entries = HashMap::with_capacity(files.len());
+                for (
+                    name,
+                    DirEntry {
+                        inum,
+                        original_name,
+                        ..
+                    },
+                ) in files.iter()
+                {
+                    if self.config.ignored_file(name) {
+                        warn!("skipping ignored file '{}'", name);
+                        continue;
+                    }
+                    let v = self.as_value(*inum);
+                    let name = original_name.as_ref().unwrap_or(name).into();
+                    entries.insert(name, v);
+                }
+                V::from_named_dir(entries, &self.config)
+            }
+        }
     }
 }
 

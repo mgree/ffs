@@ -1,13 +1,11 @@
 use std::collections::HashMap;
-use std::fs::File;
 use std::str::FromStr;
 
-use tracing::{debug, error, info, instrument, warn};
+use tracing::debug;
 
 use fuser::FileType;
 
-use super::config::{Config, Input, Munge, Output, ERROR_STATUS_FUSE};
-use super::eager::{DirEntry, DirType, Entry, Inode, FS};
+use super::config::Config;
 
 use ::toml as serde_toml;
 
@@ -143,150 +141,6 @@ impl Format {
             Format::Yaml => false,
         }
     }
-
-    /// Generates a filesystem `fs`, reading from `reader` according to a
-    /// particular `Config`.
-    ///
-    /// NB there is no check that `self == fs.config.input_format`!
-    #[instrument(level = "info", skip(config))]
-    pub fn load(&self, config: Config) -> FS {
-        macro_rules! time_ns {
-            ($msg:expr, $e:expr) => {{
-                let start = std::time::Instant::now();
-                let v = $e;
-
-                let msg = $msg;
-                let elapsed = start.elapsed().as_nanos();
-                if config.timing {
-                    eprintln!("{},{}", msg, elapsed);
-                } else {
-                    info!("{} ({}ns)", msg, elapsed);
-                }
-
-                v
-            }};
-        }
-
-        info!("loading");
-        let mut inodes: Vec<Option<Inode>> = Vec::new();
-
-        let reader: Box<dyn std::io::Read> = match &config.input {
-            Input::Stdin => Box::new(std::io::stdin()),
-            Input::File(file) => {
-                let fmt = config.input_format;
-                let file = std::fs::File::open(&file).unwrap_or_else(|e| {
-                    error!("Unable to open {} for {} input: {}", file.display(), fmt, e);
-                    std::process::exit(ERROR_STATUS_FUSE);
-                });
-                Box::new(file)
-            }
-            Input::Empty => {
-                // let's just reserve some space for later and get cracking
-                info!("reserving space in empty filesystem");
-                inodes.resize_with(1024, || None);
-
-                // create an empty directory
-                let contents = HashMap::with_capacity(16);
-                inodes[1] = Some(Inode::new(
-                    fuser::FUSE_ROOT_ID,
-                    fuser::FUSE_ROOT_ID,
-                    Entry::Directory(DirType::Named, contents),
-                    &config,
-                ));
-                return FS::new(inodes, config);
-            }
-        };
-
-        match self {
-            Format::Json => {
-                let v: serde_json::Value =
-                    time_ns!("reading", serde_json::from_reader(reader).expect("JSON"));
-                time_ns!("loading", fs_from_value(v, &config, &mut inodes));
-            }
-            Format::Toml => {
-                let v = time_ns!("reading", toml::from_reader(reader).expect("TOML"));
-                time_ns!("loading", fs_from_value(v, &config, &mut inodes));
-            }
-            Format::Yaml => {
-                let v = time_ns!("reading", yaml::from_reader(reader).expect("YAML"));
-                time_ns!("loading", fs_from_value(v, &config, &mut inodes));
-            }
-        };
-
-        FS::new(inodes, config)
-    }
-
-    /// Given a filesystem `fs`, it outputs a file in the appropriate format,
-    /// following `fs.config`.
-    ///
-    /// NB there is no check that `self == fs.config.output_format`!
-    #[instrument(level = "info", skip(fs))]
-    pub fn save(&self, fs: &FS) {
-        let writer: Box<dyn std::io::Write> = match &fs.config.output {
-            Output::Stdout => {
-                debug!("outputting on STDOUT");
-                Box::new(std::io::stdout())
-            }
-            Output::File(path) => {
-                debug!("output {}", path.display());
-                Box::new(File::create(path).unwrap())
-            }
-            Output::Quiet => {
-                debug!("no output path, skipping");
-                return;
-            }
-        };
-
-        match self {
-            Format::Json => {
-                let v: serde_json::Value = time_ns!(
-                    "saving",
-                    value_from_fs(fs, fuser::FUSE_ROOT_ID),
-                    fs.config.timing
-                );
-                debug!("outputting {}", v);
-                time_ns!(
-                    "writing",
-                    if fs.config.pretty {
-                        serde_json::to_writer_pretty(writer, &v).unwrap();
-                    } else {
-                        serde_json::to_writer(writer, &v).unwrap();
-                    },
-                    fs.config.timing
-                );
-            }
-            Format::Toml => {
-                let v: toml::Value = time_ns!(
-                    "saving",
-                    value_from_fs(fs, fuser::FUSE_ROOT_ID),
-                    fs.config.timing
-                );
-                debug!("outputting {}", v);
-                time_ns!(
-                    "writing",
-                    if fs.config.pretty {
-                        toml::to_writer_pretty(writer, &v).unwrap();
-                    } else {
-                        toml::to_writer(writer, &v).unwrap();
-                    },
-                    fs.config.timing
-                );
-            }
-            Format::Yaml => {
-                let v: yaml::Value = time_ns!(
-                    "saving",
-                    value_from_fs(fs, fuser::FUSE_ROOT_ID),
-                    fs.config.timing
-                );
-                debug!("outputting {}", v);
-                time_ns!(
-                    "writing",
-                    yaml::to_writer(writer, &v).unwrap(),
-                    fs.config.timing
-                );
-            }
-        }
-    }
 }
 
 /// The ffs data model; it represents just one layer---lists and maps are
@@ -342,198 +196,8 @@ where
     fn to_writer(&self, writer: Box<dyn std::io::Write>, pretty: bool);
 }
 
-/// Given a `Nodelike` value `v`, initializes the vector `inodes` of (nullable)
-/// `Inodes` according to a given `config`.
-///
-/// The current implementation is eager: it preallocates enough inodes and then
-/// fills them in using a depth-first traversal.
-///
-/// Invariant: the index in the vector is the inode number. Inode 0 is invalid,
-/// and is left empty.
-fn fs_from_value<V>(v: V, config: &Config, inodes: &mut Vec<Option<Inode>>)
-where
-    V: Nodelike + std::fmt::Display,
-{
-    // reserve space for everyone else
-    // won't work with streaming or lazy generation, but avoids having to resize the vector midway through
-    inodes.resize_with(v.size() + 1, || None);
-    info!("allocated {} inodes", inodes.len());
-
-    if v.kind() != FileType::Directory {
-        error!("The root of the filesystem must be a directory, but '{}' only generates a single file.", v);
-        std::process::exit(ERROR_STATUS_FUSE);
-    }
-
-    let mut filtered = 0;
-    let mut next_id = fuser::FUSE_ROOT_ID;
-    // parent inum, inum, value
-    let mut worklist: Vec<(u64, u64, V)> = vec![(next_id, next_id, v)];
-
-    next_id += 1;
-
-    while !worklist.is_empty() {
-        let (parent, inum, v) = worklist.pop().unwrap();
-
-        let entry = match v.node(config) {
-            Node::Bytes(b) => Entry::File(Typ::Bytes, b),
-            Node::String(t, s) => Entry::File(t, s.into_bytes()),
-            Node::List(vs) => {
-                let mut children = HashMap::new();
-                children.reserve(vs.len());
-
-                let num_elts = vs.len() as f64;
-                let width = num_elts.log10().ceil() as usize;
-
-                for (i, child) in vs.into_iter().enumerate() {
-                    // TODO 2021-06-08 ability to add prefixes
-                    let name = if config.pad_element_names {
-                        format!("{:0width$}", i, width = width)
-                    } else {
-                        format!("{}", i)
-                    };
-
-                    children.insert(
-                        name,
-                        DirEntry {
-                            kind: child.kind(),
-                            original_name: None,
-                            inum: next_id,
-                        },
-                    );
-                    worklist.push((inum, next_id, child));
-                    next_id += 1;
-                }
-
-                Entry::Directory(DirType::List, children)
-            }
-            Node::Map(fvs) => {
-                let mut children = HashMap::new();
-                children.reserve(fvs.len());
-
-                for (field, child) in fvs.into_iter() {
-                    let original = field.clone();
-
-                    let nfield = if !config.valid_name(&original) {
-                        match config.munge {
-                            Munge::Rename => {
-                                let mut nfield = config.normalize_name(field);
-
-                                // TODO 2021-07-08 could be better to check fvs, but it's a vec now... :/
-                                while children.contains_key(&nfield) {
-                                    nfield.push('_');
-                                }
-
-                                nfield
-                            }
-                            Munge::Filter => {
-                                warn!("skipping '{}'", field);
-                                filtered += child.size();
-                                continue;
-                            }
-                        }
-                    } else {
-                        field
-                    };
-
-                    let original_name = if original != nfield {
-                        info!(
-                            "renamed {} to {} (inode {} with parent {})",
-                            original, nfield, next_id, parent
-                        );
-                        Some(original)
-                    } else {
-                        assert!(config.valid_name(&original));
-                        None
-                    };
-
-                    children.insert(
-                        nfield,
-                        DirEntry {
-                            kind: child.kind(),
-                            original_name,
-                            inum: next_id,
-                        },
-                    );
-
-                    worklist.push((inum, next_id, child));
-                    next_id += 1;
-                }
-
-                Entry::Directory(DirType::Named, children)
-            }
-        };
-
-        inodes[inum as usize] = Some(Inode::new(parent, inum, entry, config));
-    }
-
-    assert_eq!((inodes.len() - filtered) as u64, next_id);
-}
-
-/// Walks `fs` starting at the inode with number `inum`, producing an
-/// appropriate value.
-fn value_from_fs<V>(fs: &FS, inum: u64) -> V
-where
-    V: Nodelike,
-{
-    match &fs.get(inum).unwrap().entry {
-        Entry::File(typ, contents) => {
-            // TODO 2021-07-01 use _t to try to force the type
-            match String::from_utf8(contents.clone()) {
-                Ok(mut contents) if typ != &Typ::Bytes => {
-                    if fs.config.add_newlines && contents.ends_with('\n') {
-                        contents.truncate(contents.len() - 1);
-                    }
-                    // TODO 2021-06-24 trim?
-                    V::from_string(*typ, contents, &fs.config)
-                }
-                Ok(_) | Err(_) => V::from_bytes(contents, &fs.config),
-            }
-        }
-        Entry::Directory(DirType::List, files) => {
-            let mut entries = Vec::with_capacity(files.len());
-
-            let mut files = files.iter().collect::<Vec<_>>();
-            files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
-            for (name, DirEntry { inum, .. }) in files.iter() {
-                if fs.config.ignored_file(name) {
-                    warn!("skipping ignored file '{}'", name);
-                    continue;
-                }
-
-                let v = value_from_fs(fs, *inum);
-                entries.push(v);
-            }
-
-            V::from_list_dir(entries, &fs.config)
-        }
-        Entry::Directory(DirType::Named, files) => {
-            let mut entries = HashMap::with_capacity(files.len());
-
-            for (
-                name,
-                DirEntry {
-                    inum,
-                    original_name,
-                    ..
-                },
-            ) in files.iter()
-            {
-                if fs.config.ignored_file(name) {
-                    warn!("skipping ignored file '{}'", name);
-                    continue;
-                }
-
-                let v = value_from_fs(fs, *inum);
-
-                let name = original_name.as_ref().unwrap_or(name).into();
-                entries.insert(name, v);
-            }
-
-            V::from_named_dir(entries, &fs.config)
-        }
-    }
-}
-
+////////////////////////////////////////////////////////////////////////////////
+/// JSON Nodelike implementation
 pub mod json {
     use super::*;
     pub use serde_json::Value;
@@ -660,42 +324,14 @@ pub mod json {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// TOML Nodelike implementation
 pub mod toml {
     use super::*;
     use serde_toml::Value as Toml;
 
     #[derive(Clone, Debug)]
     pub struct Value(serde_toml::Value);
-
-    #[derive(Debug)]
-    pub enum Error<E> {
-        Io(std::io::Error),
-        Toml(E),
-    }
-
-    pub fn from_reader(
-        mut reader: Box<dyn std::io::Read>,
-    ) -> Result<Value, Error<serde_toml::de::Error>> {
-        let mut text = String::new();
-        let _len = reader.read_to_string(&mut text).map_err(Error::Io)?;
-        serde_toml::from_str(&text).map_err(Error::Toml).map(Value)
-    }
-
-    pub fn to_writer(
-        mut writer: Box<dyn std::io::Write>,
-        v: &Value,
-    ) -> Result<(), Error<serde_toml::ser::Error>> {
-        let text = serde_toml::to_string(&v.0).map_err(Error::Toml)?;
-        writer.write_all(text.as_bytes()).map_err(Error::Io)
-    }
-
-    pub fn to_writer_pretty(
-        mut writer: Box<dyn std::io::Write>,
-        v: &Value,
-    ) -> Result<(), Error<serde_toml::ser::Error>> {
-        let text = serde_toml::to_string_pretty(&v.0).map_err(Error::Toml)?;
-        writer.write_all(text.as_bytes()).map_err(Error::Io)
-    }
 
     impl std::fmt::Display for Value {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
@@ -852,51 +488,22 @@ pub mod toml {
             let text = if pretty {
                 serde_toml::to_string_pretty(&self.0).unwrap()
             } else {
-                serde_toml::to_string(&self.0).map_err(Error::Toml).unwrap()
+                serde_toml::to_string(&self.0).unwrap()
             };
             writer.write_all(text.as_bytes()).unwrap();
         }
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// YAML Nodelike implementation
 pub mod yaml {
     use super::*;
     use std::hash::{Hash, Hasher};
-    use yaml_rust::{EmitError, ScanError, Yaml};
+    use yaml_rust::Yaml;
 
     #[derive(Clone, Debug)]
     pub struct Value(Yaml);
-
-    #[derive(Debug)]
-    pub enum Error<E> {
-        Io(std::io::Error),
-        Yaml(E),
-    }
-
-    pub fn from_reader(mut reader: Box<dyn std::io::Read>) -> Result<Value, Error<ScanError>> {
-        let mut text = String::new();
-        let _len = reader.read_to_string(&mut text).map_err(Error::Io)?;
-        yaml_rust::YamlLoader::load_from_str(&text)
-            .map(|vs| {
-                Value(if vs.len() == 1 {
-                    vs.into_iter().next().unwrap()
-                } else {
-                    Yaml::Array(vs)
-                })
-            })
-            .map_err(Error::Yaml)
-    }
-
-    // XXX drop these
-    pub fn to_writer(
-        mut writer: Box<dyn std::io::Write>,
-        v: &Value,
-    ) -> Result<(), Error<EmitError>> {
-        let mut text = String::new();
-        let mut emitter = yaml_rust::YamlEmitter::new(&mut text);
-        emitter.dump(&v.0).map_err(Error::Yaml)?;
-        writer.write_all(text.as_bytes()).map_err(Error::Io)
-    }
 
     impl std::fmt::Display for Value {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {

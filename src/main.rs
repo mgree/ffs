@@ -83,7 +83,7 @@ fn main() {
         }
     } else {
         // EAGER OPERATION
-        let fs = input_format.load(config);
+        let fs = eager::FS::new(config);
 
         info!("mounting on {:?} with options {:?}", mount, options);
         match fuser::mount2(fs, &mount, &options) {

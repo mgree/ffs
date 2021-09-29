@@ -1,3 +1,4 @@
+use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
@@ -580,6 +581,44 @@ impl Config {
             self.dirmode
         } else {
             self.filemode
+        }
+    }
+
+    /// Generate a reader for input
+    ///
+    /// A return of `None` means to start from an empty named directory
+    pub fn input_reader(&self) -> Option<Box<dyn std::io::Read>> {
+        match &self.input {
+            Input::Stdin => Some(Box::new(std::io::stdin())),
+            Input::File(file) => {
+                let fmt = self.input_format;
+                let file = std::fs::File::open(&file).unwrap_or_else(|e| {
+                    error!("Unable to open {} for {} input: {}", file.display(), fmt, e);
+                    std::process::exit(ERROR_STATUS_FUSE);
+                });
+                Some(Box::new(file))
+            }
+            Input::Empty => None,
+        }
+    }
+
+    /// Generate a writer for output
+    ///
+    /// A return of `None` means no output should be provided
+    pub fn output_writer(&self) -> Option<Box<dyn std::io::Write>> {
+        match &self.output {
+            Output::Stdout => {
+                debug!("outputting on STDOUT");
+                Some(Box::new(std::io::stdout()))
+            }
+            Output::File(path) => {
+                debug!("output {}", path.display());
+                Some(Box::new(File::create(path).unwrap()))
+            }
+            Output::Quiet => {
+                debug!("no output path, skipping");
+                None
+            }
         }
     }
 }

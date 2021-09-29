@@ -2,7 +2,6 @@ use std::cell::Cell;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::fmt::{Debug, Display};
-use std::fs::File;
 use std::mem;
 use std::path::Path;
 use std::str::FromStr;
@@ -19,7 +18,7 @@ use fuser::ReplyXTimes;
 
 use tracing::{debug, error, info, instrument, trace, warn};
 
-use super::config::{Config, Input, Munge, Output, ERROR_STATUS_FUSE};
+use super::config::{Config, Munge, Output, ERROR_STATUS_FUSE};
 use super::format::{Node, Nodelike, Typ};
 use crate::time_ns;
 
@@ -350,17 +349,9 @@ where
         // allocate space for dummy inode 0, root node
         inodes.resize_with(2, || None);
 
-        let reader: Box<dyn std::io::Read> = match &config.input {
-            Input::Stdin => Box::new(std::io::stdin()),
-            Input::File(file) => {
-                let fmt = config.input_format;
-                let file = std::fs::File::open(&file).unwrap_or_else(|e| {
-                    error!("Unable to open {} for {} input: {}", file.display(), fmt, e);
-                    std::process::exit(ERROR_STATUS_FUSE);
-                });
-                Box::new(file)
-            }
-            Input::Empty => {
+        let reader = match config.input_reader() {
+            Some(reader) => reader,
+            None => {
                 // create an empty directory
                 let contents = HashMap::with_capacity(16);
                 inodes[1] = Some(Inode::new(
@@ -405,19 +396,9 @@ where
     }
 
     fn save(&self) {
-        let writer: Box<dyn std::io::Write> = match &self.config.output {
-            Output::Stdout => {
-                debug!("outputting on STDOUT");
-                Box::new(std::io::stdout())
-            }
-            Output::File(path) => {
-                debug!("output {}", path.display());
-                Box::new(File::create(path).unwrap())
-            }
-            Output::Quiet => {
-                debug!("no output path, skipping");
-                return;
-            }
+        let writer = match self.config.output_writer() {
+            Some(writer) => writer,
+            None => return,
         };
 
         let v = time_ns!(
