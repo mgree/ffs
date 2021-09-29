@@ -7,7 +7,7 @@ use tracing::{debug, error, info, instrument, warn};
 use fuser::FileType;
 
 use super::config::{Config, Input, Munge, Output, ERROR_STATUS_FUSE};
-use super::fs::{DirEntry, DirType, Entry, Inode, FS};
+use super::eager::{DirEntry, DirType, Entry, Inode, FS};
 
 use ::toml as serde_toml;
 
