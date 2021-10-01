@@ -47,8 +47,11 @@ jobs:
         run: |
           Rscript -e "install.packages('ggplot2', repos = 'https://cloud.r-project.org/')"
           PATH="$(pwd)/target/release:$PATH" ./run_bench.sh -n 3
+          # grab latest directory (output of run_bench)
+          DATADIR=bench/$(ls -ct bench/ | head -n 1)
+          [ -d $DATADIR ] && ls $DATADIR | grep log >/dev/null || { echo "No log files found in $DATADIR. What's going on?"; tree bench; exit 1; }
           mkdir data
-          for x in *.log *.png
+          for x in $DATADIR/*
           do
             mv $x data/${x##*_}
           done

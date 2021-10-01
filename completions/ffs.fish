@@ -12,6 +12,7 @@ complete -c ffs -n "__fish_use_subcommand" -l new -d 'Mounts an empty filesystem
 complete -c ffs -n "__fish_use_subcommand" -s q -l quiet -d 'Quiet mode (turns off all errors and warnings, enables `--no-output`)'
 complete -c ffs -n "__fish_use_subcommand" -l time -d 'Emit timing information on stderr in an \'event,time\' format; time is in nanoseconds'
 complete -c ffs -n "__fish_use_subcommand" -s d -l debug -d 'Give debug output on stderr'
+complete -c ffs -n "__fish_use_subcommand" -l eager -d 'Eagerly load data on startup'
 complete -c ffs -n "__fish_use_subcommand" -l exact -d 'Don\'t add newlines to the end of values that don\'t already have them (or strip them when loading)'
 complete -c ffs -n "__fish_use_subcommand" -l no-xattr -d 'Don\'t use extended attributes to track metadata (see `man xattr`)'
 complete -c ffs -n "__fish_use_subcommand" -l keep-macos-xattr -d 'Include ._* extended attribute/resource fork files on macOS'

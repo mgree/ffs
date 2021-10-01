@@ -6,14 +6,14 @@ mod format;
 mod fs;
 
 use config::{Config, ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
+use format::Format;
+use fs::FS;
 
 use fuser::MountOption;
 
 fn main() {
     let config = Config::from_args();
-    let mut options = vec![
-        MountOption::FSName(format!("{}", config.input)),
-    ];
+    let mut options = vec![MountOption::FSName(format!("{}", config.input))];
     if config.read_only {
         options.push(MountOption::RO);
     }
@@ -30,17 +30,52 @@ fn main() {
     };
     let cleanup_mount = config.cleanup_mount;
     let input_format = config.input_format;
-    let fs = input_format.load(config);
 
-    info!("mounting on {:?} with options {:?}", mount, options);
-    let status = match fuser::mount2(fs, &mount, &options) {
-        Ok(()) => {
-            info!("unmounted");
-            0
+    let status = match input_format {
+        Format::Json => {
+            let fs: FS<format::json::Value> = FS::new(config);
+
+            info!("mounting on {:?} with options {:?}", mount, options);
+            match fuser::mount2(fs, &mount, &options) {
+                Ok(()) => {
+                    info!("unmounted");
+                    0
+                }
+                Err(e) => {
+                    error!("I/O error: {}", e);
+                    ERROR_STATUS_FUSE
+                }
+            }
         }
-        Err(e) => {
-            error!("I/O error: {}", e);
-            ERROR_STATUS_FUSE
+        Format::Toml => {
+            let fs: FS<format::toml::Value> = FS::new(config);
+
+            info!("mounting on {:?} with options {:?}", mount, options);
+            match fuser::mount2(fs, &mount, &options) {
+                Ok(()) => {
+                    info!("unmounted");
+                    0
+                }
+                Err(e) => {
+                    error!("I/O error: {}", e);
+                    ERROR_STATUS_FUSE
+                }
+            }
+        }
+        Format::Yaml => {
+            let fs: FS<format::yaml::Value> = FS::new(config);
+
+            info!("mounting on {:?} with options {:?}", mount, options);
+            match fuser::mount2(fs, &mount, &options) {
+                Ok(()) => {
+                    info!("unmounted");
+                    0
+                }
+                Err(e) => {
+                    error!("I/O error: {}", e);
+                    ERROR_STATUS_FUSE
+                }
+            }
         }
     };
 
