@@ -1,13 +1,13 @@
-use tracing::{debug, error, info, warn};
+use tracing::{error, info, warn};
 
 mod cli;
 mod config;
 mod format;
-mod eager;
-mod lazy;
+mod fs;
 
 use config::{Config, ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
 use format::Format;
+use fs::FS;
 
 use fuser::MountOption;
 
@@ -31,69 +31,50 @@ fn main() {
     let cleanup_mount = config.cleanup_mount;
     let input_format = config.input_format;
 
-    let status = if config.lazy {
-        debug!("lazy mounting");
-        
-        match input_format {
-            Format::Json => {
-                let fs: lazy::FS<format::json::Value> = lazy::FS::new(config);
+    let status = match input_format {
+        Format::Json => {
+            let fs: FS<format::json::Value> = FS::new(config);
 
-                info!("mounting on {:?} with options {:?}", mount, options);
-                match fuser::mount2(fs, &mount, &options) {
-                    Ok(()) => {
-                        info!("unmounted");
-                        0
-                    }
-                    Err(e) => {
-                        error!("I/O error: {}", e);
-                        ERROR_STATUS_FUSE
-                    }
+            info!("mounting on {:?} with options {:?}", mount, options);
+            match fuser::mount2(fs, &mount, &options) {
+                Ok(()) => {
+                    info!("unmounted");
+                    0
                 }
-            }
-            Format::Toml => {
-                let fs: lazy::FS<format::toml::Value> = lazy::FS::new(config);
-
-                info!("mounting on {:?} with options {:?}", mount, options);
-                match fuser::mount2(fs, &mount, &options) {
-                    Ok(()) => {
-                        info!("unmounted");
-                        0
-                    }
-                    Err(e) => {
-                        error!("I/O error: {}", e);
-                        ERROR_STATUS_FUSE
-                    }
-                }
-            }
-            Format::Yaml => {
-                let fs: lazy::FS<format::yaml::Value> = lazy::FS::new(config);
-
-                info!("mounting on {:?} with options {:?}", mount, options);
-                match fuser::mount2(fs, &mount, &options) {
-                    Ok(()) => {
-                        info!("unmounted");
-                        0
-                    }
-                    Err(e) => {
-                        error!("I/O error: {}", e);
-                        ERROR_STATUS_FUSE
-                    }
+                Err(e) => {
+                    error!("I/O error: {}", e);
+                    ERROR_STATUS_FUSE
                 }
             }
         }
-    } else {
-        // EAGER OPERATION
-        let fs = eager::FS::new(config);
+        Format::Toml => {
+            let fs: FS<format::toml::Value> = FS::new(config);
 
-        info!("mounting on {:?} with options {:?}", mount, options);
-        match fuser::mount2(fs, &mount, &options) {
-            Ok(()) => {
-                info!("unmounted");
-                0
+            info!("mounting on {:?} with options {:?}", mount, options);
+            match fuser::mount2(fs, &mount, &options) {
+                Ok(()) => {
+                    info!("unmounted");
+                    0
+                }
+                Err(e) => {
+                    error!("I/O error: {}", e);
+                    ERROR_STATUS_FUSE
+                }
             }
-            Err(e) => {
-                error!("I/O error: {}", e);
-                ERROR_STATUS_FUSE
+        }
+        Format::Yaml => {
+            let fs: FS<format::yaml::Value> = FS::new(config);
+
+            info!("mounting on {:?} with options {:?}", mount, options);
+            match fuser::mount2(fs, &mount, &options) {
+                Ok(()) => {
+                    info!("unmounted");
+                    0
+                }
+                Err(e) => {
+                    error!("I/O error: {}", e);
+                    ERROR_STATUS_FUSE
+                }
             }
         }
     };

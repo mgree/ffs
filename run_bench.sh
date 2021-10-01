@@ -49,15 +49,6 @@ BENCH_LAZY="${TIMESTAMP}/lazy_bench.log"
 MICRO_LAZY="${TIMESTAMP}/lazy_micro.log"
 ./fixup_micro.sh "$MICRO_RAW" >"$MICRO_LAZY"
 
-printf "BENCHMARKING FORCE MODE\n"
-
-BENCH_FORCE="${TIMESTAMP}/force_bench.log"
-FFS_ARGS="--force-early" ./bench.sh $ARGS >"$BENCH_FORCE"
-
-FFS_ARGS="--force-early" ./bench.sh -d micro $ARGS >"$MICRO_RAW"
-MICRO_FORCE="${TIMESTAMP}/force_micro.log"
-./fixup_micro.sh "$MICRO_RAW" >"$MICRO_FORCE"
-
 printf "BENCHMARKING EAGER MODE\n"
 
 BENCH_EAGER="${TIMESTAMP}/eager_bench.log"
@@ -70,5 +61,4 @@ MICRO_EAGER="${TIMESTAMP}/eager_micro.log"
 rm "$MICRO_RAW"
 
 ./generate_charts.R "$BENCH_LAZY"  "$MICRO_LAZY"
-./generate_charts.R "$BENCH_FORCE"  "$MICRO_FORCE"
 ./generate_charts.R "$BENCH_EAGER" "$MICRO_EAGER"

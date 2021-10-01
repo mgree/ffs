@@ -38,14 +38,8 @@ pub fn app() -> App<'static, 'static> {
         )
         .arg(
             Arg::with_name("EAGER")
-                .help("Eagerly load data on startup")
+                .help("Eagerly load data on startup (data is lazily loaded by default)")
                 .long("eager")
-        )
-        .arg(
-            Arg::with_name("FORCEEARLY")
-                .help("When in lazy mode, resolve everything early (for internal testing only)")
-                .long("force-early")
-                .conflicts_with("EAGER")
         )
         .arg(
             Arg::with_name("UID")

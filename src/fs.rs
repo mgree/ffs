@@ -19,7 +19,7 @@ use fuser::ReplyXTimes;
 use tracing::{debug, error, info, instrument, trace, warn};
 
 use super::config::{Config, Munge, Output, ERROR_STATUS_FUSE};
-use super::format::{Node, Nodelike, Typ};
+use super::format::{json, toml, yaml, Format, Node, Nodelike, Typ};
 use crate::time_ns;
 
 /// A filesystem `FS` is just a vector of nullable inodes, where the index is
@@ -91,7 +91,7 @@ pub enum Entry<V> {
 
 /// Directory entries. We record the kind and inode (for faster
 /// `Filesystem::readdir`).
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct DirEntry {
     pub kind: FileType,
     /// When loading from certain map types, names might get munged.
@@ -328,39 +328,6 @@ where
         }
     }
 
-    /// Tries to synchronize the in-memory `FS` with its on-disk representation.
-    ///
-    /// Depending on output conventions and the state of the `FS`, nothing may
-    /// happen. In particular:
-    ///
-    ///   - if a sync has happened before and the `FS` isn't dirty, nothing will
-    ///     happen (to prevent pointless writes)
-    ///
-    ///   - if `self.config.output == Output::Stdout` and `last_sync == false`,
-    ///     nothing will happen (to prevent redundant writes to STDOUT)
-    #[instrument(level = "debug", skip(self), fields(synced = self.synced.get(), dirty = self.dirty.get()))]
-    pub fn sync(&self, last_sync: bool) {
-        info!("called");
-        trace!("{:?}", self.inodes);
-
-        if self.synced.get() && !self.dirty.get() {
-            info!("skipping sync; already synced and not dirty");
-            return;
-        }
-
-        match self.config.output {
-            Output::Stdout if !last_sync => {
-                info!("skipping sync; not last sync, using stdout");
-                return;
-            }
-            _ => (),
-        };
-
-        self.save();
-        self.dirty.set(false);
-        self.synced.set(true);
-    }
-
     pub fn new(config: Config) -> Self {
         info!("loading");
         let mut inodes: Vec<Option<Inode<V>>> = Vec::with_capacity(1024);
@@ -410,7 +377,7 @@ where
                     &fs.config,
                 ));
 
-                if fs.config.force_early {
+                if fs.config.eager {
                     fs.resolve_nodes_transitively(fuser::FUSE_ROOT_ID)
                         .expect("resolve_nodes_transitively");
                 } else {
@@ -424,25 +391,109 @@ where
         fs
     }
 
-    fn save(&self) {
+    /// Tries to synchronize the in-memory `FS` with its on-disk representation.
+    ///
+    /// Depending on output conventions and the state of the `FS`, nothing may
+    /// happen. In particular:
+    ///
+    ///   - if a sync has happened before and the `FS` isn't dirty, nothing will
+    ///     happen (to prevent pointless writes)
+    ///
+    ///   - if `self.config.output == Output::Stdout` and `last_sync == false`,
+    ///     nothing will happen (to prevent redundant writes to STDOUT)
+    #[instrument(level = "debug", skip(self), fields(synced = self.synced.get(), dirty = self.dirty.get()))]
+    pub fn sync(&mut self, last_sync: bool) {
+        info!("called");
+        trace!("{:?}", self.inodes);
+
+        if self.synced.get() && !self.dirty.get() {
+            info!("skipping sync; already synced and not dirty");
+            return;
+        }
+
+        match self.config.output {
+            Output::Stdout if !last_sync => {
+                info!("skipping sync; not last sync, using stdout");
+                return;
+            }
+            _ => (),
+        };
+
+        self.save();
+        self.dirty.set(false);
+        self.synced.set(true);
+    }
+
+    /// Actually output results, using `self.config.output`.
+    ///
+    /// When `self.config.input == self.config.output`, then resolved lazy nodes
+    /// can be directly returned. If the input and output formats are different,
+    /// we eager resolve everything and then save.
+    fn save(&mut self) {
         let writer = match self.config.output_writer() {
             Some(writer) => writer,
             None => return,
         };
 
-        let v = time_ns!(
-            "saving",
-            self.as_value(fuser::FUSE_ROOT_ID),
-            self.config.timing
-        );
+        if self.config.input_format == self.config.output_format {
+            let v = time_ns!(
+                "saving",
+                self.as_value(fuser::FUSE_ROOT_ID),
+                self.config.timing
+            );
 
-        time_ns!(
-            "writing",
-            v.to_writer(writer, self.config.pretty),
-            self.config.timing
-        );
+            time_ns!(
+                "writing",
+                v.to_writer(writer, self.config.pretty),
+                self.config.timing
+            );
+        } else {
+            match self.config.output_format {
+                Format::Json => {
+                    let v: json::Value = time_ns!(
+                        "saving",
+                        self.as_other_value(fuser::FUSE_ROOT_ID),
+                        self.config.timing
+                    );
+
+                    time_ns!(
+                        "writing",
+                        v.to_writer(writer, self.config.pretty),
+                        self.config.timing
+                    );
+                }
+                Format::Toml => {
+                    let v: toml::Value = time_ns!(
+                        "saving",
+                        self.as_other_value(fuser::FUSE_ROOT_ID),
+                        self.config.timing
+                    );
+
+                    time_ns!(
+                        "writing",
+                        v.to_writer(writer, self.config.pretty),
+                        self.config.timing
+                    );
+                }
+                Format::Yaml => {
+                    let v: yaml::Value = time_ns!(
+                        "saving",
+                        self.as_other_value(fuser::FUSE_ROOT_ID),
+                        self.config.timing
+                    );
+
+                    time_ns!(
+                        "writing",
+                        v.to_writer(writer, self.config.pretty),
+                        self.config.timing
+                    );
+                }
+            }
+        }
     }
 
+    // save as a value of the same type as the input
+    // we need this special case to avoid type-level shenanigans
     fn as_value(&self, inum: u64) -> V {
         match &self.inodes[inum as usize].as_ref().unwrap().entry {
             Entry::Lazy(v) => v.clone(),
@@ -493,6 +544,67 @@ where
                     entries.insert(name, v);
                 }
                 V::from_named_dir(entries, &self.config)
+            }
+        }
+    }
+
+    #[instrument(level = "trace", skip(self))]
+    fn as_other_value<U>(&mut self, inum: u64) -> U
+    where
+        U: Nodelike,
+    {
+        match &self.inodes[inum as usize].as_ref().unwrap().entry {
+            Entry::Lazy(_) => {
+                self.resolve_nodes_transitively(inum).unwrap();
+                self.as_other_value(inum)
+            }
+            Entry::File(typ, contents) => {
+                // TODO 2021-07-01 use _t to try to force the type
+                match String::from_utf8(contents.clone()) {
+                    Ok(mut contents) if typ != &Typ::Bytes => {
+                        if self.config.add_newlines && contents.ends_with('\n') {
+                            contents.truncate(contents.len() - 1);
+                        }
+                        // TODO 2021-06-24 trim?
+                        U::from_string(*typ, contents, &self.config)
+                    }
+                    Ok(_) | Err(_) => U::from_bytes(contents, &self.config),
+                }
+            }
+            Entry::Directory(DirType::List, files) => {
+                let mut entries = Vec::with_capacity(files.len());
+                let mut files = files
+                    .iter()
+                    .map(|(name, entry)| (name.clone(), entry.inum))
+                    .collect::<Vec<_>>();
+                files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
+                for (name, inum) in files {
+                    if self.config.ignored_file(&name) {
+                        warn!("skipping ignored file '{}'", name);
+                        continue;
+                    }
+                    let v = self.as_other_value(inum);
+                    entries.push(v);
+                }
+                U::from_list_dir(entries, &self.config)
+            }
+            Entry::Directory(DirType::Named, files) => {
+                let mut entries = HashMap::with_capacity(files.len());
+
+                let files = files
+                    .iter()
+                    .map(|(name, entry)| (name.clone(), entry.inum, entry.original_name.clone()))
+                    .collect::<Vec<_>>();
+                for (name, inum, original_name) in files.iter() {
+                    if self.config.ignored_file(name) {
+                        warn!("skipping ignored file '{}'", name);
+                        continue;
+                    }
+                    let v = self.as_other_value(*inum);
+                    let name = original_name.as_ref().unwrap_or(name).into();
+                    entries.insert(name, v);
+                }
+                U::from_named_dir(entries, &self.config)
             }
         }
     }

@@ -27,8 +27,7 @@ pub const ERROR_STATUS_CLI: i32 = 2;
 pub struct Config {
     pub input_format: Format,
     pub output_format: Format,
-    pub lazy: bool,
-    pub force_early: bool,
+    pub eager: bool,
     pub uid: u32,
     pub gid: u32,
     pub filemode: u16,
@@ -149,8 +148,7 @@ impl Config {
 
         // simple flags
         config.timing = args.is_present("TIMING");
-        config.lazy = !args.is_present("EAGER");
-        config.force_early = args.is_present("FORCEEARLY");
+        config.eager = args.is_present("EAGER");
         config.add_newlines = !args.is_present("EXACT");
         config.pad_element_names = !args.is_present("UNPADDED");
         config.read_only = args.is_present("READONLY");
@@ -531,16 +529,6 @@ impl Config {
             )
         }
 
-        if config.lazy
-            && config.output != Output::Quiet
-            && config.input_format != config.output_format
-        {
-            warn!(
-                "Lazy operation is only supported when the input and output formats are the same or in quiet mode; turning off lazy mode."
-            );
-            config.lazy = false;
-        }
-
         config
     }
 
@@ -631,8 +619,7 @@ impl Default for Config {
         Config {
             input_format: Format::Json,
             output_format: Format::Json,
-            lazy: true,
-            force_early: false,
+            eager: false,
             uid: 501,
             gid: 501,
             filemode: 0o644,
