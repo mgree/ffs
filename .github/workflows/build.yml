@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-latest
+          - macos-10.15
           - ubuntu-latest
 
     runs-on: ${{ matrix.os }}
@@ -58,28 +58,28 @@ jobs:
           
       - name: Upload macOS release build
         uses: actions/upload-artifact@v2
-        if: ${{ matrix.os == 'macos-latest' }}
+        if: contains(matrix.os, 'macos')
         with:
           name: ffs.macos
           path: target/release/ffs
 
       - name: Upload Linux release build
         uses: actions/upload-artifact@v2
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: contains(matrix.os, 'linux')
         with:
           name: ffs.linux
           path: target/release/ffs            
 
       - name: Upload macOS benchmark data
         uses: actions/upload-artifact@v2
-        if: ${{ matrix.os == 'macos-latest' }}
+        if: contains(matrix.os, 'macos')
         with:
           name: benchmarks.macos
           path: data
             
       - name: Upload Linux benchmark data
         uses: actions/upload-artifact@v2
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: contains(matrix.os, 'linux')
         with:
           name: benchmarks.linux
           path: data
