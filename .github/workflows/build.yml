@@ -65,7 +65,7 @@ jobs:
 
       - name: Upload Linux release build
         uses: actions/upload-artifact@v2
-        if: contains(matrix.os, 'linux')
+        if: contains(matrix.os, 'ubuntu')
         with:
           name: ffs.linux
           path: target/release/ffs            
@@ -79,7 +79,7 @@ jobs:
             
       - name: Upload Linux benchmark data
         uses: actions/upload-artifact@v2
-        if: contains(matrix.os, 'linux')
+        if: contains(matrix.os, 'ubuntu')
         with:
           name: benchmarks.linux
           path: data
