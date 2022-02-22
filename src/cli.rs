@@ -143,8 +143,8 @@ pub fn app() -> App<'static, 'static> {
             Arg::with_name("PRETTY")
                 .help("Pretty-print output (may increase size)")
                 .long("pretty")
-                .conflicts_with("NOOUTPUT")
-                .conflicts_with("QUIET")
+                .overrides_with("NOOUTPUT")
+                .overrides_with("QUIET")
         )
         .arg(
             Arg::with_name("MOUNT")
