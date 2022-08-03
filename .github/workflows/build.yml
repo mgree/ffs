@@ -97,7 +97,7 @@ jobs:
         run: |
           mkdir ffs
           mv ffs.linux/ffs ffs/ffs.linux
-          [ -d ffs.macos ] && [ -f ffs.macos/ffs ] && ffs.macos/ffs ffs/ffs.macos
+          [ -d ffs.macos ] && [ -f ffs.macos/ffs ] && ffs.macos/ffs ffs/ffs.macos || echo "macOS is disabled 😢"
   
       - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
