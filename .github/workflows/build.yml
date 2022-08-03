@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-11
+#          - macos-11
           - ubuntu-latest
 
     runs-on: ${{ matrix.os }}
@@ -97,7 +97,7 @@ jobs:
         run: |
           mkdir ffs
           mv ffs.linux/ffs ffs/ffs.linux
-          mv ffs.macos/ffs ffs/ffs.macos
+          [ -d ffs.macos ] && [ -f ffs.macos/ffs ] && ffs.macos/ffs ffs/ffs.macos
   
       - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -107,8 +107,7 @@ jobs:
           prerelease: true
           title: "Latest development build"
           files: |
-            ffs/ffs.linux
-            ffs/ffs.macos
+            ffs/ffs.*
 
         
         
