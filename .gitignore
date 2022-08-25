@@ -3,3 +3,4 @@
 *.log
 *.png
 .Rhistory
+.DS_Store

@@ -13,6 +13,8 @@ data, like JSON or YAML. These semi-structured formats are essentially
 trees, and string processing is a bad match---editing JSON with sed is
 not a very good idea!
 
+![Demo of in-place editing, starting from an empty JSON object to building up a compound one; transcript is below](assets/images/inplace_demo.gif)
+
 ffs---short for the **f**ile **f**ile**s**ystem---lets you mount
 semi-structured data as a filesystem, letting you work with modern
 formats using your familiar shell tools.
@@ -25,7 +27,7 @@ You can read more about it in [the `ffs` manpage](ffs.1.html).
 
 # Examples
 
-![Demo of in-place editing, starting from an empty JSON object to building up a compound one; transcript is below](assets/images/inplace_demo.gif)
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/B8dQCyPVU4I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 Run `ffs [file]` to mount `file.blah` at the mountpoint `file`. The
 final, updated version of the file will be outputted on stdout.
@@ -100,8 +102,17 @@ download a single executable. These are the [latest development builds](https://
  - [macOS]({{ site.github.macos_url }})
 
 See the [release page](https://github.com/mgree/ffs/releases) for
-particular releases; the current version is 0.1.1. You can also build
+particular releases; the current version is 0.1.2. You can also build
 ffs from [source](https://github.com/mgree/ffs).
+
+# Learn more
+
+Check out the paper ["Files-as-Filesystems for POSIX Shell Data
+Processing"](https://dl.acm.org/doi/10.1145/3477113.3487265) from
+[PLOS 2021](https://plos-workshop.org/2021/). The pre-recorded demo is
+above; the pre-recorded talk is below.
+
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/VIphHPBj9ms" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 # Related tools
 

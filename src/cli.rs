@@ -37,6 +37,11 @@ pub fn app() -> App<'static, 'static> {
                 .short("d")
         )
         .arg(
+            Arg::with_name("EAGER")
+                .help("Eagerly load data on startup (data is lazily loaded by default)")
+                .long("eager")
+        )
+        .arg(
             Arg::with_name("UID")
                 .help("Sets the user id of the generated filesystem (defaults to current effective user id)")
                 .short("u")
@@ -138,8 +143,8 @@ pub fn app() -> App<'static, 'static> {
             Arg::with_name("PRETTY")
                 .help("Pretty-print output (may increase size)")
                 .long("pretty")
-                .conflicts_with("NOOUTPUT")
-                .conflicts_with("QUIET")
+                .overrides_with("NOOUTPUT")
+                .overrides_with("QUIET")
         )
         .arg(
             Arg::with_name("MOUNT")

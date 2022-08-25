@@ -23,7 +23,7 @@ for test in *.sh
 do
     tname="$(basename ${test%*.sh})"
     printf "========== STARTING TEST: $tname\n"
-    (RUST_LOG="ffs=debug"; export RUST_LOG; ./${test} >$LOG/$tname.out 2>$LOG/$tname.nerr; echo $?>$LOG/$tname.ec) &
+    (RUST_LOG="ffs=debug,fuser=debug"; export RUST_LOG; ./${test} >$LOG/$tname.out 2>$LOG/$tname.err; echo $?>$LOG/$tname.ec) &
     : $((TOTAL += 1))
 
     # don't slam 'em
@@ -43,12 +43,17 @@ do
         printf "========== PASSED: $tname\n"
     else
         printf "========== FAILED: $tname (ec=$(cat $LOG/$tname.ec))\n"
+        : $((FAILED += 1))
+    fi
+
+    # just always capture output in the CI logs
+    if [ "$(cat $LOG/$tname.ec)" -ne 0 ] || [ "$CI" ]
+    then
         printf "<<<<<<<<<< STDOUT\n"
         cat $LOG/$tname.out
         printf "<<<<<<<<<< STDERR\n"
         cat $LOG/$tname.err
         printf "\n"
-        : $((FAILED += 1))
     fi
 done
 

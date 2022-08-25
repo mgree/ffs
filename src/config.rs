@@ -1,3 +1,4 @@
+use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
@@ -26,6 +27,7 @@ pub const ERROR_STATUS_CLI: i32 = 2;
 pub struct Config {
     pub input_format: Format,
     pub output_format: Format,
+    pub eager: bool,
     pub uid: u32,
     pub gid: u32,
     pub filemode: u16,
@@ -63,7 +65,7 @@ impl std::fmt::Display for Input {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Output {
     Quiet,
     Stdout,
@@ -104,12 +106,10 @@ impl FromStr for Munge {
 impl Config {
     /// Parses arguments from `std::env::Args`, via `cli::app().get_matches()`
     pub fn from_args() -> Self {
-        let args = cli::app()
-            .get_matches_safe()
-            .unwrap_or_else(|e| {
-                eprintln!("{}", e.message);
-                std::process::exit(ERROR_STATUS_CLI)
-            });
+        let args = cli::app().get_matches_safe().unwrap_or_else(|e| {
+            eprintln!("{}", e.message);
+            std::process::exit(ERROR_STATUS_CLI)
+        });
 
         let mut config = Config::default();
         // generate completions?
@@ -148,6 +148,7 @@ impl Config {
 
         // simple flags
         config.timing = args.is_present("TIMING");
+        config.eager = args.is_present("EAGER");
         config.add_newlines = !args.is_present("EXACT");
         config.pad_element_names = !args.is_present("UNPADDED");
         config.read_only = args.is_present("READONLY");
@@ -573,6 +574,44 @@ impl Config {
             self.filemode
         }
     }
+
+    /// Generate a reader for input
+    ///
+    /// A return of `None` means to start from an empty named directory
+    pub fn input_reader(&self) -> Option<Box<dyn std::io::Read>> {
+        match &self.input {
+            Input::Stdin => Some(Box::new(std::io::stdin())),
+            Input::File(file) => {
+                let fmt = self.input_format;
+                let file = std::fs::File::open(&file).unwrap_or_else(|e| {
+                    error!("Unable to open {} for {} input: {}", file.display(), fmt, e);
+                    std::process::exit(ERROR_STATUS_FUSE);
+                });
+                Some(Box::new(file))
+            }
+            Input::Empty => None,
+        }
+    }
+
+    /// Generate a writer for output
+    ///
+    /// A return of `None` means no output should be provided
+    pub fn output_writer(&self) -> Option<Box<dyn std::io::Write>> {
+        match &self.output {
+            Output::Stdout => {
+                debug!("outputting on STDOUT");
+                Some(Box::new(std::io::stdout()))
+            }
+            Output::File(path) => {
+                debug!("output {}", path.display());
+                Some(Box::new(File::create(path).unwrap()))
+            }
+            Output::Quiet => {
+                debug!("no output path, skipping");
+                None
+            }
+        }
+    }
 }
 
 impl Default for Config {
@@ -580,6 +619,7 @@ impl Default for Config {
         Config {
             input_format: Format::Json,
             output_format: Format::Json,
+            eager: false,
             uid: 501,
             gid: 501,
             filemode: 0o644,

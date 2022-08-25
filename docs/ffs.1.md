@@ -1,4 +1,4 @@
-% FFS(1) Version 0.1.1 | File Filesystem Documentation
+% FFS(1) Version 0.1.2 | File Filesystem Documentation
 % Michael Greenberg
 
 # NAME
@@ -30,6 +30,11 @@ installed on your system to use *ffs*.
 -d, --debug
 
 : Give debug output on stderr
+
+--eager
+
+: Eagerly load all data on startup. *ffs*'s default behavior is to lazily load
+  data on startup, which avoids preparing data that won't be read or written.
 
 --exact
 
@@ -240,7 +245,8 @@ RUST_LOG
   should probably be *ffs* and *level* should be one of *error*,
   *warn*, *info*, *debug*, or *trace*. The default is
   *ffs=warn*. Setting *-q* turns off all output; setting *-d* sets
-  *ffs=debug*.
+  *ffs=debug*. To get more information from FUSE bindings, add *fuser*, e.g., 
+  *ffs=debug,fuser=info*.
 
 # EXIT STATUS
 

@@ -37,6 +37,7 @@ _ffs() {
 '--time[Emit timing information on stderr in an '\''event,time'\'' format; time is in nanoseconds]' \
 '-d[Give debug output on stderr]' \
 '--debug[Give debug output on stderr]' \
+'--eager[Eagerly load data on startup]' \
 '--exact[Don'\''t add newlines to the end of values that don'\''t already have them (or strip them when loading)]' \
 '--no-xattr[Don'\''t use extended attributes to track metadata (see `man xattr`)]' \
 '--keep-macos-xattr[Include ._* extended attribute/resource fork files on macOS]' \
