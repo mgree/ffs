@@ -1,6 +1,9 @@
+use tracing::error;
 
 use std::fs;
+use std::env;
 use std::path::PathBuf;
+use std::path::Path;
 use std::io::BufReader;
 use std::collections::VecDeque;
 
@@ -17,16 +20,48 @@ fn create_files(json: &Value, path: PathBuf) {
         let (current,p) = queue.pop_front().unwrap();
         match current {
             Value::Null => {
-                println!("Path {}", p.display());
+                // println!("Path {}", p.display());
+                match fs::create_dir_all(p.parent().unwrap()) {
+                    Ok(_) => (),
+                    Err(e) => error!("Error creating directory: {}", e),
+                }
+                match fs::write(p, "") {
+                    Ok(_) => (),
+                    Err(e) => error!("Error writing file: {}", e),
+                }
             }
             Value::Bool(b) => {
-                println!("Path {} Bool {}", p.display(), b.to_string());
+                // println!("Path {} Bool {}", p.display(), b.to_string());
+                match fs::create_dir_all(p.parent().unwrap()) {
+                    Ok(_) => (),
+                    Err(e) => error!("Error creating directory: {}", e),
+                }
+                match fs::write(p, b.to_string().as_bytes()) {
+                    Ok(_) => (),
+                    Err(e) => error!("Error writing file: {}", e),
+                }
             }
             Value::Number(n) => {
-                println!("Path {} Number {}", p.display(), n.to_string());
+                // println!("Path {} Number {}", p.display(), n.to_string());
+                match fs::create_dir_all(p.parent().unwrap()) {
+                    Ok(_) => (),
+                    Err(e) => error!("Error creating directory: {}", e),
+                }
+                match fs::write(p, n.to_string().as_bytes()) {
+                    Ok(_) => (),
+                    Err(e) => error!("Error writing file: {}", e),
+                }
             }
             Value::String(s) => {
-                println!("Path {} String {}", p.display(), s);
+                // println!("Path {} String {}", p.display(), s);
+                match fs::create_dir_all(p.parent().unwrap()) {
+                    Ok(_) => (),
+                    Err(e) => error!("Error creating directory: {}", e),
+                }
+                match fs::write(p, s) {
+                    Ok(_) => (),
+                    Err(e) => error!("Error writing file: {}", e),
+                }
             }
             Value::Object(obj) => {
                 for (k,v) in obj.iter() {
@@ -42,17 +77,21 @@ fn create_files(json: &Value, path: PathBuf) {
     }
 }
 
-
 fn main() {
-    let filename = String::from("test.json");
+    let args: Vec<_> = env::args().collect();
+    let filename = String::from(&args[1]);
 
-    println!("filename: {}", filename);
+    let cwd = env::current_dir().unwrap();
 
-    let file = fs::File::open("test.json").unwrap();
+    // println!("filename: {}", filename);
+
+    let file = fs::File::open(&filename).unwrap();
     let reader = Box::new(BufReader::new(file));
     let jsonvalue: Value = Nodelike::from_reader(reader);
 
-    create_files(&jsonvalue, PathBuf::from("test"));
+    let filepath = Path::new(&filename).file_stem().unwrap().to_str().unwrap();
+
+    create_files(&jsonvalue, PathBuf::from(&cwd).join(&filepath));
 
     /*
     - get json file from options
