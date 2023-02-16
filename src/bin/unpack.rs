@@ -1,9 +1,7 @@
-use tracing::error;
-
 use std::fs;
 use std::env;
-use std::path::PathBuf;
-use std::path::Path;
+use std::io::Write;
+use std::path::{PathBuf, Path};
 use std::io::BufReader;
 use std::collections::VecDeque;
 
@@ -20,47 +18,60 @@ fn create_files(json: &Value, path: PathBuf) {
         let (current,p) = queue.pop_front().unwrap();
         match current {
             Value::Null => {
-                // println!("Path {}", p.display());
                 match fs::create_dir_all(p.parent().unwrap()) {
                     Ok(_) => (),
-                    Err(e) => error!("Error creating directory: {}", e),
+                    Err(e) => panic!("Error creating directory: {}", e),
                 }
-                match fs::write(p, "") {
+                let mut f: fs::File = match fs::OpenOptions::new().read(true).write(true).create_new(true).open(p) {
+                    Ok(file) => file,
+                    Err(e) => panic!("Error creating new file: {}", e),
+                };
+                match writeln!(f, "") {
                     Ok(_) => (),
-                    Err(e) => error!("Error writing file: {}", e),
+                    Err(e) => panic!("Error writing to file: {}", e),
                 }
             }
             Value::Bool(b) => {
-                // println!("Path {} Bool {}", p.display(), b.to_string());
                 match fs::create_dir_all(p.parent().unwrap()) {
                     Ok(_) => (),
-                    Err(e) => error!("Error creating directory: {}", e),
+                    Err(e) => panic!("Error creating directory: {}", e),
                 }
-                match fs::write(p, b.to_string().as_bytes()) {
+                let mut f: fs::File = match fs::OpenOptions::new().read(true).write(true).create_new(true).open(p) {
+                    Ok(file) => file,
+                    Err(e) => panic!("Error creating new file: {}", e),
+                };
+                match writeln!(f, "{}", b.to_string()) {
                     Ok(_) => (),
-                    Err(e) => error!("Error writing file: {}", e),
+                    Err(e) => panic!("Error writing to file: {}", e),
                 }
             }
             Value::Number(n) => {
-                // println!("Path {} Number {}", p.display(), n.to_string());
                 match fs::create_dir_all(p.parent().unwrap()) {
                     Ok(_) => (),
-                    Err(e) => error!("Error creating directory: {}", e),
+                    Err(e) => panic!("Error creating directory: {}", e),
                 }
-                match fs::write(p, n.to_string().as_bytes()) {
+                let mut f: fs::File = match fs::OpenOptions::new().read(true).write(true).create_new(true).open(p) {
+                    Ok(file) => file,
+                    Err(e) => panic!("Error creating new file: {}", e),
+                };
+                match writeln!(f, "{}", n.to_string()) {
                     Ok(_) => (),
-                    Err(e) => error!("Error writing file: {}", e),
+                    Err(e) => panic!("Error writing to file: {}", e),
                 }
             }
             Value::String(s) => {
                 // println!("Path {} String {}", p.display(), s);
                 match fs::create_dir_all(p.parent().unwrap()) {
                     Ok(_) => (),
-                    Err(e) => error!("Error creating directory: {}", e),
+                    Err(e) => panic!("Error creating directory: {}", e),
                 }
-                match fs::write(p, s) {
+                let mut f: fs::File = match fs::OpenOptions::new().read(true).write(true).create_new(true).open(p) {
+                    Ok(file) => file,
+                    Err(e) => panic!("Error creating new file: {}", e),
+                };
+                match writeln!(f, "{}", s.to_string()) {
                     Ok(_) => (),
-                    Err(e) => error!("Error writing file: {}", e),
+                    Err(e) => panic!("Error writing to file: {}", e),
                 }
             }
             Value::Object(obj) => {
@@ -87,11 +98,15 @@ fn main() {
 
     let file = fs::File::open(&filename).unwrap();
     let reader = Box::new(BufReader::new(file));
-    let jsonvalue: Value = Nodelike::from_reader(reader);
+    let json_value: Value = Nodelike::from_reader(reader);
 
-    let filepath = Path::new(&filename).file_stem().unwrap().to_str().unwrap();
+    let relative_file_path = Path::new(&filename).file_stem().unwrap().to_str().unwrap();
 
-    create_files(&jsonvalue, PathBuf::from(&cwd).join(&filepath));
+    if Path::new(&relative_file_path).exists() {
+        panic!("Directory {} already exists", relative_file_path);
+    }
+    // TODO add subdirectory check not just root directory check
+    create_files(&json_value, PathBuf::from(&cwd).join(&relative_file_path));
 
     /*
     - get json file from options
