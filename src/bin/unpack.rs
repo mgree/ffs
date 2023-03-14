@@ -7,9 +7,13 @@ use std::path::{Path, PathBuf};
 
 use ffs::config::Config;
 use ffs::format;
+use format::{Format, Nodelike, Typ};
+use format::json::Value as JsonValue;
+use format::toml::Value as TomlValue;
+use format::yaml::Value as YamlValue;
 
-use format::json::Value;
-use format::Nodelike;
+
+use ::xattr;
 
 #[allow(dead_code)]
 fn unpack<V>(root: V, root_path: PathBuf, config: &Config) -> std::io::Result<()>
@@ -23,36 +27,39 @@ where
         let (v, path, original_name) = queue.pop_front().unwrap();
 
         match v.node(config) {
-            format::Node::String(_t, s) => {
+            format::Node::String(t, s) => {
                 // make a regular file at `path`
                 let mut f = fs::OpenOptions::new()
                     .write(true)
                     .create_new(true) // TODO(mmg) 2023-03-06 allow truncation?
-                    .open(path)?;
+                    .open(&path)?;
 
                 // write `s` into that file
                 write!(f, "{}", s)?;
 
                 // set metadata according to `t`
                 // TODO(mmg) 2023-03-06 set `user.type` metadata using setxattr
+                xattr::set(&path, "user.type", format!("{}", t).as_bytes())?;
             }
             format::Node::Bytes(b) => {
                 // make a regular file at `path`
                 let mut f = fs::OpenOptions::new()
                     .write(true)
                     .create_new(true) // TODO(mmg) 2023-03-06 allow truncation?
-                    .open(path)?;
+                    .open(&path)?;
 
                 // write `b` into that file
                 f.write_all(b.as_slice())?;
 
                 // set metadata to bytes
                 // TODO(mmg) 2023-03-06 set `user.type` metadata using setxattr
+                xattr::set(&path, "user.type", format!("{}", Typ::Bytes).as_bytes())?;
             }
             format::Node::List(vs) => {
                 // make directory
                 fs::create_dir(&path)?;
                 // TODO(mmg) 2023-03-06 set directory metadata to list using setxattr
+                xattr::set(&path, "user.type", "list".as_bytes())?;
 
                 // enqueue children with appropriate names
                 let num_elts = vs.len() as f64;
@@ -74,6 +81,7 @@ where
                 // make directory
                 fs::create_dir(&path)?;
                 // TODO(mmg) 2023-03-06 set directory metadata to map using setxattr
+                xattr::set(&path, "user.type", "map".as_bytes())?;
 
                 // enqueue children with appropriate names
                 let mut child_names = std::collections::HashSet::new();
@@ -111,109 +119,11 @@ where
 
         if let Some(_original_name) = original_name {
             // TODO(mmg) 2023-03-6 set `user.original_name` using setxattr
+            xattr::set(&path, "user.original_name", _original_name.as_bytes())?;
         }
     }
 
     Ok(())
-}
-
-#[allow(dead_code)]
-fn create_files(json: &Value, path: PathBuf) {
-    let mut queue: VecDeque<(&Value, PathBuf)> = VecDeque::new();
-    queue.push_back((json, path));
-
-    while !queue.is_empty() {
-        let (current, p) = queue.pop_front().unwrap();
-        match current {
-            Value::Null => {
-                match fs::create_dir_all(p.parent().unwrap()) {
-                    Ok(_) => (),
-                    Err(e) => panic!("Error creating directory: {}", e),
-                }
-                let mut f: fs::File = match fs::OpenOptions::new()
-                    .read(true)
-                    .write(true)
-                    .create_new(true)
-                    .open(p)
-                {
-                    Ok(file) => file,
-                    Err(e) => panic!("Error creating new file: {}", e),
-                };
-                match writeln!(f, "") {
-                    Ok(_) => (),
-                    Err(e) => panic!("Error writing to file: {}", e),
-                }
-            }
-            Value::Bool(b) => {
-                match fs::create_dir_all(p.parent().unwrap()) {
-                    Ok(_) => (),
-                    Err(e) => panic!("Error creating directory: {}", e),
-                }
-                let mut f: fs::File = match fs::OpenOptions::new()
-                    .read(true)
-                    .write(true)
-                    .create_new(true)
-                    .open(p)
-                {
-                    Ok(file) => file,
-                    Err(e) => panic!("Error creating new file: {}", e),
-                };
-                match writeln!(f, "{}", b.to_string()) {
-                    Ok(_) => (),
-                    Err(e) => panic!("Error writing to file: {}", e),
-                }
-            }
-            Value::Number(n) => {
-                match fs::create_dir_all(p.parent().unwrap()) {
-                    Ok(_) => (),
-                    Err(e) => panic!("Error creating directory: {}", e),
-                }
-                let mut f: fs::File = match fs::OpenOptions::new()
-                    .read(true)
-                    .write(true)
-                    .create_new(true)
-                    .open(p)
-                {
-                    Ok(file) => file,
-                    Err(e) => panic!("Error creating new file: {}", e),
-                };
-                match writeln!(f, "{}", n.to_string()) {
-                    Ok(_) => (),
-                    Err(e) => panic!("Error writing to file: {}", e),
-                }
-            }
-            Value::String(s) => {
-                // println!("Path {} String {}", p.display(), s);
-                match fs::create_dir_all(p.parent().unwrap()) {
-                    Ok(_) => (),
-                    Err(e) => panic!("Error creating directory: {}", e),
-                }
-                let mut f: fs::File = match fs::OpenOptions::new()
-                    .read(true)
-                    .write(true)
-                    .create_new(true)
-                    .open(p)
-                {
-                    Ok(file) => file,
-                    Err(e) => panic!("Error creating new file: {}", e),
-                };
-                match writeln!(f, "{}", s.to_string()) {
-                    Ok(_) => (),
-                    Err(e) => panic!("Error writing to file: {}", e),
-                }
-            }
-            Value::Object(obj) => {
-                for (k, v) in obj.iter() {
-                    queue.push_back((v, p.join(k)));
-                }
-            }
-            Value::Array(arr) => {
-                for (i, v) in arr.iter().enumerate() {
-                    queue.push_back((v, p.join(i.to_string())));
-                }
-            }
-        }
-    }
 }
 
 fn main() -> std::io::Result<()> {
@@ -222,11 +132,8 @@ fn main() -> std::io::Result<()> {
 
     let cwd = env::current_dir().unwrap();
 
-    // println!("filename: {}", filename);
-
     let file = fs::File::open(&filename).unwrap();
     let reader = Box::new(BufReader::new(file));
-    let json_value: Value = Nodelike::from_reader(reader);
 
     let relative_file_path = Path::new(&filename).file_stem().unwrap().to_str().unwrap();
 
@@ -234,24 +141,13 @@ fn main() -> std::io::Result<()> {
         panic!("Directory {} already exists", relative_file_path);
     }
     // TODO add subdirectory check not just root directory check
-    //    create_files(&json_value, PathBuf::from(&cwd).join(&relative_file_path));
 
-    unpack(
-        json_value,
-        PathBuf::from(&cwd).join(&relative_file_path),
-        &Config::default(),
-    )
+    let config = Config::from_unpack_args();
+    println!("{:?}", config);
 
-    /*
-    - get json file from options
-    - get other options
-    - parse json file using serde
-    - use fn to (recursively) or iteratively create directories.
-        - if directory exists, maybe raise error (given command line options)
-        - if directory does not exist, create it
-        - maybe use iterative bfs with a queue of json values.
-            - probably not as memory efficient in terms of storing multiple copies of the same thing?
-            - if it is not a json array or object create a file.
-            - if it is a json array or object, create a directory and add references of the sub objects to the queue.
-    */
+    match config.input_format {
+        Format::Json => unpack(JsonValue::from_reader(reader), PathBuf::from(&cwd).join(&relative_file_path), &config),
+        Format::Toml => unpack(TomlValue::from_reader(reader), PathBuf::from(&cwd).join(&relative_file_path), &config),
+        Format::Yaml => unpack(YamlValue::from_reader(reader), PathBuf::from(&cwd).join(&relative_file_path), &config),
+    }
 }

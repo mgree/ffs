@@ -105,7 +105,7 @@ impl FromStr for Munge {
 
 impl Config {
     /// Parses arguments from `std::env::Args`, via `cli::app().get_matches()`
-    pub fn from_args() -> Self {
+    pub fn from_ffs_args() -> Self {
         let args = cli::app().get_matches_safe().unwrap_or_else(|e| {
             eprintln!("{}", e.message);
             std::process::exit(ERROR_STATUS_CLI)
@@ -307,7 +307,7 @@ impl Config {
                         let mount_dir = PathBuf::from(stem);
                         // If that file already exists, give up and tell the user about --mount.
                         if mount_dir.exists() {
-                            error!("Inferred mountpoint '{mount}' for output file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.", 
+                            error!("Inferred mountpoint '{mount}' for output file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
                                     mount = mount_dir.display(), file = output.display());
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
@@ -409,7 +409,7 @@ impl Config {
 
                                 // If that file already exists, give up and tell the user about --mount.
                                 if mount_dir.exists() {
-                                    error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.", 
+                                    error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
                                     mount = mount_dir.display(), file = file.display());
                                     std::process::exit(ERROR_STATUS_FUSE);
                                 }
@@ -531,6 +531,220 @@ impl Config {
 
         config
     }
+
+    pub fn from_unpack_args() -> Self {
+        let args = cli::app().get_matches_safe().unwrap_or_else(|e| {
+            eprintln!("{}", e.message);
+            std::process::exit(ERROR_STATUS_CLI)
+        });
+
+        let mut config = Config::default();
+        // generate completions?
+        //
+        // TODO 2021-07-06 good candidate for a subcommand
+        if let Some(shell) = args.value_of("SHELL") {
+            let shell = if shell == "bash" {
+                clap::Shell::Bash
+            } else if shell == "fish" {
+                clap::Shell::Fish
+            } else if shell == "zsh" {
+                clap::Shell::Zsh
+            } else {
+                eprintln!("Can't generate completions for '{}'.", shell);
+                std::process::exit(ERROR_STATUS_CLI);
+            };
+            cli::app().gen_completions_to("ffs", shell, &mut std::io::stdout());
+            std::process::exit(0);
+        }
+
+        // logging
+        if !args.is_present("QUIET") {
+            let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
+                if args.is_present("DEBUG") {
+                    EnvFilter::new("ffs=debug")
+                } else {
+                    EnvFilter::new("ffs=warn")
+                }
+            });
+            let fmt_layer = fmt::layer().with_writer(std::io::stderr);
+            tracing_subscriber::registry()
+                .with(filter_layer)
+                .with(fmt_layer)
+                .init();
+        }
+
+        // simple flags
+        config.timing = args.is_present("TIMING");
+        config.eager = args.is_present("EAGER");
+        config.add_newlines = !args.is_present("EXACT");
+        config.pad_element_names = !args.is_present("UNPADDED");
+        config.read_only = args.is_present("READONLY");
+        config.allow_xattr = !args.is_present("NOXATTR");
+        config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
+        config.pretty = args.is_present("PRETTY");
+
+        // munging policy
+        config.munge = match args.value_of("MUNGE") {
+            None => Munge::Filter,
+            Some(s) => match str::parse(s) {
+                Ok(munge) => munge,
+                Err(_) => {
+                    warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
+                    Munge::Filter
+                }
+            },
+        };
+
+        // perms
+        config.filemode = match u16::from_str_radix(args.value_of("FILEMODE").unwrap(), 8) {
+            Ok(filemode) => filemode,
+            Err(e) => {
+                error!(
+                    "Couldn't parse `--mode {}`: {}.",
+                    args.value_of("FILEMODE").unwrap(),
+                    e
+                );
+                std::process::exit(ERROR_STATUS_CLI)
+            }
+        };
+        if args.occurrences_of("FILEMODE") > 0 && args.occurrences_of("DIRMODE") == 0 {
+            // wherever a read bit is set, the dirmode should have an execute bit, too
+            config.dirmode = config.filemode;
+            if config.dirmode & 0o400 != 0 {
+                config.dirmode |= 0o100;
+            }
+            if config.dirmode & 0o040 != 0 {
+                config.dirmode |= 0o010;
+            }
+            if config.dirmode & 0o004 != 0 {
+                config.dirmode |= 0o001;
+            }
+        } else {
+            config.dirmode = match u16::from_str_radix(args.value_of("DIRMODE").unwrap(), 8) {
+                Ok(filemode) => filemode,
+                Err(e) => {
+                    error!(
+                        "Couldn't parse `--dirmode {}`: {}.",
+                        args.value_of("DIRMODE").unwrap(),
+                        e
+                    );
+                    std::process::exit(ERROR_STATUS_CLI)
+                }
+            };
+        }
+
+        // uid and gid
+        match args.value_of("UID") {
+            Some(uid_string) => match uid_string.parse() {
+                Ok(uid) => config.uid = uid,
+                Err(e) => {
+                    let euid = unsafe { libc::geteuid() };
+                    warn!(
+                        "Couldn't parse '{}' as a uid ({}), defaulting to effective uid ({})",
+                        uid_string, e, euid
+                    );
+                    config.uid = euid;
+                }
+            },
+            None => config.uid = unsafe { libc::geteuid() },
+        }
+        match args.value_of("GID") {
+            Some(gid_string) => match gid_string.parse() {
+                Ok(gid) => config.gid = gid,
+                Err(e) => {
+                    let egid = unsafe { libc::getegid() };
+                    warn!(
+                        "Couldn't parse '{}' as a gid ({}), defaulting to effective gid ({})",
+                        gid_string, e, egid
+                    );
+                    config.gid = egid;
+                }
+            },
+            None => config.gid = unsafe { libc::getegid() },
+        }
+
+        // two modes: with `--new` flag (infer most stuff) or without (parse other args)
+        //
+        // TODO 2021-07-06 maybe this would all be better with subcommands. but all that is so _complex_ :(
+        match args.value_of("NEW") {
+            Some(target_file) => {
+            }
+            None => {
+                // no `--new` flag... so parse everything
+
+                // configure input
+                config.input = match args.value_of("INPUT") {
+                    Some(input_source) => {
+                        if input_source == "-" {
+                            Input::Stdin
+                        } else {
+                            let input_source = PathBuf::from(input_source);
+                            if !input_source.exists() {
+                                error!("Input file {} does not exist.", input_source.display());
+                                std::process::exit(ERROR_STATUS_FUSE);
+                            }
+                            Input::File(input_source)
+                        }
+                    }
+                    None => Input::Stdin,
+                };
+
+                // try to autodetect the input format.
+                //
+                // first see if it's specified and parses okay.
+                //
+                // then see if we can pull it out of the extension.
+                //
+                // then give up and use json
+                config.input_format = match args
+                    .value_of("SOURCE_FORMAT")
+                    .ok_or(format::ParseFormatError::NoFormatProvided)
+                    .and_then(|s| s.parse::<Format>())
+                {
+                    Ok(source_format) => source_format,
+                    Err(e) => {
+                        match e {
+                            format::ParseFormatError::NoSuchFormat(s) => {
+                                warn!("Unrecognized format '{}', inferring from input.", s)
+                            }
+                            format::ParseFormatError::NoFormatProvided => {
+                                debug!("Inferring format from input.")
+                            }
+                        };
+                        match &config.input {
+                            Input::Stdin => Format::Json,
+                            Input::Empty => Format::Json,
+                            Input::File(input_source) => match input_source
+                                .extension()
+                                .and_then(|s| s.to_str())
+                                .ok_or(format::ParseFormatError::NoFormatProvided)
+                                .and_then(|s| s.parse::<Format>())
+                            {
+                                Ok(format) => format,
+                                Err(_) => {
+                                    warn!(
+                                        "Unrecognized format {}, defaulting to JSON.",
+                                        input_source.display()
+                                    );
+                                    Format::Json
+                                }
+                            },
+                        }
+                    }
+                };
+            }
+        };
+
+        if config.pretty && !config.output_format.can_be_pretty() {
+            warn!(
+                "There is no pretty printing routine for {}.",
+                config.output_format
+            )
+        }
+
+        config
+    }
+
 
     pub fn valid_name(&self, s: &str) -> bool {
         s != "." && s != ".." && !s.contains('\0') && !s.contains('/')
