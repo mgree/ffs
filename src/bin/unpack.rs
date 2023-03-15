@@ -1,17 +1,16 @@
 use std::collections::VecDeque;
-use std::env;
 use std::fs;
 use std::io::BufReader;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use ffs::config::Config;
+use ffs::config::Input;
 use ffs::format;
 use format::{Format, Nodelike, Typ};
 use format::json::Value as JsonValue;
 use format::toml::Value as TomlValue;
 use format::yaml::Value as YamlValue;
-
 
 use ::xattr;
 
@@ -88,7 +87,7 @@ where
                 for (field, child) in fvs.into_iter() {
                     let original = field.clone();
 
-                    // munge name to be valid and uniqueÍ
+                    // munge name to be valid and unique
                     let name = if !config.valid_name(&original) {
                         match config.munge {
                             ffs::config::Munge::Rename => {
@@ -127,27 +126,35 @@ where
 }
 
 fn main() -> std::io::Result<()> {
-    let args: Vec<_> = env::args().collect();
-    let filename = String::from(&args[1]);
+    let config = Config::from_unpack_args();
+    // println!("{:?}", config);
 
-    let cwd = env::current_dir().unwrap();
+    assert!(config.mount.is_some());
+    let mount = match &config.mount {
+        Some(mount) => mount.clone(),
+        None => {
+            panic!("Directory not specified");
+        }
+    };
+    // println!("mount: {:?}", mount);
 
-    let file = fs::File::open(&filename).unwrap();
+    let path = match &config.input {
+        Input::File(path) => path,
+        _ => {
+            panic!("for testing, input must be a file");
+        }
+    };
+    // println!("path: {:?}", path);
+    let file = fs::File::open(&path)?;
+    // println!("file: {:?}", file);
     let reader = Box::new(BufReader::new(file));
+    // println!("reader: {:?}", reader);
 
-    let relative_file_path = Path::new(&filename).file_stem().unwrap().to_str().unwrap();
-
-    if Path::new(&relative_file_path).exists() {
-        panic!("Directory {} already exists", relative_file_path);
-    }
     // TODO add subdirectory check not just root directory check
 
-    let config = Config::from_unpack_args();
-    println!("{:?}", config);
-
-    match config.input_format {
-        Format::Json => unpack(JsonValue::from_reader(reader), PathBuf::from(&cwd).join(&relative_file_path), &config),
-        Format::Toml => unpack(TomlValue::from_reader(reader), PathBuf::from(&cwd).join(&relative_file_path), &config),
-        Format::Yaml => unpack(YamlValue::from_reader(reader), PathBuf::from(&cwd).join(&relative_file_path), &config),
+    match &config.input_format {
+        Format::Json => unpack(JsonValue::from_reader(reader), mount, &config),
+        Format::Toml => unpack(TomlValue::from_reader(reader), mount, &config),
+        Format::Yaml => unpack(YamlValue::from_reader(reader), mount, &config),
     }
 }

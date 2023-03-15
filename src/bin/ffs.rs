@@ -11,7 +11,7 @@ use fs::FS;
 use fuser::MountOption;
 
 fn main() {
-    let config = Config::from_args();
+    let config = Config::from_ffs_args();
     let mut options = vec![MountOption::FSName(format!("{}", config.input))];
     if config.read_only {
         options.push(MountOption::RO);

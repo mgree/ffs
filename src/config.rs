@@ -581,7 +581,7 @@ impl Config {
         config.read_only = args.is_present("READONLY");
         config.allow_xattr = !args.is_present("NOXATTR");
         config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
-        config.pretty = args.is_present("PRETTY");
+        // config.pretty = args.is_present("PRETTY"); // is pretty needed for unpack?
 
         // munging policy
         config.munge = match args.value_of("MUNGE") {
@@ -633,41 +633,41 @@ impl Config {
             };
         }
 
-        // uid and gid
-        match args.value_of("UID") {
-            Some(uid_string) => match uid_string.parse() {
-                Ok(uid) => config.uid = uid,
-                Err(e) => {
-                    let euid = unsafe { libc::geteuid() };
-                    warn!(
-                        "Couldn't parse '{}' as a uid ({}), defaulting to effective uid ({})",
-                        uid_string, e, euid
-                    );
-                    config.uid = euid;
-                }
-            },
-            None => config.uid = unsafe { libc::geteuid() },
-        }
-        match args.value_of("GID") {
-            Some(gid_string) => match gid_string.parse() {
-                Ok(gid) => config.gid = gid,
-                Err(e) => {
-                    let egid = unsafe { libc::getegid() };
-                    warn!(
-                        "Couldn't parse '{}' as a gid ({}), defaulting to effective gid ({})",
-                        gid_string, e, egid
-                    );
-                    config.gid = egid;
-                }
-            },
-            None => config.gid = unsafe { libc::getegid() },
-        }
+        // uid and gid // TODO(nad) 2023-03-15 check if needed for unpack
+        // match args.value_of("UID") {
+        //     Some(uid_string) => match uid_string.parse() {
+        //         Ok(uid) => config.uid = uid,
+        //         Err(e) => {
+        //             let euid = unsafe { libc::geteuid() };
+        //             warn!(
+        //                 "Couldn't parse '{}' as a uid ({}), defaulting to effective uid ({})",
+        //                 uid_string, e, euid
+        //             );
+        //             config.uid = euid;
+        //         }
+        //     },
+        //     None => config.uid = unsafe { libc::geteuid() },
+        // }
+        // match args.value_of("GID") {
+        //     Some(gid_string) => match gid_string.parse() {
+        //         Ok(gid) => config.gid = gid,
+        //         Err(e) => {
+        //             let egid = unsafe { libc::getegid() };
+        //             warn!(
+        //                 "Couldn't parse '{}' as a gid ({}), defaulting to effective gid ({})",
+        //                 gid_string, e, egid
+        //             );
+        //             config.gid = egid;
+        //         }
+        //     },
+        //     None => config.gid = unsafe { libc::getegid() },
+        // }
 
         // two modes: with `--new` flag (infer most stuff) or without (parse other args)
         //
         // TODO 2021-07-06 maybe this would all be better with subcommands. but all that is so _complex_ :(
         match args.value_of("NEW") {
-            Some(target_file) => {
+            Some(_) => {
             }
             None => {
                 // no `--new` flag... so parse everything
@@ -688,6 +688,68 @@ impl Config {
                     }
                     None => Input::Stdin,
                 };
+
+                // println!("configured input: {:?}", config.input);
+
+                // infer and create mountpoint from filename as possible
+                config.mount = match args.value_of("MOUNT") {
+                    Some(mount_point) => {
+                        let mount_point = PathBuf::from(mount_point);
+                        if !mount_point.exists() {
+                            error!("Mount point {} does not exist.", mount_point.display());
+                            std::process::exit(ERROR_STATUS_FUSE);
+                        }
+                        config.cleanup_mount = false;
+                        Some(mount_point)
+                    }
+                    None => {
+                        match &config.input {
+                            Input::Stdin => {
+                                error!("You must specify a mount point when reading from stdin.");
+                                std::process::exit(ERROR_STATUS_CLI);
+                            }
+                            Input::Empty => {
+                                error!(
+                                    "You must specify a mount point when reading an empty file."
+                                );
+                                std::process::exit(ERROR_STATUS_CLI);
+                            }
+                            Input::File(file) => {
+                                // If the input is from a file foo.EXT, then try to make a directory foo.
+                                let stem = file.file_stem().unwrap_or_else(|| {
+                                    error!("Couldn't infer the mountpoint from input '{}'. Use `--mount MOUNT` to specify a mountpoint.", file.display());
+                                    std::process::exit(ERROR_STATUS_FUSE);
+                                });
+                                let mount_dir = PathBuf::from(stem);
+                                debug!("inferred mount_dir {}", mount_dir.display());
+
+                                // If that file already exists, give up and tell the user about --mount.
+                                if mount_dir.exists() {
+                                    error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
+                                    mount = mount_dir.display(), file = file.display());
+                                    std::process::exit(ERROR_STATUS_FUSE);
+                                }
+                                // TODO(nad) 2023-03-15 check if this snippet is needed
+                                // If the mountpoint can't be created, give up and tell the user about --mount.
+                                // if let Err(e) = std::fs::create_dir(&mount_dir) {
+                                //     error!(
+                                //         "Couldn't create mountpoint '{}': {}. Use `--mount MOUNT` to specify a mountpoint.",
+                                //         mount_dir.display(),
+                                //         e
+                                //     );
+                                //     std::process::exit(ERROR_STATUS_FUSE);
+                                // }
+
+                                // We did it!
+                                config.cleanup_mount = true;
+                                Some(mount_dir)
+                            }
+                        }
+                    }
+                };
+                assert!(config.mount.is_some());
+
+                // println!("configured mount: {:?}", config.mount);
 
                 // try to autodetect the input format.
                 //
@@ -732,15 +794,19 @@ impl Config {
                         }
                     }
                 };
+
+                // println!("configured input format: {:?}", config.input_format);
+
             }
         };
 
-        if config.pretty && !config.output_format.can_be_pretty() {
-            warn!(
-                "There is no pretty printing routine for {}.",
-                config.output_format
-            )
-        }
+        // probably not needed for unpack
+        // if config.pretty && !config.output_format.can_be_pretty() {
+        //     warn!(
+        //         "There is no pretty printing routine for {}.",
+        //         config.output_format
+        //     )
+        // }
 
         config
     }
