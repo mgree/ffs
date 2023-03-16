@@ -575,13 +575,11 @@ impl Config {
 
         // simple flags
         config.timing = args.is_present("TIMING");
-        config.eager = args.is_present("EAGER");
         config.add_newlines = !args.is_present("EXACT");
         config.pad_element_names = !args.is_present("UNPADDED");
         config.read_only = args.is_present("READONLY");
         config.allow_xattr = !args.is_present("NOXATTR");
         config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
-        // config.pretty = args.is_present("PRETTY"); // is pretty needed for unpack?
 
         // munging policy
         config.munge = match args.value_of("MUNGE") {
@@ -595,218 +593,122 @@ impl Config {
             },
         };
 
-        // perms
-        config.filemode = match u16::from_str_radix(args.value_of("FILEMODE").unwrap(), 8) {
-            Ok(filemode) => filemode,
-            Err(e) => {
-                error!(
-                    "Couldn't parse `--mode {}`: {}.",
-                    args.value_of("FILEMODE").unwrap(),
-                    e
-                );
-                std::process::exit(ERROR_STATUS_CLI)
-            }
-        };
-        if args.occurrences_of("FILEMODE") > 0 && args.occurrences_of("DIRMODE") == 0 {
-            // wherever a read bit is set, the dirmode should have an execute bit, too
-            config.dirmode = config.filemode;
-            if config.dirmode & 0o400 != 0 {
-                config.dirmode |= 0o100;
-            }
-            if config.dirmode & 0o040 != 0 {
-                config.dirmode |= 0o010;
-            }
-            if config.dirmode & 0o004 != 0 {
-                config.dirmode |= 0o001;
-            }
-        } else {
-            config.dirmode = match u16::from_str_radix(args.value_of("DIRMODE").unwrap(), 8) {
-                Ok(filemode) => filemode,
-                Err(e) => {
-                    error!(
-                        "Couldn't parse `--dirmode {}`: {}.",
-                        args.value_of("DIRMODE").unwrap(),
-                        e
-                    );
-                    std::process::exit(ERROR_STATUS_CLI)
+        // configure input
+        config.input = match args.value_of("INPUT") {
+            Some(input_source) => {
+                if input_source == "-" {
+                    Input::Stdin
+                } else {
+                    let input_source = PathBuf::from(input_source);
+                    if !input_source.exists() {
+                        error!("Input file {} does not exist.", input_source.display());
+                        std::process::exit(ERROR_STATUS_FUSE);
+                    }
+                    Input::File(input_source)
                 }
-            };
-        }
+            }
+            None => Input::Stdin,
+        };
 
-        // uid and gid // TODO(nad) 2023-03-15 check if needed for unpack
-        // match args.value_of("UID") {
-        //     Some(uid_string) => match uid_string.parse() {
-        //         Ok(uid) => config.uid = uid,
-        //         Err(e) => {
-        //             let euid = unsafe { libc::geteuid() };
-        //             warn!(
-        //                 "Couldn't parse '{}' as a uid ({}), defaulting to effective uid ({})",
-        //                 uid_string, e, euid
-        //             );
-        //             config.uid = euid;
-        //         }
-        //     },
-        //     None => config.uid = unsafe { libc::geteuid() },
-        // }
-        // match args.value_of("GID") {
-        //     Some(gid_string) => match gid_string.parse() {
-        //         Ok(gid) => config.gid = gid,
-        //         Err(e) => {
-        //             let egid = unsafe { libc::getegid() };
-        //             warn!(
-        //                 "Couldn't parse '{}' as a gid ({}), defaulting to effective gid ({})",
-        //                 gid_string, e, egid
-        //             );
-        //             config.gid = egid;
-        //         }
-        //     },
-        //     None => config.gid = unsafe { libc::getegid() },
-        // }
+        // infer and create mountpoint from filename as possible
+        config.mount = match args.value_of("MOUNT") {
+            Some(mount_point) => {
+                let mount_point = PathBuf::from(mount_point);
+                if !mount_point.exists() {
+                    error!("Mount point {} does not exist.", mount_point.display());
+                    std::process::exit(ERROR_STATUS_FUSE);
+                }
 
-        // two modes: with `--new` flag (infer most stuff) or without (parse other args)
-        //
-        // TODO 2021-07-06 maybe this would all be better with subcommands. but all that is so _complex_ :(
-        match args.value_of("NEW") {
-            Some(_) => {
+                Some(mount_point)
             }
             None => {
-                // no `--new` flag... so parse everything
-
-                // configure input
-                config.input = match args.value_of("INPUT") {
-                    Some(input_source) => {
-                        if input_source == "-" {
-                            Input::Stdin
-                        } else {
-                            let input_source = PathBuf::from(input_source);
-                            if !input_source.exists() {
-                                error!("Input file {} does not exist.", input_source.display());
-                                std::process::exit(ERROR_STATUS_FUSE);
-                            }
-                            Input::File(input_source)
-                        }
+                match &config.input {
+                    Input::Stdin => {
+                        error!("You must specify a mount point when reading from stdin.");
+                        std::process::exit(ERROR_STATUS_CLI);
                     }
-                    None => Input::Stdin,
-                };
+                    Input::Empty => {
+                        error!(
+                            "You must specify a mount point when reading an empty file."
+                        );
+                        std::process::exit(ERROR_STATUS_CLI);
+                    }
+                    Input::File(file) => {
+                        // If the input is from a file foo.EXT, then try to make a directory foo.
+                        let stem = file.file_stem().unwrap_or_else(|| {
+                            error!("Couldn't infer the mountpoint from input '{}'. Use `--mount MOUNT` to specify a mountpoint.", file.display());
+                            std::process::exit(ERROR_STATUS_FUSE);
+                        });
+                        let mount_dir = PathBuf::from(stem);
+                        debug!("inferred mount_dir {}", mount_dir.display());
 
-                // println!("configured input: {:?}", config.input);
-
-                // infer and create mountpoint from filename as possible
-                config.mount = match args.value_of("MOUNT") {
-                    Some(mount_point) => {
-                        let mount_point = PathBuf::from(mount_point);
-                        if !mount_point.exists() {
-                            error!("Mount point {} does not exist.", mount_point.display());
+                        // If that file already exists, give up and tell the user about --mount.
+                        if mount_dir.exists() {
+                            error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
+                            mount = mount_dir.display(), file = file.display());
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
-                        config.cleanup_mount = false;
-                        Some(mount_point)
-                    }
-                    None => {
-                        match &config.input {
-                            Input::Stdin => {
-                                error!("You must specify a mount point when reading from stdin.");
-                                std::process::exit(ERROR_STATUS_CLI);
-                            }
-                            Input::Empty => {
-                                error!(
-                                    "You must specify a mount point when reading an empty file."
-                                );
-                                std::process::exit(ERROR_STATUS_CLI);
-                            }
-                            Input::File(file) => {
-                                // If the input is from a file foo.EXT, then try to make a directory foo.
-                                let stem = file.file_stem().unwrap_or_else(|| {
-                                    error!("Couldn't infer the mountpoint from input '{}'. Use `--mount MOUNT` to specify a mountpoint.", file.display());
-                                    std::process::exit(ERROR_STATUS_FUSE);
-                                });
-                                let mount_dir = PathBuf::from(stem);
-                                debug!("inferred mount_dir {}", mount_dir.display());
-
-                                // If that file already exists, give up and tell the user about --mount.
-                                if mount_dir.exists() {
-                                    error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
-                                    mount = mount_dir.display(), file = file.display());
-                                    std::process::exit(ERROR_STATUS_FUSE);
-                                }
-                                // TODO(nad) 2023-03-15 check if this snippet is needed
-                                // If the mountpoint can't be created, give up and tell the user about --mount.
-                                // if let Err(e) = std::fs::create_dir(&mount_dir) {
-                                //     error!(
-                                //         "Couldn't create mountpoint '{}': {}. Use `--mount MOUNT` to specify a mountpoint.",
-                                //         mount_dir.display(),
-                                //         e
-                                //     );
-                                //     std::process::exit(ERROR_STATUS_FUSE);
-                                // }
-
-                                // We did it!
-                                config.cleanup_mount = true;
-                                Some(mount_dir)
-                            }
+                        // If the mountpoint can't be created, give up and tell the user about --mount.
+                        if let Err(e) = std::fs::create_dir(&mount_dir) {
+                            error!(
+                                "Couldn't create mountpoint '{}': {}. Use `--mount MOUNT` to specify a mountpoint.",
+                                mount_dir.display(),
+                                e
+                            );
+                            std::process::exit(ERROR_STATUS_FUSE);
                         }
+
+                        // We did it!
+                        Some(mount_dir)
                     }
-                };
-                assert!(config.mount.is_some());
-
-                // println!("configured mount: {:?}", config.mount);
-
-                // try to autodetect the input format.
-                //
-                // first see if it's specified and parses okay.
-                //
-                // then see if we can pull it out of the extension.
-                //
-                // then give up and use json
-                config.input_format = match args
-                    .value_of("SOURCE_FORMAT")
-                    .ok_or(format::ParseFormatError::NoFormatProvided)
-                    .and_then(|s| s.parse::<Format>())
-                {
-                    Ok(source_format) => source_format,
-                    Err(e) => {
-                        match e {
-                            format::ParseFormatError::NoSuchFormat(s) => {
-                                warn!("Unrecognized format '{}', inferring from input.", s)
-                            }
-                            format::ParseFormatError::NoFormatProvided => {
-                                debug!("Inferring format from input.")
-                            }
-                        };
-                        match &config.input {
-                            Input::Stdin => Format::Json,
-                            Input::Empty => Format::Json,
-                            Input::File(input_source) => match input_source
-                                .extension()
-                                .and_then(|s| s.to_str())
-                                .ok_or(format::ParseFormatError::NoFormatProvided)
-                                .and_then(|s| s.parse::<Format>())
-                            {
-                                Ok(format) => format,
-                                Err(_) => {
-                                    warn!(
-                                        "Unrecognized format {}, defaulting to JSON.",
-                                        input_source.display()
-                                    );
-                                    Format::Json
-                                }
-                            },
-                        }
-                    }
-                };
-
-                // println!("configured input format: {:?}", config.input_format);
-
+                }
             }
         };
+        assert!(config.mount.is_some());
 
-        // probably not needed for unpack
-        // if config.pretty && !config.output_format.can_be_pretty() {
-        //     warn!(
-        //         "There is no pretty printing routine for {}.",
-        //         config.output_format
-        //     )
-        // }
+        // try to autodetect the input format.
+        //
+        // first see if it's specified and parses okay.
+        //
+        // then see if we can pull it out of the extension.
+        //
+        // then give up and use json
+        config.input_format = match args
+            .value_of("SOURCE_FORMAT")
+            .ok_or(format::ParseFormatError::NoFormatProvided)
+            .and_then(|s| s.parse::<Format>())
+        {
+            Ok(source_format) => source_format,
+            Err(e) => {
+                match e {
+                    format::ParseFormatError::NoSuchFormat(s) => {
+                        warn!("Unrecognized format '{}', inferring from input.", s)
+                    }
+                    format::ParseFormatError::NoFormatProvided => {
+                        debug!("Inferring format from input.")
+                    }
+                };
+                match &config.input {
+                    Input::Stdin => Format::Json,
+                    Input::Empty => Format::Json,
+                    Input::File(input_source) => match input_source
+                        .extension()
+                        .and_then(|s| s.to_str())
+                        .ok_or(format::ParseFormatError::NoFormatProvided)
+                        .and_then(|s| s.parse::<Format>())
+                    {
+                        Ok(format) => format,
+                        Err(_) => {
+                            warn!(
+                                "Unrecognized format {}, defaulting to JSON.",
+                                input_source.display()
+                            );
+                            Format::Json
+                        }
+                    },
+                }
+            }
+        };
 
         config
     }

@@ -20,7 +20,7 @@ where
     V: Nodelike + std::fmt::Display + Default,
 {
     let mut queue: VecDeque<(V, PathBuf, Option<String>)> = VecDeque::new();
-    queue.push_back((root, root_path, None));
+    queue.push_back((root, root_path.clone(), None));
 
     while !queue.is_empty() {
         let (v, path, original_name) = queue.pop_front().unwrap();
@@ -55,8 +55,10 @@ where
                 xattr::set(&path, "user.type", format!("{}", Typ::Bytes).as_bytes())?;
             }
             format::Node::List(vs) => {
-                // make directory
-                fs::create_dir(&path)?;
+                // if not root path, make directory
+                if path != root_path.clone() {
+                    fs::create_dir(&path)?;
+                }
                 // TODO(mmg) 2023-03-06 set directory metadata to list using setxattr
                 xattr::set(&path, "user.type", "list".as_bytes())?;
 
@@ -77,8 +79,10 @@ where
                 }
             }
             format::Node::Map(fvs) => {
-                // make directory
-                fs::create_dir(&path)?;
+                // if not root path, make directory
+                if path != root_path.clone() {
+                    fs::create_dir(&path)?;
+                }
                 // TODO(mmg) 2023-03-06 set directory metadata to map using setxattr
                 xattr::set(&path, "user.type", "map".as_bytes())?;
 
@@ -151,10 +155,21 @@ fn main() -> std::io::Result<()> {
     // println!("reader: {:?}", reader);
 
     // TODO add subdirectory check not just root directory check
+    // TODO(nad) 2023-03-16 fix the amount of clones!!!
+    let result = match &config.input_format {
+        Format::Json => unpack(JsonValue::from_reader(reader), mount.clone(), &config),
+        Format::Toml => unpack(TomlValue::from_reader(reader), mount.clone(), &config),
+        Format::Yaml => unpack(YamlValue::from_reader(reader), mount.clone(), &config),
+    };
 
-    match &config.input_format {
-        Format::Json => unpack(JsonValue::from_reader(reader), mount, &config),
-        Format::Toml => unpack(TomlValue::from_reader(reader), mount, &config),
-        Format::Yaml => unpack(YamlValue::from_reader(reader), mount, &config),
-    }
+    // have to set read_only in the root dir after unpacking because you can't create files or dirs
+    // inside a read-only directory
+    // if config.read_only {
+    //     let file = fs::File::open(mount)?;
+    //     let mut perms = file.metadata()?.permissions();
+    //     perms.set_readonly(true);
+    //     file.set_permissions(perms)?;
+    // }
+
+    result
 }
