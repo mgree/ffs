@@ -62,12 +62,10 @@ where
         // TODO (nad) 2023-03-22 get the original name from the xattr
         match child_type {
             "map" => {
-                // println!("map");
                 let v = pack(child.clone(), config)?;
                 queue.push((child.file_name().unwrap().to_os_string(), v));
             }
             "list" => {
-                // println!("list");
                 let v = pack(child.clone(), config)?;
                 queue.push((child.file_name().unwrap().to_os_string(), v));
             }
@@ -104,11 +102,11 @@ where
         "map" => {
             let mut entries = HashMap::with_capacity(queue.len());
             let files = queue
-                .iter()
+                .into_iter()
                 .map(|(name, entry)| (name.clone().into_string().unwrap(), entry/*, insert original_name */))
                 .collect::<Vec<_>>();
-            for (name, value/*, original_name */) in files.iter() {
-                if config.ignored_file(name) {
+            for (name, value/*, original_name */) in files {
+                if config.ignored_file(name.as_str()) {
                     warn!("skipping ignored file '{}'", name);
                     continue;
                 }
@@ -120,7 +118,7 @@ where
         "list" => {
             let mut entries = Vec::with_capacity(queue.len());
             let mut files = queue
-                .iter()
+                .into_iter()
                 .map(|(name, entry)| (name.clone().into_string().unwrap(), entry))
                 .collect::<Vec<_>>();
             files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
@@ -132,7 +130,6 @@ where
                 entries.push(value);
             }
             V::from_list_dir(entries, &config)
-
         }
         _ => {
             panic!("Unknown directory type: {}", dir_type);
@@ -168,6 +165,8 @@ fn main() -> std::io::Result<()> {
         Some(writer) => writer,
         None => return Ok(()),
     };
+
+    println!("output format: {:?}", &config.output_format);
 
     match &config.output_format {
         Format::Json => {
