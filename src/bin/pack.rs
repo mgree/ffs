@@ -1,4 +1,5 @@
 use std::fs;
+
 use std::ffi::OsString;
 use std::collections::VecDeque;
 use std::collections::HashMap;
@@ -27,116 +28,120 @@ use ::xattr;
 
 #[allow(dead_code)]
 #[allow(unused_variables)]
-fn pack<V>(dir: PathBuf, config: &Config) -> std::io::Result<V>
+fn pack<V>(path: PathBuf, config: &Config) -> std::option::Option<(OsString,V)>
 where
     V: Nodelike + std::fmt::Display + Default,
 {
-    /*
-     * get xattr of dir (this function only gets recursively called on directories)
-     *
-     * loop through the entries in this directory (sorted?)
-     * - if the entry is a list or map, recursively call this function first. "depth first"
-     *   append the returned Value to the vec along with the path
-     * - else append it to the vec with the path and value parsed by xattr and V type.
-     *
-     * with the list of (path, value) pairs, build the Value of this list or map from the xattr
-     * determined in the beginning
-     */
+    let path_type = xattr::get(&path, "user.type").unwrap().unwrap();
+    let path_type = str::from_utf8(&path_type).unwrap();
+    println!("{:?} is a {}", path, path_type);
 
-    let dir_type = xattr::get(&dir, "user.type")?.unwrap();
-    let dir_type = str::from_utf8(&dir_type).unwrap();
-    println!("parsing dir {:?} of type {}", dir, dir_type);
-
-    let mut children = fs::read_dir(dir)?
-            .map(|res| res.map(|e| e.path()))
-            .collect::<Result<Vec<_>, Error>>()?;
-    children.sort();
-
-    let mut queue: Vec<(OsString, V)> = Vec::new();
-
-    for child in children {
-        println!("child path: {:?}", &child.display());
-        let child_type = xattr::get(&child, "user.type")?.unwrap();
-        let child_type = str::from_utf8(&child_type).unwrap();
-        println!("child_type: {}", child_type);
-        // TODO (nad) 2023-03-22 get the original name from the xattr
-        match child_type {
-            "map" => {
-                let v = pack(child.clone(), config)?;
-                queue.push((child.file_name().unwrap().to_os_string(), v));
-            }
-            "list" => {
-                let v = pack(child.clone(), config)?;
-                queue.push((child.file_name().unwrap().to_os_string(), v));
-            }
-            typ => {
-                if let Ok(t) = Typ::from_str(typ) {
-                    println!("parsed type {}", t);
-                    let file = fs::File::open(&child).unwrap();
-                    let mut reader = BufReader::new(&file);
-                    let mut contents: Vec<u8> = Vec::new();
-                    reader.read_to_end(&mut contents)?;
-                    match String::from_utf8(contents.clone()) {
-                        Ok(mut contents) if t != Typ::Bytes => {
-                            if config.add_newlines && contents.ends_with('\n') {
-                                contents.truncate(contents.len() - 1);
-                            }
-                            // TODO 2021-06-24 trim?
-                            queue.push((child.file_name().unwrap().to_os_string(), V::from_string(t, contents, &config)));
-                        }
-                        Ok(_) | Err(_) => {
-                            queue.push((child.file_name().unwrap().to_os_string(), V::from_bytes(contents, &config)));
-                        }
-                    };
-                } else {
-                    // we were already supposed to detect dirs with map and list
-                    // so this is a bad error.
-                    panic!("Very bad error. Unknown type {}", typ);
-                }
-            }
-        };
-    }
-
-    // we now have the complete list of file names and child values in the queue.
-    let parsed_value = match dir_type {
+    // TODO (nad) 2023-03-22 get the original name from the xattr
+    match path_type {
         "map" => {
-            let mut entries = HashMap::with_capacity(queue.len());
-            let files = queue
-                .into_iter()
-                .map(|(name, entry)| (name.clone().into_string().unwrap(), entry/*, insert original_name */))
-                .collect::<Vec<_>>();
-            for (name, value/*, original_name */) in files {
-                if config.ignored_file(name.as_str()) {
-                    warn!("skipping ignored file '{}'", name);
-                    continue;
-                }
-                // let name = original_name.as_ref().unwrap_or(name).into();
-                entries.insert(name, value);
-            }
-            V::from_named_dir(entries, &config)
+            let mut children = fs::read_dir(path.clone()).unwrap()
+                .map(|res| res.map(|e| e.path()))
+                .collect::<Result<Vec<_>, Error>>().unwrap();
+
+
+            // return something for now
+            // TODO: fix this
+            Some((path.as_os_str().to_os_string(), V::default()))
+            // let v = pack(path.clone(), config)?;
+            // (path.file_name().unwrap().to_os_string(), v)
         }
         "list" => {
-            let mut entries = Vec::with_capacity(queue.len());
-            let mut files = queue
-                .into_iter()
-                .map(|(name, entry)| (name.clone().into_string().unwrap(), entry))
-                .collect::<Vec<_>>();
-            files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
-            for (name, value) in files {
-                if config.ignored_file(&name) {
-                    warn!("skipping ignored file '{}'", name);
-                    continue;
-                }
-                entries.push(value);
-            }
-            V::from_list_dir(entries, &config)
-        }
-        _ => {
-            panic!("Unknown directory type: {}", dir_type);
-        }
-    };
+            let mut children = fs::read_dir(path.clone()).unwrap()
+                .map(|res| res.map(|e| e.path()))
+                .collect::<Result<Vec<_>, Error>>().unwrap();
 
-    Ok(parsed_value)
+
+            // return something for now
+            // TODO: fix this
+            Some((path.as_os_str().to_os_string(), V::default()))
+            // let v = pack(child.clone(), config)?;
+            // (child.file_name().unwrap().to_os_string(), v)
+        }
+        typ => {
+            if let Ok(t) = Typ::from_str(typ) {
+                let mut name = path.file_name().unwrap().to_os_string();
+                if config.ignored_file(name.to_str().unwrap()) {
+                    warn!("skipping ignored file '{:?}'", name);
+                    return None
+                };
+                println!("parsed type {}", t);
+                let file = fs::File::open(&path).unwrap();
+                let mut reader = BufReader::new(&file);
+                let mut contents: Vec<u8> = Vec::new();
+                reader.read_to_end(&mut contents).unwrap();
+                match String::from_utf8(contents.clone()) {
+                    Ok(mut contents) if t != Typ::Bytes => {
+                        if config.add_newlines && contents.ends_with('\n') {
+                            contents.truncate(contents.len() - 1);
+                        }
+                        match config.munge {
+                            ffs::config::Munge::Rename => {
+                                let original = xattr::get(&name, "user.original_name");
+                                if let Ok(Some(original)) = original {
+                                    let original = str::from_utf8(&original).unwrap();
+                                    name = OsString::from(original);
+                                }
+                            }
+                            ffs::config::Munge::Filter => {
+
+                            }
+                        }
+                        Some((name, V::from_string(t, contents, &config)))
+                    }
+                    Ok(_) | Err(_) => {
+                        Some((name, V::from_bytes(contents, &config)))
+                    }
+                }
+            } else {
+                // we were already supposed to detect dirs with map and list
+                // so this is a bad error.
+                panic!("Very bad error. Unknown type {}", typ);
+            }
+        }
+    }
+
+    // let parsed_value = match dir_type {
+    //     "map" => {
+    //         let mut entries = HashMap::with_capacity(queue.len());
+    //         let files = queue
+    //             .into_iter()
+    //             .map(|(name, entry)| (name.clone().into_string().unwrap(), entry/*, insert original_name */))
+    //             .collect::<Vec<_>>();
+    //         for (name, value/*, original_name */) in files {
+    //             if config.ignored_file(name.as_str()) {
+    //                 warn!("skipping ignored file '{}'", name);
+    //                 continue;
+    //             }
+    //             // let name = original_name.as_ref().unwrap_or(name).into();
+    //             entries.insert(name, value);
+    //         }
+    //         V::from_named_dir(entries, &config)
+    //     }
+    //     "list" => {
+    //         let mut entries = Vec::with_capacity(queue.len());
+    //         let mut files = queue
+    //             .into_iter()
+    //             .map(|(name, entry)| (name.clone().into_string().unwrap(), entry))
+    //             .collect::<Vec<_>>();
+    //         files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
+    //         for (name, value) in files {
+    //             if config.ignored_file(&name) {
+    //                 warn!("skipping ignored file '{}'", name);
+    //                 continue;
+    //             }
+    //             entries.push(value);
+    //         }
+    //         V::from_list_dir(entries, &config)
+    //     }
+    //     _ => {
+    //         panic!("Unknown directory type: {}", dir_type);
+    //     }
+    // };
 }
 
 
@@ -170,15 +175,15 @@ fn main() -> std::io::Result<()> {
 
     match &config.output_format {
         Format::Json => {
-            let v: JsonValue = pack(folder, &config).unwrap();
+            let v: JsonValue = pack(folder, &config).unwrap().1;
             v.to_writer(writer, config.pretty);
         }
         Format::Toml => {
-            let v: TomlValue = pack(folder, &config).unwrap();
+            let v: TomlValue = pack(folder, &config).unwrap().1;
             v.to_writer(writer, config.pretty);
         }
         Format::Yaml => {
-            let v: YamlValue = pack(folder, &config).unwrap();
+            let v: YamlValue = pack(folder, &config).unwrap().1;
             v.to_writer(writer, config.pretty);
         }
     }

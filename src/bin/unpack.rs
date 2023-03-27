@@ -37,7 +37,6 @@ where
                 write!(f, "{}", s)?;
 
                 // set metadata according to `t`
-                // TODO(mmg) 2023-03-06 set `user.type` metadata using setxattr
                 xattr::set(&path, "user.type", format!("{}", t).as_bytes())?;
             }
             format::Node::Bytes(b) => {
@@ -51,7 +50,6 @@ where
                 f.write_all(b.as_slice())?;
 
                 // set metadata to bytes
-                // TODO(mmg) 2023-03-06 set `user.type` metadata using setxattr
                 xattr::set(&path, "user.type", format!("{}", Typ::Bytes).as_bytes())?;
             }
             format::Node::List(vs) => {
@@ -59,7 +57,6 @@ where
                 if path != root_path.clone() {
                     fs::create_dir(&path)?;
                 }
-                // TODO(mmg) 2023-03-06 set directory metadata to list using setxattr
                 xattr::set(&path, "user.type", "list".as_bytes())?;
 
                 // enqueue children with appropriate names
@@ -83,7 +80,6 @@ where
                 if path != root_path.clone() {
                     fs::create_dir(&path)?;
                 }
-                // TODO(mmg) 2023-03-06 set directory metadata to map using setxattr
                 xattr::set(&path, "user.type", "map".as_bytes())?;
 
                 // enqueue children with appropriate names
