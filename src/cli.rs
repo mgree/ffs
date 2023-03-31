@@ -6,7 +6,7 @@ pub const POSSIBLE_FORMATS: &[&str] = &["json", "toml", "yaml"];
 /// The possible name munging policies.
 pub const MUNGE_POLICIES: &[&str] = &["filter", "rename"];
 
-pub fn app() -> App<'static, 'static> {
+pub fn ffs() -> App<'static, 'static> {
     App::new("ffs")
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
@@ -120,7 +120,7 @@ pub fn app() -> App<'static, 'static> {
                 .help("Writes the output back over the input file")
                 .long("in-place")
                 .short("i")
-                .overrides_with("OUTPUT")            
+                .overrides_with("OUTPUT")
                 .overrides_with("NOOUTPUT")
         )
         .arg(
@@ -163,6 +163,190 @@ pub fn app() -> App<'static, 'static> {
                 .conflicts_with("OUTPUT")
         )
         .arg(
+            Arg::with_name("INPUT")
+                .help("Sets the input file ('-' means STDIN)")
+                .default_value("-")
+                .index(1),
+        )
+}
+
+pub fn unpack() -> App<'static, 'static> {
+    App::new("unpack")
+        .version(env!("CARGO_PKG_VERSION"))
+        .author(env!("CARGO_PKG_AUTHORS"))
+        .about("unpack structured data into a directory")
+        .arg(
+            Arg::with_name("SHELL")
+                .help("Generate shell completions (and exits)")
+                .long("completions")
+                .takes_value(true)
+                .possible_values(&["bash", "fish", "zsh"])
+        )
+        .arg(
+            Arg::with_name("QUIET")
+                .help("Quiet mode (turns off all errors and warnings, enables `--no-output`)")
+                .long("quiet")
+                .short("q")
+                .overrides_with("DEBUG")
+        )
+        .arg(
+            Arg::with_name("TIMING")
+                .help("Emit timing information on stderr in an 'event,time' format; time is in nanoseconds")
+                .long("time")
+        )
+        .arg(
+            Arg::with_name("DEBUG")
+                .help("Give debug output on stderr")
+                .long("debug")
+                .short("d")
+        )
+        .arg(
+            Arg::with_name("EXACT")
+                .help("Don't add newlines to the end of values that don't already have them (or strip them when loading)")
+                .long("exact")
+        )
+        .arg(
+            Arg::with_name("NOXATTR")
+                .help("Don't use extended attributes to track metadata (see `man xattr`)")
+                .long("no-xattr")
+        )
+        .arg(
+            Arg::with_name("MUNGE")
+                .help("Set the name munging policy; applies to '.', '..', and files with NUL and '/' in them")
+                .long("munge")
+                .takes_value(true)
+                .default_value("rename")
+                .possible_values(MUNGE_POLICIES)
+        )
+        .arg(
+            Arg::with_name("UNPADDED")
+                .help("Don't pad the numeric names of list elements with zeroes; will not sort properly")
+                .long("unpadded")
+        )
+        .arg(
+            Arg::with_name("READONLY")
+                .help("Mounted filesystem will be readonly")
+                .long("readonly")
+        )
+        .arg(
+            Arg::with_name("SOURCE_FORMAT")
+                .help("Specify the source format explicitly (by default, automatically inferred from filename extension)")
+                .long("source")
+                .short("s")
+                .takes_value(true)
+                .possible_values(POSSIBLE_FORMATS)
+        )
+        .arg(
+            Arg::with_name("MOUNT")
+                .help("Sets the mountpoint; will be inferred when using a file, but must be specified when running on stdin")
+                .long("mount")
+                .short("m")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::with_name("INPUT")
+                .help("Sets the input file ('-' means STDIN)")
+                .default_value("-")
+                .index(1),
+        )
+}
+
+pub fn pack() -> App<'static, 'static> {
+    App::new("pack")
+        .version(env!("CARGO_PKG_VERSION"))
+        .author(env!("CARGO_PKG_AUTHORS"))
+        .about("pack directory")
+        .arg(
+            Arg::with_name("SHELL")
+                .help("Generate shell completions (and exits)")
+                .long("completions")
+                .takes_value(true)
+                .possible_values(&["bash", "fish", "zsh"])
+        )
+        .arg(
+            Arg::with_name("QUIET")
+                .help("Quiet mode (turns off all errors and warnings, enables `--no-output`)")
+                .long("quiet")
+                .short("q")
+                .overrides_with("DEBUG")
+        )
+        .arg(
+            Arg::with_name("TIMING")
+                .help("Emit timing information on stderr in an 'event,time' format; time is in nanoseconds")
+                .long("time")
+        )
+        .arg(
+            Arg::with_name("DEBUG")
+                .help("Give debug output on stderr")
+                .long("debug")
+                .short("d")
+        )
+        .arg(
+            Arg::with_name("NOXATTR")
+                .help("Don't use extended attributes to track metadata (see `man xattr`)")
+                .long("no-xattr")
+        )
+        .arg(
+            Arg::with_name("KEEPMACOSDOT")
+                .help("Include ._* extended attribute/resource fork files on macOS")
+                .long("keep-macos-xattr")
+        )
+        .arg(
+            Arg::with_name("MUNGE")
+                .help("Set the name munging policy; applies to '.', '..', and files with NUL and '/' in them")
+                .long("munge")
+                .takes_value(true)
+                .default_value("rename")
+                .possible_values(MUNGE_POLICIES)
+        )
+        .arg(
+            Arg::with_name("OUTPUT")
+                .help("Sets the output file for saving changes (defaults to stdout)")
+                .long("output")
+                .short("o")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::with_name("NOOUTPUT")
+                .help("Disables output of filesystem (normally on stdout)")
+                .long("no-output")
+                .overrides_with("OUTPUT")
+        )
+        .arg(
+            // TODO (nad) 03-30-2023 replace with overwrite instead of in-place?
+            Arg::with_name("INPLACE")
+                .help("Writes the output back over the input file")
+                .long("in-place")
+                .short("i")
+                .overrides_with("OUTPUT")
+                .overrides_with("NOOUTPUT")
+        )
+        .arg(
+            Arg::with_name("TARGET_FORMAT")
+                .help("Specify the target format explicitly (by default, automatically inferred from filename extension)")
+                .long("target")
+                .short("t")
+                .takes_value(true)
+                .possible_values(POSSIBLE_FORMATS)
+        )
+        .arg(
+            Arg::with_name("PRETTY")
+                .help("Pretty-print output (may increase size)")
+                .long("pretty")
+                .overrides_with("NOOUTPUT")
+                .overrides_with("QUIET")
+        )
+        .arg(
+            // TODO (nad) 03-30-2023 not sure whether it should be a default argument with no
+            // option/arg name
+            Arg::with_name("MOUNT")
+                .help("Sets the mountpoint; will be inferred when using a file, but must be specified when running on stdin")
+                .long("mount")
+                .short("m")
+                .takes_value(true)
+        )
+        .arg(
+            // TODO (nad) 03-30-2023 should input be folder path? I think yes.
             Arg::with_name("INPUT")
                 .help("Sets the input file ('-' means STDIN)")
                 .default_value("-")

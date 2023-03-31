@@ -106,7 +106,7 @@ impl FromStr for Munge {
 impl Config {
     /// Parses arguments from `std::env::Args`, via `cli::app().get_matches()`
     pub fn from_ffs_args() -> Self {
-        let args = cli::app().get_matches_safe().unwrap_or_else(|e| {
+        let args = cli::ffs().get_matches_safe().unwrap_or_else(|e| {
             eprintln!("{}", e.message);
             std::process::exit(ERROR_STATUS_CLI)
         });
@@ -126,7 +126,7 @@ impl Config {
                 eprintln!("Can't generate completions for '{}'.", shell);
                 std::process::exit(ERROR_STATUS_CLI);
             };
-            cli::app().gen_completions_to("ffs", shell, &mut std::io::stdout());
+            cli::ffs().gen_completions_to("ffs", shell, &mut std::io::stdout());
             std::process::exit(0);
         }
 
@@ -533,7 +533,7 @@ impl Config {
     }
 
     pub fn from_unpack_args() -> Self {
-        let args = cli::app().get_matches_safe().unwrap_or_else(|e| {
+        let args = cli::unpack().get_matches_safe().unwrap_or_else(|e| {
             eprintln!("{}", e.message);
             std::process::exit(ERROR_STATUS_CLI)
         });
@@ -553,7 +553,7 @@ impl Config {
                 eprintln!("Can't generate completions for '{}'.", shell);
                 std::process::exit(ERROR_STATUS_CLI);
             };
-            cli::app().gen_completions_to("ffs", shell, &mut std::io::stdout());
+            cli::unpack().gen_completions_to("ffs", shell, &mut std::io::stdout());
             std::process::exit(0);
         }
 
@@ -713,7 +713,7 @@ impl Config {
     }
 
     pub fn from_pack_args() -> Self {
-        let args = cli::app().get_matches_safe().unwrap_or_else(|e| {
+        let args = cli::pack().get_matches_safe().unwrap_or_else(|e| {
             eprintln!("{}", e.message);
             std::process::exit(ERROR_STATUS_CLI)
         });
@@ -733,7 +733,7 @@ impl Config {
                 eprintln!("Can't generate completions for '{}'.", shell);
                 std::process::exit(ERROR_STATUS_CLI);
             };
-            cli::app().gen_completions_to("ffs", shell, &mut std::io::stdout());
+            cli::pack().gen_completions_to("ffs", shell, &mut std::io::stdout());
             std::process::exit(0);
         }
 
