@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::str::FromStr;
 
 use tracing::debug;
@@ -187,7 +187,7 @@ where
     /// Should never be called when `typ == Typ::Bytes`.
     fn from_string(typ: Typ, v: String, config: &Config) -> Self;
     fn from_list_dir(files: Vec<Self>, config: &Config) -> Self;
-    fn from_named_dir(files: HashMap<String, Self>, config: &Config) -> Self;
+    fn from_named_dir(files: BTreeMap<String, Self>, config: &Config) -> Self;
 
     /// Loading
     fn from_reader(reader: Box<dyn std::io::Read>) -> Self;
@@ -307,7 +307,7 @@ pub mod json {
             Value::Array(files)
         }
 
-        fn from_named_dir(files: HashMap<String, Self>, _config: &Config) -> Self {
+        fn from_named_dir(files: BTreeMap<String, Self>, _config: &Config) -> Self {
             Value::Object(files.into_iter().collect())
         }
 
@@ -472,7 +472,7 @@ pub mod toml {
             Value(Toml::Array(files.into_iter().map(|v| v.0).collect()))
         }
 
-        fn from_named_dir(files: HashMap<String, Self>, _config: &Config) -> Self {
+        fn from_named_dir(files: BTreeMap<String, Self>, _config: &Config) -> Self {
             Value(Toml::Table(
                 files.into_iter().map(|(f, v)| (f, v.0)).collect(),
             ))
@@ -668,7 +668,7 @@ pub mod yaml {
             Value(Yaml::Array(vs.into_iter().map(|v| v.0).collect()))
         }
 
-        fn from_named_dir(fvs: HashMap<String, Self>, config: &Config) -> Self {
+        fn from_named_dir(fvs: BTreeMap<String, Self>, config: &Config) -> Self {
             Value(Yaml::Hash(
                 fvs.into_iter()
                     .map(|(k, v)| (Value::from_string(Typ::String, k, config).0, v.0))

@@ -1,6 +1,6 @@
 use std::fs;
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::io::Read;
 use std::io::BufReader;
 use std::io::Error;
@@ -11,9 +11,10 @@ use std::str::FromStr;
 use tracing::warn;
 use tracing::info;
 
-use ffs::config::Config;
 use ffs::format;
 use ffs::time_ns;
+use ffs::config::Config;
+use ffs::config::Input;
 use format::Format;
 use format::Nodelike;
 use format::Typ;
@@ -35,11 +36,12 @@ where
 
     match path_type {
         "map" => {
-            let children = fs::read_dir(path.clone()).unwrap()
+            let mut children = fs::read_dir(path.clone()).unwrap()
                 .map(|res| res.map(|e| e.path()))
                 .collect::<Result<Vec<_>, Error>>().unwrap();
+            children.sort_unstable_by(|a,b| a.file_name().cmp(&b.file_name()));
 
-            let mut entries = HashMap::with_capacity(children.len());
+            let mut entries = BTreeMap::new();
 
             for child in &children {
                 let child_name = child.file_name().unwrap();
@@ -107,11 +109,12 @@ where
 fn main() -> std::io::Result<()> {
     let config = Config::from_pack_args();
 
-    let mount = match &config.mount {
-        Some(m) => m,
-        None => {
-            println!("No mount point given");
-            return Ok(());
+    // println!("{:?}", &config);
+
+    let mount = match &config.input {
+        Input::File(mount) => mount,
+        _ => {
+            panic!("input must be a file path");
         }
     };
 

@@ -229,18 +229,18 @@ pub fn unpack() -> App<'static, 'static> {
                 .long("readonly")
         )
         .arg(
-            Arg::with_name("SOURCE_FORMAT")
-                .help("Specify the source format explicitly (by default, automatically inferred from filename extension)")
-                .long("source")
-                .short("s")
+            Arg::with_name("TYPE")
+                .help("Specify the format type explicitly (by default, automatically inferred from filename extension)")
+                .long("type")
+                .short("t")
                 .takes_value(true)
                 .possible_values(POSSIBLE_FORMATS)
         )
         .arg(
-            Arg::with_name("MOUNT")
-                .help("Sets the mountpoint; will be inferred when using a file, but must be specified when running on stdin")
-                .long("mount")
-                .short("m")
+            Arg::with_name("INTO")
+                .help("Sets the directory in which to unpack the file; will be inferred when using a file, but must be specified when running on stdin")
+                .long("into")
+                .short("i")
                 .takes_value(true)
         )
         .arg(
@@ -282,11 +282,6 @@ pub fn pack() -> App<'static, 'static> {
                 .short("d")
         )
         .arg(
-            Arg::with_name("NOXATTR")
-                .help("Don't use extended attributes to track metadata (see `man xattr`)")
-                .long("no-xattr")
-        )
-        .arg(
             Arg::with_name("KEEPMACOSDOT")
                 .help("Include ._* extended attribute/resource fork files on macOS")
                 .long("keep-macos-xattr")
@@ -307,21 +302,6 @@ pub fn pack() -> App<'static, 'static> {
                 .takes_value(true)
         )
         .arg(
-            Arg::with_name("NOOUTPUT")
-                .help("Disables output of filesystem (normally on stdout)")
-                .long("no-output")
-                .overrides_with("OUTPUT")
-        )
-        .arg(
-            // TODO (nad) 03-30-2023 replace with overwrite instead of in-place?
-            Arg::with_name("INPLACE")
-                .help("Writes the output back over the input file")
-                .long("in-place")
-                .short("i")
-                .overrides_with("OUTPUT")
-                .overrides_with("NOOUTPUT")
-        )
-        .arg(
             Arg::with_name("TARGET_FORMAT")
                 .help("Specify the target format explicitly (by default, automatically inferred from filename extension)")
                 .long("target")
@@ -337,18 +317,8 @@ pub fn pack() -> App<'static, 'static> {
                 .overrides_with("QUIET")
         )
         .arg(
-            // TODO (nad) 03-30-2023 not sure whether it should be a default argument with no
-            // option/arg name
-            Arg::with_name("MOUNT")
-                .help("Sets the mountpoint; will be inferred when using a file, but must be specified when running on stdin")
-                .long("mount")
-                .short("m")
-                .takes_value(true)
-        )
-        .arg(
-            // TODO (nad) 03-30-2023 should input be folder path? I think yes.
             Arg::with_name("INPUT")
-                .help("Sets the input file ('-' means STDIN)")
+                .help("Sets the input folder ('-' means STDIN)")
                 .default_value("-")
                 .index(1),
         )

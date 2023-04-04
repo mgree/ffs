@@ -577,7 +577,7 @@ impl Config {
         config.timing = args.is_present("TIMING");
         config.add_newlines = !args.is_present("EXACT");
         config.pad_element_names = !args.is_present("UNPADDED");
-        config.read_only = args.is_present("READONLY");
+        // config.read_only = args.is_present("READONLY");  TODO (nad) 2023-04-04 maybe handle readonly
         config.allow_xattr = !args.is_present("NOXATTR");
 
         // munging policy
@@ -797,61 +797,26 @@ impl Config {
             Output::Stdout
         };
 
-        // infer and create mountpoint from filename as possible
-        config.mount = match args.value_of("MOUNT") {
-            Some(mount_point) => {
-                let mount_point = PathBuf::from(mount_point);
-                if !mount_point.exists() {
-                    error!("Mount point {} does not exist.", mount_point.display());
-                    std::process::exit(ERROR_STATUS_FUSE);
-                }
-                config.cleanup_mount = false;
-                Some(mount_point)
-            }
-            None => {
-                match &config.input {
-                    Input::Stdin => {
-                        error!("You must specify a mount point when reading from stdin.");
-                        std::process::exit(ERROR_STATUS_CLI);
-                    }
-                    Input::Empty => {
-                        error!(
-                            "You must specify a mount point when reading an empty file."
-                        );
-                        std::process::exit(ERROR_STATUS_CLI);
-                    }
-                    Input::File(file) => {
-                        // If the input is from a file foo.EXT, then try to make a directory foo.
-                        let stem = file.file_stem().unwrap_or_else(|| {
-                            error!("Couldn't infer the mountpoint from input '{}'. Use `--mount MOUNT` to specify a mountpoint.", file.display());
-                            std::process::exit(ERROR_STATUS_FUSE);
-                        });
-                        let mount_dir = PathBuf::from(stem);
-                        debug!("inferred mount_dir {}", mount_dir.display());
 
-                        // If that file already exists, give up and tell the user about --mount.
-                        if mount_dir.exists() {
-                            error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
-                            mount = mount_dir.display(), file = file.display());
-                            std::process::exit(ERROR_STATUS_FUSE);
-                        }
-                        // If the mountpoint can't be created, give up and tell the user about --mount.
-                        if let Err(e) = std::fs::create_dir(&mount_dir) {
-                            error!(
-                                "Couldn't create mountpoint '{}': {}. Use `--mount MOUNT` to specify a mountpoint.",
-                                mount_dir.display(),
-                                e
-                            );
-                            std::process::exit(ERROR_STATUS_FUSE);
-                        }
-                        // We did it!
-                        config.cleanup_mount = true;
-                        Some(mount_dir)
+        // TODO (nad) Fully handle these options:
+        // input pretty target_format output munge keepmacosdot debug timing quiet shell
+
+        // configure input
+        config.input = match args.value_of("INPUT") {
+            Some(input_source) => {
+                if input_source == "-" {
+                    Input::Stdin
+                } else {
+                    let input_source = PathBuf::from(input_source);
+                    if !input_source.exists() {
+                        error!("Input file {} does not exist.", input_source.display());
+                        std::process::exit(ERROR_STATUS_FUSE);
                     }
+                    Input::File(input_source)
                 }
             }
+            None => Input::Stdin,
         };
-        assert!(config.mount.is_some());
 
         // try to autodetect the output format.
         //

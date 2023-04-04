@@ -1,5 +1,5 @@
 use std::cell::Cell;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::ffi::OsStr;
 use std::fmt::{Debug, Display};
 use std::mem;
@@ -85,7 +85,7 @@ pub enum Entry<V> {
     // TODO 2021-06-14 need a 'written' flag to determine whether or not to
     // strip newlines during writeback
     File(Typ, Vec<u8>),
-    Directory(DirType, HashMap<String, DirEntry>),
+    Directory(DirType, BTreeMap<String, DirEntry>),
     Lazy(V),
 }
 
@@ -159,8 +159,8 @@ where
             Node::Bytes(b) => (Entry::File(Typ::Bytes, b), Option::None),
             Node::String(t, s) => (Entry::File(t, s.into_bytes()), Option::None),
             Node::List(vs) => {
-                let mut children = HashMap::new();
-                children.reserve(vs.len());
+                let mut children = BTreeMap::new();
+                // children.reserve(vs.len()); TODO (nad) 2023-04-04 deal with BTree and capacity
                 let num_elts = vs.len() as f64;
                 let width = num_elts.log10().ceil() as usize;
 
@@ -199,8 +199,8 @@ where
                 )
             }
             Node::Map(fvs) => {
-                let mut children = HashMap::new();
-                children.reserve(fvs.len());
+                let mut children = BTreeMap::new();
+                // children.reserve(fvs.len()); TODO (nad) 2023-04-04 deal with BTree and capacity
 
                 let mut new_nodes = Vec::with_capacity(fvs.len());
                 for (field, child) in fvs.into_iter() {
@@ -338,7 +338,7 @@ where
             Some(reader) => reader,
             None => {
                 // create an empty directory
-                let contents = HashMap::with_capacity(16);
+                let contents = BTreeMap::new();
                 inodes[1] = Some(Inode::new(
                     fuser::FUSE_ROOT_ID,
                     fuser::FUSE_ROOT_ID,
@@ -525,7 +525,7 @@ where
                 V::from_list_dir(entries, &self.config)
             }
             Entry::Directory(DirType::Named, files) => {
-                let mut entries = HashMap::with_capacity(files.len());
+                let mut entries = BTreeMap::new();// TODO (nad) 2023-04-04 deal with BTree and capacity
                 for (
                     name,
                     DirEntry {
@@ -589,7 +589,7 @@ where
                 U::from_list_dir(entries, &self.config)
             }
             Entry::Directory(DirType::Named, files) => {
-                let mut entries = HashMap::with_capacity(files.len());
+                let mut entries = BTreeMap::new();// TODO (nad) 2023-04-04 deal with BTree and capacity
 
                 let files = files
                     .iter()
@@ -1386,7 +1386,7 @@ where
         } else {
             assert_eq!(file_type, libc::S_IFDIR as u32);
             (
-                Entry::Directory(DirType::Named, HashMap::new()),
+                Entry::Directory(DirType::Named, BTreeMap::new()), // TODO (nad) 2023-04-04 deal with BTree and capacity
                 FileType::Directory,
             )
         };
@@ -1466,7 +1466,7 @@ where
         };
 
         // create the inode entry
-        let entry = Entry::Directory(DirType::Named, HashMap::new());
+        let entry = Entry::Directory(DirType::Named, BTreeMap::new()); // TODO (nad) 2023-04-04 deal with BTree and capacity
         let kind = FileType::Directory;
 
         // allocate the inode (sets dirty bit)
