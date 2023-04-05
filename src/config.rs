@@ -163,7 +163,7 @@ impl Config {
                 Ok(munge) => munge,
                 Err(_) => {
                     warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
-                    Munge::Filter
+                    Munge::Rename
                 }
             },
         };
@@ -587,7 +587,7 @@ impl Config {
                 Ok(munge) => munge,
                 Err(_) => {
                     warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
-                    Munge::Filter
+                    Munge::Rename
                 }
             },
         };
@@ -610,15 +610,15 @@ impl Config {
         };
 
         // infer and create mountpoint from filename as possible
-        config.mount = match args.value_of("MOUNT") {
+        config.mount = match args.value_of("INTO") {
             Some(mount_point) => {
-                let mount_point = PathBuf::from(mount_point);
-                if !mount_point.exists() {
-                    error!("Mount point {} does not exist.", mount_point.display());
-                    std::process::exit(ERROR_STATUS_FUSE);
+                match std::fs::create_dir(&mount_point) {
+                    Ok(_) => Some(PathBuf::from(mount_point)),
+                    Err(_) => {
+                        error!("Directory `{}` already exists.", mount_point);
+                        std::process::exit(ERROR_STATUS_FUSE);
+                    }
                 }
-
-                Some(mount_point)
             }
             None => {
                 match &config.input {
@@ -635,7 +635,7 @@ impl Config {
                     Input::File(file) => {
                         // If the input is from a file foo.EXT, then try to make a directory foo.
                         let stem = file.file_stem().unwrap_or_else(|| {
-                            error!("Couldn't infer the mountpoint from input '{}'. Use `--mount MOUNT` to specify a mountpoint.", file.display());
+                            error!("Couldn't infer the directory to unpack into from input '{}'. Use `--into DIRECTORY` to specify a directory.", file.display());
                             std::process::exit(ERROR_STATUS_FUSE);
                         });
                         let mount_dir = PathBuf::from(stem);
@@ -643,14 +643,14 @@ impl Config {
 
                         // If that file already exists, give up and tell the user about --mount.
                         if mount_dir.exists() {
-                            error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
+                            error!("Inferred directory '{mount}' for input file '{file}', but '{mount}' already exists. Use `--into DIRECTORY` to specify a directory.",
                             mount = mount_dir.display(), file = file.display());
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                         // If the mountpoint can't be created, give up and tell the user about --mount.
                         if let Err(e) = std::fs::create_dir(&mount_dir) {
                             error!(
-                                "Couldn't create mountpoint '{}': {}. Use `--mount MOUNT` to specify a mountpoint.",
+                                "Couldn't create directory '{}': {}. Use `--into DIRECTORY` to specify a directory.",
                                 mount_dir.display(),
                                 e
                             );
@@ -767,55 +767,51 @@ impl Config {
                 Ok(munge) => munge,
                 Err(_) => {
                     warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
-                    Munge::Filter
+                    Munge::Rename
                 }
             },
         };
 
-        // configure output
-        config.output = if let Some(output) = args.value_of("OUTPUT") {
-            Output::File(PathBuf::from(output))
-        } else if args.is_present("INPLACE") {
-            match &config.input {
-                Input::Stdin => {
-                    warn!(
-                    "In-place output `-i` with STDIN input makes no sense; outputting on STDOUT."
-                );
-                    Output::Stdout
-                }
-                Input::Empty => {
-                    warn!(
-                        "In-place output `-i` with empty input makes no sense; outputting on STDOUT."
-                    );
-                    Output::Stdout
-                }
-                Input::File(input_source) => Output::File(input_source.clone()),
-            }
-        } else if args.is_present("NOOUTPUT") || args.is_present("QUIET") {
-            Output::Quiet
-        } else {
-            Output::Stdout
-        };
-
-
-        // TODO (nad) Fully handle these options:
+        // TODO (nad) 2023-04-05 Fully handle these options:
         // input pretty target_format output munge keepmacosdot debug timing quiet shell
 
         // configure input
         config.input = match args.value_of("INPUT") {
             Some(input_source) => {
-                if input_source == "-" {
-                    Input::Stdin
-                } else {
-                    let input_source = PathBuf::from(input_source);
-                    if !input_source.exists() {
-                        error!("Input file {} does not exist.", input_source.display());
-                        std::process::exit(ERROR_STATUS_FUSE);
-                    }
-                    Input::File(input_source)
+                let input_source = PathBuf::from(input_source);
+                if !input_source.exists() {
+                    error!("Input file {} does not exist.", input_source.display());
+                    std::process::exit(ERROR_STATUS_CLI);
+                    // TODO (nad) 2023-04-05 fix all exit statuses
                 }
+                Input::File(input_source)
             }
-            None => Input::Stdin,
+            None => {
+                error!("Directory to pack must be specified.");
+                std::process::exit(ERROR_STATUS_CLI);
+            }
+        };
+
+
+        // set the mount from the input directory
+        // TODO (nad) 2023-04-05 check this later
+        config.mount = match &config.input {
+            Input::File(file) => Some(file.clone()),
+            _ => {
+                error!("Input must be a file.");
+                std::process::exit(ERROR_STATUS_CLI);
+            }
+        };
+
+        // configure output
+        // TODO (nad) 2023-04-05 handle output format for pack. only allow output to file.
+        // use output in pack.rs
+        config.output = if let Some(output) = args.value_of("OUTPUT") {
+            Output::File(PathBuf::from(output))
+        } else if args.is_present("NOOUTPUT") || args.is_present("QUIET") {
+            Output::Quiet
+        } else {
+            Output::Stdout
         };
 
         // try to autodetect the output format.

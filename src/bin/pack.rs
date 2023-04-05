@@ -8,12 +8,12 @@ use std::path::PathBuf;
 use std::str;
 use std::str::FromStr;
 
-use tracing::warn;
-use tracing::info;
+use tracing::{error, info, warn};
 
 use ffs::format;
 use ffs::time_ns;
 use ffs::config::Config;
+use ffs::config::{ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
 use ffs::config::Input;
 use format::Format;
 use format::Nodelike;
@@ -111,10 +111,12 @@ fn main() -> std::io::Result<()> {
 
     // println!("{:?}", &config);
 
-    let mount = match &config.input {
-        Input::File(mount) => mount,
-        _ => {
-            panic!("input must be a file path");
+    let mount = match &config.mount {
+        Some(mount) => mount,
+        None => {
+            error!("Cannot pack unspecified directory.");
+            std::process::exit(ERROR_STATUS_FUSE);
+            // TODO (nad) 2023-04-05 fix all exit statuses
         }
     };
 

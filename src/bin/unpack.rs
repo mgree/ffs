@@ -1,3 +1,5 @@
+use tracing::{error, info, warn};
+
 use std::collections::VecDeque;
 use std::fs;
 use std::io::BufReader;
@@ -5,6 +7,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use ffs::config::Config;
+use ffs::config::{ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
 use ffs::config::Input;
 use ffs::format;
 use format::{Format, Nodelike, Typ};
@@ -138,20 +141,17 @@ fn main() -> std::io::Result<()> {
     };
     // println!("mount: {:?}", mount);
 
-    let path = match &config.input {
-        Input::File(path) => path,
-        _ => {
-            panic!("for testing, input must be a file");
+    let reader = match config.input_reader() {
+        Some(reader) => reader,
+        None => {
+            error!("Input not specified");
+            std::process::exit(ERROR_STATUS_CLI);
         }
     };
-    // println!("path: {:?}", path);
-    let file = fs::File::open(&path)?;
-    // println!("file: {:?}", file);
-    let reader = Box::new(BufReader::new(file));
     // println!("reader: {:?}", reader);
 
-    // TODO add subdirectory check not just root directory check
-    // TODO(nad) 2023-03-16 fix the amount of clones!!!
+    // TODO (nad) add subdirectory check not just root directory check
+    // TODO (nad) 2023-03-16 fix the amount of clones!!!
     let result = match &config.input_format {
         Format::Json => unpack(JsonValue::from_reader(reader), mount.clone(), &config),
         Format::Toml => unpack(TomlValue::from_reader(reader), mount.clone(), &config),

@@ -318,8 +318,7 @@ pub fn pack() -> App<'static, 'static> {
         )
         .arg(
             Arg::with_name("INPUT")
-                .help("Sets the input folder ('-' means STDIN)")
-                .default_value("-")
+                .help("Sets the input folder")
                 .index(1),
         )
 }
