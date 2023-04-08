@@ -163,7 +163,7 @@ impl Config {
                 Ok(munge) => munge,
                 Err(_) => {
                     warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
-                    Munge::Filter
+                    Munge::Rename
                 }
             },
         };
@@ -307,7 +307,7 @@ impl Config {
                         let mount_dir = PathBuf::from(stem);
                         // If that file already exists, give up and tell the user about --mount.
                         if mount_dir.exists() {
-                            error!("Inferred mountpoint '{mount}' for output file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.", 
+                            error!("Inferred mountpoint '{mount}' for output file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
                                     mount = mount_dir.display(), file = output.display());
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
@@ -409,7 +409,7 @@ impl Config {
 
                                 // If that file already exists, give up and tell the user about --mount.
                                 if mount_dir.exists() {
-                                    error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.", 
+                                    error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
                                     mount = mount_dir.display(), file = file.display());
                                     std::process::exit(ERROR_STATUS_FUSE);
                                 }
