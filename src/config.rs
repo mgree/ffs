@@ -615,8 +615,16 @@ impl Config {
                 match std::fs::create_dir(&mount_point) {
                     Ok(_) => Some(PathBuf::from(mount_point)),
                     Err(_) => {
-                        error!("Directory `{}` already exists.", mount_point);
-                        std::process::exit(ERROR_STATUS_FUSE);
+                        // if dir is empty then we can use it
+                        let mount = PathBuf::from(mount_point);
+                        if mount.read_dir().unwrap().next().is_none() {
+                            // dir exists and is empty
+                            Some(PathBuf::from(mount_point))
+                        } else {
+                            // dir exists but is not empty
+                            error!("Directory `{}` already exists and is not empty.", mount_point);
+                            std::process::exit(ERROR_STATUS_FUSE);
+                        }
                     }
                 }
             }
@@ -673,7 +681,7 @@ impl Config {
         //
         // then give up and use json
         config.input_format = match args
-            .value_of("SOURCE_FORMAT")
+            .value_of("TYPE")
             .ok_or(format::ParseFormatError::NoFormatProvided)
             .and_then(|s| s.parse::<Format>())
         {

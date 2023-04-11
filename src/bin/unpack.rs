@@ -153,11 +153,20 @@ fn main() -> std::io::Result<()> {
     // TODO (nad) add subdirectory check not just root directory check
     // TODO (nad) 2023-03-16 fix the amount of clones!!!
     let result = match &config.input_format {
-        Format::Json => unpack(JsonValue::from_reader(reader), mount.clone(), &config),
-        Format::Toml => unpack(TomlValue::from_reader(reader), mount.clone(), &config),
-        Format::Yaml => unpack(YamlValue::from_reader(reader), mount.clone(), &config),
+        Format::Json => {
+            // TODO (nad) 2023-04-11 if we want a nice format mismatch error message, we need to
+            // replace the .expect("") call in format.rs with a new match statement.
+            unpack(JsonValue::from_reader(reader), mount.clone(), &config)
+        }
+        Format::Toml => {
+            unpack(TomlValue::from_reader(reader), mount.clone(), &config)
+        }
+        Format::Yaml => {
+            unpack(YamlValue::from_reader(reader), mount.clone(), &config)
+        }
     };
 
+    // if readonly is supported,
     // have to set read_only in the root dir after unpacking because you can't create files or dirs
     // inside a read-only directory
     // if config.read_only {
