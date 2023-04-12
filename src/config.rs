@@ -789,31 +789,27 @@ impl Config {
                 let input_source = PathBuf::from(input_source);
                 if !input_source.exists() {
                     error!("Input file {} does not exist.", input_source.display());
-                    std::process::exit(ERROR_STATUS_CLI);
-                    // TODO (nad) 2023-04-05 fix all exit statuses
+                    std::process::exit(ERROR_STATUS_FUSE);
                 }
                 Input::File(input_source)
             }
             None => {
-                error!("Directory to pack must be specified.");
+                error!("The directory to pack must be specified.");
                 std::process::exit(ERROR_STATUS_CLI);
             }
         };
 
 
         // set the mount from the input directory
-        // TODO (nad) 2023-04-05 check this later
         config.mount = match &config.input {
             Input::File(file) => Some(file.clone()),
             _ => {
-                error!("Input must be a file.");
+                error!("Input must be a directory.");
                 std::process::exit(ERROR_STATUS_CLI);
             }
         };
 
         // configure output
-        // TODO (nad) 2023-04-05 handle output format for pack. only allow output to file.
-        // use output in pack.rs
         config.output = if let Some(output) = args.value_of("OUTPUT") {
             Output::File(PathBuf::from(output))
         } else if args.is_present("NOOUTPUT") || args.is_present("QUIET") {

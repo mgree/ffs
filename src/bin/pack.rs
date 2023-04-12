@@ -115,8 +115,7 @@ fn main() -> std::io::Result<()> {
         Some(mount) => mount,
         None => {
             error!("Cannot pack unspecified directory.");
-            std::process::exit(ERROR_STATUS_FUSE);
-            // TODO (nad) 2023-04-05 fix all exit statuses
+            std::process::exit(ERROR_STATUS_CLI);
         }
     };
 

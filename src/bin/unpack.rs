@@ -104,7 +104,7 @@ where
                             }
                             ffs::config::Munge::Filter => {
                                 // TODO(mmg) 2023-03-06 support logging
-                                //warn!("skipping '{}'", field);
+                                // warn!("skipping '{}'", field);
                                 continue;
                             }
                         }
@@ -120,7 +120,6 @@ where
         }
 
         if let Some(_original_name) = original_name {
-            // TODO(mmg) 2023-03-6 set `user.original_name` using setxattr
             xattr::set(&path, "user.original_name", _original_name.as_bytes())?;
         }
     }
@@ -136,7 +135,8 @@ fn main() -> std::io::Result<()> {
     let mount = match &config.mount {
         Some(mount) => mount.clone(),
         None => {
-            panic!("Directory not specified");
+            error!("Directory not specified");
+            std::process::exit(ERROR_STATUS_CLI);
         }
     };
     // println!("mount: {:?}", mount);
@@ -154,8 +154,6 @@ fn main() -> std::io::Result<()> {
     // TODO (nad) 2023-03-16 fix the amount of clones!!!
     let result = match &config.input_format {
         Format::Json => {
-            // TODO (nad) 2023-04-11 if we want a nice format mismatch error message, we need to
-            // replace the .expect("") call in format.rs with a new match statement.
             unpack(JsonValue::from_reader(reader), mount.clone(), &config)
         }
         Format::Toml => {
