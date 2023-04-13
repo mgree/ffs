@@ -781,7 +781,7 @@ impl Config {
         };
 
         // TODO (nad) 2023-04-05 Fully handle these options:
-        // input pretty target_format output munge keepmacosdot debug timing quiet shell
+        // input pretty target output munge keepmacosdot debug timing quiet shell
 
         // configure input
         config.input = match args.value_of("INPUT") {

@@ -40,7 +40,9 @@ where
                 write!(f, "{}", s)?;
 
                 // set metadata according to `t`
-                xattr::set(&path, "user.type", format!("{}", t).as_bytes())?;
+                if config.allow_xattr {
+                    xattr::set(&path, "user.type", format!("{}", t).as_bytes())?;
+                }
             }
             format::Node::Bytes(b) => {
                 // make a regular file at `path`
@@ -53,14 +55,18 @@ where
                 f.write_all(b.as_slice())?;
 
                 // set metadata to bytes
-                xattr::set(&path, "user.type", format!("{}", Typ::Bytes).as_bytes())?;
+                if config.allow_xattr {
+                    xattr::set(&path, "user.type", format!("{}", Typ::Bytes).as_bytes())?;
+                }
             }
             format::Node::List(vs) => {
                 // if not root path, make directory
                 if path != root_path.clone() {
                     fs::create_dir(&path)?;
                 }
-                xattr::set(&path, "user.type", "list".as_bytes())?;
+                if config.allow_xattr {
+                    xattr::set(&path, "user.type", "list".as_bytes())?;
+                }
 
                 // enqueue children with appropriate names
                 let num_elts = vs.len() as f64;
@@ -83,7 +89,9 @@ where
                 if path != root_path.clone() {
                     fs::create_dir(&path)?;
                 }
-                xattr::set(&path, "user.type", "map".as_bytes())?;
+                if config.allow_xattr {
+                    xattr::set(&path, "user.type", "map".as_bytes())?;
+                }
 
                 // enqueue children with appropriate names
                 let mut child_names = std::collections::HashSet::new();
@@ -120,7 +128,9 @@ where
         }
 
         if let Some(_original_name) = original_name {
-            xattr::set(&path, "user.original_name", _original_name.as_bytes())?;
+            if config.allow_xattr {
+                xattr::set(&path, "user.original_name", _original_name.as_bytes())?;
+            }
         }
     }
 
