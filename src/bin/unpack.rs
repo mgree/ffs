@@ -169,9 +169,7 @@ fn main() -> std::io::Result<()> {
             if value.kind() == FileType::Directory {
                 unpack(value, mount.clone(), &config)
             } else {
-                // TODO (nad) 2023-04-17 find out why error! is not outputting anything
                 error!("The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.", mount.display());
-                // println!("print: The root of the unpacked form must be a dir...");
                 fs::remove_dir(&mount)?;
                 std::process::exit(ERROR_STATUS_FUSE);
             }

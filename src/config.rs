@@ -553,7 +553,7 @@ impl Config {
                 eprintln!("Can't generate completions for '{}'.", shell);
                 std::process::exit(ERROR_STATUS_CLI);
             };
-            cli::unpack().gen_completions_to("ffs", shell, &mut std::io::stdout());
+            cli::unpack().gen_completions_to("unpack", shell, &mut std::io::stdout());
             std::process::exit(0);
         }
 
@@ -561,9 +561,9 @@ impl Config {
         if !args.is_present("QUIET") {
             let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
                 if args.is_present("DEBUG") {
-                    EnvFilter::new("ffs=debug")
+                    EnvFilter::new("unpack=debug")
                 } else {
-                    EnvFilter::new("ffs=warn")
+                    EnvFilter::new("unpack=warn")
                 }
             });
             let fmt_layer = fmt::layer().with_writer(std::io::stderr);
@@ -741,7 +741,7 @@ impl Config {
                 eprintln!("Can't generate completions for '{}'.", shell);
                 std::process::exit(ERROR_STATUS_CLI);
             };
-            cli::pack().gen_completions_to("ffs", shell, &mut std::io::stdout());
+            cli::pack().gen_completions_to("pack", shell, &mut std::io::stdout());
             std::process::exit(0);
         }
 
@@ -749,9 +749,9 @@ impl Config {
         if !args.is_present("QUIET") {
             let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
                 if args.is_present("DEBUG") {
-                    EnvFilter::new("ffs=debug")
+                    EnvFilter::new("pack=debug")
                 } else {
-                    EnvFilter::new("ffs=warn")
+                    EnvFilter::new("pack=warn")
                 }
             });
             let fmt_layer = fmt::layer().with_writer(std::io::stderr);
