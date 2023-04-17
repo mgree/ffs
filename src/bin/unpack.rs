@@ -1,3 +1,4 @@
+use fuser::FileType;
 use tracing::{error, info, warn};
 
 use std::collections::VecDeque;
@@ -161,16 +162,39 @@ fn main() -> std::io::Result<()> {
     // println!("reader: {:?}", reader);
 
     // TODO (nad) add subdirectory check not just root directory check
-    // TODO (nad) 2023-03-16 fix the amount of clones!!!
+    // TODO (nad) 2023-03-16 fix the amount of clones maybe
     let result = match &config.input_format {
         Format::Json => {
-            unpack(JsonValue::from_reader(reader), mount.clone(), &config)
+            let value = JsonValue::from_reader(reader);
+            if value.kind() == FileType::Directory {
+                unpack(value, mount.clone(), &config)
+            } else {
+                // TODO (nad) 2023-04-17 find out why error! is not outputting anything
+                error!("The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.", mount.display());
+                // println!("print: The root of the unpacked form must be a dir...");
+                fs::remove_dir(&mount)?;
+                std::process::exit(ERROR_STATUS_FUSE);
+            }
         }
         Format::Toml => {
-            unpack(TomlValue::from_reader(reader), mount.clone(), &config)
+            let value = TomlValue::from_reader(reader);
+            if value.kind() == FileType::Directory {
+                unpack(value, mount.clone(), &config)
+            } else {
+                error!("The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.", mount.display());
+                fs::remove_dir(&mount)?;
+                std::process::exit(ERROR_STATUS_FUSE);
+            }
         }
         Format::Yaml => {
-            unpack(YamlValue::from_reader(reader), mount.clone(), &config)
+            let value = YamlValue::from_reader(reader);
+            if value.kind() == FileType::Directory {
+                unpack(value, mount.clone(), &config)
+            } else {
+                error!("The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.", mount.display());
+                fs::remove_dir(&mount)?;
+                std::process::exit(ERROR_STATUS_FUSE);
+            }
         }
     };
 

@@ -780,9 +780,6 @@ impl Config {
             },
         };
 
-        // TODO (nad) 2023-04-05 Fully handle these options:
-        // input pretty target output munge keepmacosdot debug timing quiet shell
-
         // configure input
         config.input = match args.value_of("INPUT") {
             Some(input_source) => {
@@ -798,7 +795,6 @@ impl Config {
                 std::process::exit(ERROR_STATUS_CLI);
             }
         };
-
 
         // set the mount from the input directory
         config.mount = match &config.input {
