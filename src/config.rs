@@ -763,6 +763,7 @@ impl Config {
 
         // simple flags
         config.timing = args.is_present("TIMING");
+        config.add_newlines = !args.is_present("EXACT");
         config.read_only = args.is_present("READONLY");
         config.allow_xattr = !args.is_present("NOXATTR");
         config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");

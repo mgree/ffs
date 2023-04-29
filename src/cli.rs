@@ -282,6 +282,11 @@ pub fn pack() -> App<'static, 'static> {
                 .short("d")
         )
         .arg(
+            Arg::with_name("EXACT")
+                .help("Don't add newlines to the end of values that don't already have them (or strip them when loading)")
+                .long("exact")
+        )
+        .arg(
             Arg::with_name("KEEPMACOSDOT")
                 .help("Include ._* extended attribute/resource fork files on macOS")
                 .long("keep-macos-xattr")
