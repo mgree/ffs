@@ -10,6 +10,26 @@ then
     }
     PATH="$DEBUG:$PATH"
 fi
+if ! which unpack >/dev/null 2>&1
+then
+    DEBUG="$(pwd)/target/debug"
+    [ -x "$DEBUG/unpack" ] || {
+        echo Couldn\'t find ffs on "$PATH" or in "$DEBUG". >&2
+        echo Are you in the root directory of the repo? >&2
+        exit 1
+    }
+    PATH="$DEBUG:$PATH"
+fi
+if ! which pack >/dev/null 2>&1
+then
+    DEBUG="$(pwd)/target/debug"
+    [ -x "$DEBUG/pack" ] || {
+        echo Couldn\'t find ffs on "$PATH" or in "$DEBUG". >&2
+        echo Are you in the root directory of the repo? >&2
+        exit 1
+    }
+    PATH="$DEBUG:$PATH"
+fi
 
 TOTAL=0
 FAILED=0
