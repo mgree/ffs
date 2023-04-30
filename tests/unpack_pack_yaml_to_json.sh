@@ -23,14 +23,18 @@ for f in $(find ../yaml -maxdepth 1 -name '*.yaml' ! -name 'invoice.yaml' | sort
     UNPACK_MNT0=$(mktemp -d)
     unpack $f --into $UNPACK_MNT0 2>"$ERR_MSG"
     # skip the issue where it doesn't unpack into a directory structure
-    cat $ERR_MSG | grep -i -e "the unpacked form must be a directory" >/dev/null 2>&1 && {
+    if [ "$(cat $ERR_MSG | grep -i "the unpacked form must be a directory" >/dev/null 2>&1)" ]
+    then
         continue
-    }
+    fi
     PACK_FILE0=$(mktemp)
     UNPACK_MNT1=$(mktemp -d)
     pack $UNPACK_MNT0 -t json > $PACK_FILE0
     unpack $PACK_FILE0 -t json --into $UNPACK_MNT1
-    [[ -z `diff -r $UNPACK_MNT0 $UNPACK_MNT1` ]] || fail diff
+    if [ -n "$(diff -r $UNPACK_MNT0 $UNPACK_MNT1)" ]
+    then
+        fail diff
+    fi
     rm -r $UNPACK_MNT0
     rm -r $UNPACK_MNT1
     rm $PACK_FILE0
