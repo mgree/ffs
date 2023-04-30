@@ -21,18 +21,12 @@ for f in $(find ../json -maxdepth 1 -name '*.json' | sort); do
     UNPACK_MNT0=$(mktemp -d)
     unpack $f --into $UNPACK_MNT0 2>"$ERR_MSG"
     # skip the issue where it doesn't unpack into a directory structure
-    if [ "$(cat $ERR_MSG | grep -i "the unpacked form must be a directory" >/dev/null 2>&1)" ]
-    then
-        continue
-    fi
+    cat $ERR_MSG | grep -i -e "the unpacked form must be a directory" >/dev/null 2>&1 && continue
     PACK_FILE0=$(mktemp)
     UNPACK_MNT1=$(mktemp -d)
     pack $UNPACK_MNT0 -t yaml > $PACK_FILE0
     unpack $PACK_FILE0 -t yaml --into $UNPACK_MNT1
-    if [ -n "$(diff -r $UNPACK_MNT0 $UNPACK_MNT1)" ]
-    then
-        fail diff
-    fi
+    [ -z "$(diff -r $UNPACK_MNT0 $UNPACK_MNT1)" ] || fail diff
     rm -r $UNPACK_MNT0
     rm -r $UNPACK_MNT1
     rm $PACK_FILE0
