@@ -14,7 +14,6 @@ use ffs::format;
 use ffs::time_ns;
 use ffs::config::Config;
 use ffs::config::{ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
-use ffs::config::Input;
 use format::Format;
 use format::Nodelike;
 use format::Typ;
@@ -30,9 +29,57 @@ fn pack<V>(path: PathBuf, config: &Config) -> std::io::Result<V>
 where
     V: Nodelike + std::fmt::Display + Default,
 {
-    let path_type = xattr::get(&path, "user.type").unwrap().unwrap();
-    let path_type = str::from_utf8(&path_type).unwrap();
-    // println!("{:?} is a {}", path, path_type);
+    // get type of directory or file
+    let path_type = xattr::get(&path, "user.type")?.unwrap_or(b"detect".to_vec());
+    let mut path_type = str::from_utf8(&path_type).unwrap();
+
+    // resolve type if it is 'detect'
+    if path_type == "detect" {
+        let path_file_type = path.metadata().unwrap().file_type();
+
+        if path_file_type.is_file() {
+            path_type = "auto";
+        }
+        else if path_file_type.is_dir() {
+            let try_parsing_to_int = fs::read_dir(path.clone()).unwrap()
+                .map(|res| res.map(|e| e.path()))
+                .map(|e| e.unwrap().file_name().unwrap().to_str().unwrap().parse::<u32>())
+                .collect::<Result<Vec<_>,_>>();
+            info!("parsed names or parse error: {:?}", try_parsing_to_int);
+            match try_parsing_to_int {
+                Ok(mut parsed_ints) => {
+                    parsed_ints.sort_unstable();
+                    let mut i = 0;
+                    for parsed_int in parsed_ints.clone() {
+                        if parsed_int != i {
+                            info!("file {} is missing from the range of the number of files [0,{})", i, parsed_ints.len() as u32);
+                            path_type = "map";
+                            break;
+                        }
+                        i += 1;
+                    }
+                    if i == parsed_ints.len() as u32 {
+                        path_type = "list";
+                    }
+                }
+                Err(_) => {
+                    path_type = "map";
+                }
+            }
+        }
+        else if path_file_type.is_symlink() {
+            // TODO (nad) 2023-05-21 implement symlink support
+            // is the exit status code name appropriate?
+            error!("symlink file {:?} are not supported yet!", path.display());
+            std::process::exit(ERROR_STATUS_FUSE);
+        }
+        else {
+            error!("{:?} has unknown type and it is an unsupported file type (i.e. not file, directory, or symlink).", path.display());
+            std::process::exit(ERROR_STATUS_FUSE);
+        }
+    }
+
+    info!("detected type of {:?} as {}", path.display(), path_type);
 
     match path_type {
         "map" => {
@@ -44,16 +91,15 @@ where
             let mut entries = BTreeMap::new();
 
             for child in &children {
-                let child_name = child.file_name().unwrap();
-                let name = child_name.to_str().unwrap();
-                if config.ignored_file(name) {
-                    warn!("skipping ignored file '{:?}'", name);
+                let child_name = child.file_name().unwrap().to_str().unwrap();
+                if config.ignored_file(child_name) {
+                    warn!("skipping ignored file '{:?}'", child_name);
                     continue
                 };
-                let original_name = xattr::get(&child, "user.original_name")?.unwrap();
-                let v = pack(child.clone(), &config)?;
-                let name = str::from_utf8(&original_name).unwrap_or(&name);
-                entries.insert(name.to_string(), v);
+                let original_name = xattr::get(&child, "user.original_name")?.unwrap_or(child_name.as_bytes().to_vec());
+                let value = pack(child.clone(), &config)?;
+                let name = str::from_utf8(&original_name).unwrap().to_string();
+                entries.insert(name, value);
             }
 
             Ok(V::from_named_dir(entries, &config))
@@ -62,7 +108,9 @@ where
             let mut children = fs::read_dir(path.clone()).unwrap()
                 .map(|res| res.map(|e| e.path()))
                 .collect::<Result<Vec<_>, Error>>().unwrap();
-            children.sort_unstable_by(|a,b| a.file_name().cmp(&b.file_name()));
+            // TODO (nad) 2023-05-24: is sorting by parsed number the most efficient approach?
+            children.sort_unstable_by(|a,b| a.file_name().unwrap().to_str().unwrap().parse::<u32>().unwrap()
+                                      .cmp(&b.file_name().unwrap().to_str().unwrap().parse::<u32>().unwrap()));
 
             let mut entries = Vec::with_capacity(children.len());
 
@@ -72,15 +120,15 @@ where
                     warn!("skipping ignored file '{}'", name);
                     continue
                 };
-                let v = pack(child, &config)?;
-                entries.push(v);
+                let value = pack(child, &config)?;
+                entries.push(value);
             }
 
             Ok(V::from_list_dir(entries, &config))
         }
         typ => {
             if let Ok(t) = Typ::from_str(typ) {
-                // println!("parsed type {}", t);
+                info!("type is {}", t);
                 let file = fs::File::open(&path).unwrap();
                 let mut reader = BufReader::new(&file);
                 let mut contents: Vec<u8> = Vec::new();
@@ -97,9 +145,8 @@ where
                     }
                 }
             } else {
-                // we were already supposed to detect dirs with map and list
-                // so this is a bad error.
-                panic!("Very bad error. Unknown type {}", typ);
+                error!("Very bad error. Received undetected and unknown type '{}' for file '{:?}'", typ, path.display());
+                std::process::exit(ERROR_STATUS_FUSE);
             }
         }
     }

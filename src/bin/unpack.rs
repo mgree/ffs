@@ -3,13 +3,11 @@ use tracing::{error, info, warn};
 
 use std::collections::VecDeque;
 use std::fs;
-use std::io::BufReader;
 use std::io::Write;
 use std::path::PathBuf;
 
 use ffs::config::Config;
 use ffs::config::{ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
-use ffs::config::Input;
 use ffs::format;
 use format::{Format, Nodelike, Typ};
 use format::json::Value as JsonValue;
@@ -140,7 +138,7 @@ where
 
 fn main() -> std::io::Result<()> {
     let config = Config::from_unpack_args();
-    // println!("{:?}", config);
+    info!("received config: {:?}", config);
 
     assert!(config.mount.is_some());
     let mount = match &config.mount {
@@ -150,7 +148,7 @@ fn main() -> std::io::Result<()> {
             std::process::exit(ERROR_STATUS_CLI);
         }
     };
-    // println!("mount: {:?}", mount);
+    info!("mount: {:?}", mount);
 
     let reader = match config.input_reader() {
         Some(reader) => reader,
@@ -159,7 +157,6 @@ fn main() -> std::io::Result<()> {
             std::process::exit(ERROR_STATUS_CLI);
         }
     };
-    // println!("reader: {:?}", reader);
 
     // TODO (nad) add subdirectory check not just root directory check
     // TODO (nad) 2023-03-16 fix the amount of clones maybe
@@ -170,7 +167,6 @@ fn main() -> std::io::Result<()> {
                 unpack(value, mount.clone(), &config)
             } else {
                 error!("The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.", mount.display());
-                fs::remove_dir(&mount)?;
                 std::process::exit(ERROR_STATUS_FUSE);
             }
         }
@@ -180,7 +176,6 @@ fn main() -> std::io::Result<()> {
                 unpack(value, mount.clone(), &config)
             } else {
                 error!("The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.", mount.display());
-                fs::remove_dir(&mount)?;
                 std::process::exit(ERROR_STATUS_FUSE);
             }
         }
@@ -190,7 +185,6 @@ fn main() -> std::io::Result<()> {
                 unpack(value, mount.clone(), &config)
             } else {
                 error!("The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.", mount.display());
-                fs::remove_dir(&mount)?;
                 std::process::exit(ERROR_STATUS_FUSE);
             }
         }
