@@ -89,7 +89,7 @@ where
                     fs::create_dir(&path)?;
                 }
                 if config.allow_xattr {
-                    xattr::set(&path, "user.type", "map".as_bytes())?;
+                    xattr::set(&path, "user.type", "named".as_bytes())?;
                 }
 
                 // enqueue children with appropriate names
@@ -111,7 +111,7 @@ where
                             }
                             ffs::config::Munge::Filter => {
                                 // TODO(mmg) 2023-03-06 support logging
-                                // warn!("skipping '{}'", field);
+                                warn!("skipping '{}'", field);
                                 continue;
                             }
                         }

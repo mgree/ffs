@@ -63,7 +63,7 @@ where
                     }
                 }
                 Err(_) => {
-                    path_type = "map";
+                    path_type = "named";
                 }
             }
         }
@@ -79,10 +79,10 @@ where
         }
     }
 
-    info!("detected type of {:?} as {}", path.display(), path_type);
+    info!("type of {:?} as {}", path.display(), path_type);
 
     match path_type {
-        "map" => {
+        "named" => {
             let mut children = fs::read_dir(path.clone()).unwrap()
                 .map(|res| res.map(|e| e.path()))
                 .collect::<Result<Vec<_>, Error>>().unwrap();
@@ -128,7 +128,6 @@ where
         }
         typ => {
             if let Ok(t) = Typ::from_str(typ) {
-                info!("type is {}", t);
                 let file = fs::File::open(&path).unwrap();
                 let mut reader = BufReader::new(&file);
                 let mut contents: Vec<u8> = Vec::new();
