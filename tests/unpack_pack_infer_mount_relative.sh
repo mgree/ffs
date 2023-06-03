@@ -4,8 +4,7 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
-        cd
-        umount "$TMP"/nested/object
+        rm -r "$TMP"/nested/object
         rm -r "$TMP"
     fi
     exit 1
@@ -17,9 +16,8 @@ cp ../json/object.json "$TMP"
 mkdir "$TMP"/nested
 cd "$TMP"/nested
 
-ffs ../object.json &
-PID=$!
-sleep 2
+unpack ../object.json
+
 [ -d "object" ] || fail mountdir
 case $(ls object) in
     (eyes*fingernails*human*name) ;;
@@ -29,11 +27,9 @@ esac
 [ "$(cat object/eyes)" -eq 2 ] || fail eyes
 [ "$(cat object/fingernails)" -eq 10 ] || fail fingernails
 [ "$(cat object/human)" = "true" ] || fail human
-umount object || fail unmount
-sleep 1
 
-kill -0 $PID >/dev/null 2>&1 && fail process
+rm -r "$TMP"/nested/object
 
 [ -d "object" ] && fail cleanup
-cd -
+cd - >/dev/null 2>&1
 rm -r "$TMP"
