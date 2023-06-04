@@ -5,7 +5,7 @@ fail() {
     if [ "$MNT" ]
     then
         cd
-        umount "$TMP"/object
+        umount "$TMP"/nested/object
         rm -r "$TMP"
     fi
     exit 1
