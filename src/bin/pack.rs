@@ -96,9 +96,24 @@ where
                     warn!("skipping ignored file '{:?}'", child_name);
                     continue
                 };
-                let original_name = xattr::get(&child, "user.original_name")?.unwrap_or(child_name.as_bytes().to_vec());
+                let name: String;
+                if let Some(original_name) = xattr::get(&child, "user.original_name")? {
+                    let old_name = str::from_utf8(&original_name).unwrap();
+                    if !config.valid_name(old_name) {
+                        // original name must have been munged, so restore original
+                        name = old_name.to_string();
+                    }
+                    else {
+                        // original name wasn't munged, keep the current name
+                        // in case it was renamed
+                        name = child_name.to_string();
+                    }
+                }
+                else {
+                    // xattr doesn't exist, so use current name
+                    name = child_name.to_string();
+                }
                 let value = pack(child.clone(), &config)?;
-                let name = str::from_utf8(&original_name).unwrap().to_string();
                 entries.insert(name, value);
             }
 

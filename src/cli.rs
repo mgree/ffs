@@ -307,6 +307,12 @@ pub fn pack() -> App<'static, 'static> {
                 .takes_value(true)
         )
         .arg(
+            Arg::with_name("NOOUTPUT")
+                .help("Disables output of filesystem (normally on stdout)")
+                .long("no-output")
+                .overrides_with("OUTPUT")
+        )
+        .arg(
             Arg::with_name("TARGET_FORMAT")
                 .help("Specify the target format explicitly (by default, automatically inferred from filename extension)")
                 .long("target")
