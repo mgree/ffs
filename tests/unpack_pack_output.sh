@@ -21,6 +21,7 @@ echo keys >"$MNT"/pockets/pants
 echo pen >"$MNT"/pockets/shirt
 cd - >/dev/null 2>&1
 pack "$MNT" >"$TGT"
+rm -r "$MNT"
 
 # easiest to just test using ffs, but would be cool to get outside validation
 [ -f "$TGT" ] || fail output1
