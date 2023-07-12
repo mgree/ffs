@@ -38,7 +38,7 @@ cd tests
 
 LOG=$(mktemp -d)
 TESTS="$(find . -name "$1*.sh")"
-echo $TESTS
+
 # spawn 'em all in parallel
 for test in $TESTS
 do
