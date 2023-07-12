@@ -123,18 +123,12 @@ where
             let mut children = fs::read_dir(path.clone()).unwrap()
                 .map(|res| res.map(|e| e.path()))
                 .collect::<Result<Vec<_>, Error>>().unwrap();
-            // TODO (nad) 2023-05-24: is sorting by parsed number the most efficient approach?
-            children.sort_unstable_by(|a,b| a.file_name().unwrap().to_str().unwrap()/* .parse::<u32>().unwrap() */
-                                      .cmp(&b.file_name().unwrap().to_str().unwrap()/* .parse::<u32>().unwrap() */));
+            children.sort_unstable_by(|a,b| a.file_name().unwrap().to_str().unwrap()
+                                      .cmp(&b.file_name().unwrap().to_str().unwrap()));
 
             let mut entries = Vec::with_capacity(children.len());
 
             for child in children {
-                // let name = child.file_name().unwrap().to_str().unwrap();
-                // if config.ignored_file(&name) {
-                //     warn!("skipping ignored file '{}'", name);
-                //     continue
-                // };
                 let value = pack(child, &config)?;
                 entries.push(value);
             }

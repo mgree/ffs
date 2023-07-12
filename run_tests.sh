@@ -14,7 +14,7 @@ if ! which unpack >/dev/null 2>&1
 then
     DEBUG="$(pwd)/target/debug"
     [ -x "$DEBUG/unpack" ] || {
-        echo Couldn\'t find ffs on "$PATH" or in "$DEBUG". >&2
+        echo Couldn\'t find unpack on "$PATH" or in "$DEBUG". >&2
         echo Are you in the root directory of the repo? >&2
         exit 1
     }
@@ -24,7 +24,7 @@ if ! which pack >/dev/null 2>&1
 then
     DEBUG="$(pwd)/target/debug"
     [ -x "$DEBUG/pack" ] || {
-        echo Couldn\'t find ffs on "$PATH" or in "$DEBUG". >&2
+        echo Couldn\'t find pack on "$PATH" or in "$DEBUG". >&2
         echo Are you in the root directory of the repo? >&2
         exit 1
     }
@@ -37,9 +37,10 @@ ERRORS=""
 cd tests
 
 LOG=$(mktemp -d)
-
+TESTS="$(find . -name "$1*.sh")"
+echo $TESTS
 # spawn 'em all in parallel
-for test in *.sh
+for test in $TESTS
 do
     tname="$(basename ${test%*.sh})"
     printf "========== STARTING TEST: $tname\n"
@@ -55,7 +56,7 @@ done
 
 wait
 
-for test in *.sh
+for test in $TESTS
 do
     tname="$(basename ${test%*.sh})"
     if [ "$(cat $LOG/$tname.ec)" -eq 0 ]

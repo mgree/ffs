@@ -6,6 +6,10 @@ fail() {
     then
         rm -r "$MNT"
     fi
+    if [ "$MNT2" ]
+    then
+        rm -r "$MNT2"
+    fi
     exit 1
 }
 
@@ -71,15 +75,6 @@ unpack --into "$MNT" --no-xattr ../json/object.json
 [ "$(typeof $MNT/human)"       = "boolean" ] && fail human
 
 
-if ! [ "$RUNNER_OS" = "macOS" ] && ! [ "$(uname)" = "Darwin" ]
-then
-    # some version of macos will just store these in ._* files if the
-    # FS refuses them
-    #
-    # best to just not test it for now :(
-    setattr user.type list $MNT && fail "root user.type"
-    setattr user.fake list $MNT && fail "root user.fake"
-fi
 
 listattr_fails() {
     ! listattr $1 | grep "user.type"
@@ -91,8 +86,23 @@ listattr_fails "$MNT"/eyes || fail eyes
 listattr_fails "$MNT"/fingernails || fail fingernails
 listattr_fails "$MNT"/human || fail human
 
-rmattr user.type $MNT && fail "root user.type"
-rmattr user.fake $MNT && fail "root user.fake"
+# unlike ffs, we can set xattrs even if unpack didn't
+setattr user.type list $MNT || fail "root user.type"
+setattr user.fake list $MNT || fail "root user.fake"
+
+listattr "$MNT" | grep "user.type" || fail "root user.type missing"
+listattr "$MNT" | grep "user.fake" || fail "root user.fake missing"
+
+rmattr user.type $MNT || fail "root user.type"
+rmattr user.fake $MNT || fail "root user.fake"
 rmattr user.type "$MNT/name" && fail "root user.type"
 
+
+GOT="$(mktemp)"
+pack "$MNT" >"$GOT"
+MNT2="$(mktemp -d)"
+unpack --into "$MNT2" "$GOT"
+diff -r "$MNT" "$MNT2" || fail "modified output"
+
 rm -r "$MNT" || fail mount
+rm -r "$MNT2" || fail mount2
