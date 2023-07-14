@@ -38,9 +38,9 @@ then
 else
     MACOS_DIR=0
 fi
-[ $(num_links      .) -eq $((4 + MACOS_DIR)) ] || fail root   # root + parent + self + child1 + child3
+[ $(num_links      .) -eq $((4 + MACOS_DIR)) ] || fail root   # parent + self + child1 + child3
 [ $(num_links child1) -eq $((2 + MACOS_DIR)) ] || fail child1 # parent + self
-[ $(num_links child2) -eq 1 ] || fail child2 # parent
+[ $(num_links child2) -eq 1 ]                  || fail child2 # parent
 [ $(num_links child3) -eq $((2 + MACOS_DIR)) ] || fail child3 # parent + self
 cd - >/dev/null 2>&1
 

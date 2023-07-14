@@ -87,15 +87,15 @@ listattr_fails "$MNT"/fingernails || fail fingernails
 listattr_fails "$MNT"/human || fail human
 
 # unlike ffs, we can set xattrs even if unpack didn't
-setattr user.type list $MNT || fail "root user.type"
-setattr user.fake list $MNT || fail "root user.fake"
+setattr user.type list "$MNT" || fail "root user.type"
+setattr user.fake list "$MNT" || fail "root user.fake"
 
 listattr "$MNT" | grep "user.type" || fail "root user.type missing"
 listattr "$MNT" | grep "user.fake" || fail "root user.fake missing"
 
-rmattr user.type $MNT || fail "root user.type"
-rmattr user.fake $MNT || fail "root user.fake"
-rmattr user.type "$MNT/name" && fail "root user.type"
+rmattr user.type "$MNT" || fail "root user.type"
+rmattr user.fake "$MNT" || fail "root user.fake"
+rmattr user.type "$MNT"/name && fail "root user.type"
 
 
 GOT="$(mktemp)"

@@ -37,9 +37,9 @@ printf '[2,10,"true","Michael Greenberg"]' >"$EXP"
 
 unpack --into "$MNT" ../json/object.json
 
-setattr user.type list $MNT || fail "root user.type"
-setattr user.fake list $MNT || fail "root user.fake"
-setattr user.type string "$MNT/human" || fail "human"
+setattr user.type list "$MNT" || fail "root user.type"
+setattr user.fake list "$MNT" || fail "root user.fake"
+setattr user.type string "$MNT"/human || fail "human"
 
 pack --target json -o "$OUT" "$MNT"
 

@@ -16,7 +16,6 @@ MSG=$(mktemp)
 
 echo \"just a string\" | unpack --into "$MNT" >"$OUT" 2>"$MSG"
 
-# kill -0 $PID >/dev/null 2>&1 && fail process
 cat "$MSG" | grep -i -e "must be a directory" >/dev/null 2>&1 || fail error
 [ -f "$OUT" ] && ! [ -s "$OUT" ] || fail output
 

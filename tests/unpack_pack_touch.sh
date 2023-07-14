@@ -15,7 +15,7 @@ ERR=$(mktemp)
 
 unpack --into "$MNT" ../json/object.json
 
-touch "$MNT"/name 2>$ERR >&2 || { cat "$ERR"; fail touch; }
+touch "$MNT"/name 2>"$ERR" >&2 || { cat "$ERR"; fail touch; }
 [ -s "$ERR" ] && { cat "$ERR"; fail error ; }
 
 rm -r "$MNT" || fail mount

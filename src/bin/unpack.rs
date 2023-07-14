@@ -9,10 +9,10 @@ use std::path::PathBuf;
 use ffs::config::Config;
 use ffs::config::{ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
 use ffs::format;
-use format::{Format, Nodelike, Typ};
 use format::json::Value as JsonValue;
 use format::toml::Value as TomlValue;
 use format::yaml::Value as YamlValue;
+use format::{Format, Nodelike, Typ};
 
 use ::xattr;
 
@@ -189,16 +189,6 @@ fn main() -> std::io::Result<()> {
             }
         }
     };
-
-    // if readonly is supported,
-    // have to set read_only in the root dir after unpacking because you can't create files or dirs
-    // inside a read-only directory
-    // if config.read_only {
-    //     let file = fs::File::open(mount)?;
-    //     let mut perms = file.metadata()?.permissions();
-    //     perms.set_readonly(true);
-    //     file.set_permissions(perms)?;
-    // }
 
     result
 }

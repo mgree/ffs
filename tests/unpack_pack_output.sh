@@ -25,11 +25,6 @@ rm -r "$MNT"
 
 # easiest to just test using ffs, but would be cool to get outside validation
 [ -f "$TGT" ] || fail output1
-#if [ "$RUNNER_OS" = "Linux" ]
-#then
-#    echo "ABORTING TEST, currently broken on Linux (see https://github.com/cberner/fuser/issues/153)"
-#    exit 0
-#fi
 [ -s "$TGT" ] || fail output2
 cat "$TGT"
 stat "$TGT"

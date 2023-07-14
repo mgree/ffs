@@ -4,7 +4,6 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
-        # cd
         rm -r "$MNT"
         rm -r "$EXP"
     fi

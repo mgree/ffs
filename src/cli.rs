@@ -224,11 +224,6 @@ pub fn unpack() -> App<'static, 'static> {
                 .long("unpadded")
         )
         .arg(
-            Arg::with_name("READONLY")
-                .help("Mounted filesystem will be readonly")
-                .long("readonly")
-        )
-        .arg(
             Arg::with_name("TYPE")
                 .help("Specify the format type explicitly (by default, automatically inferred from filename extension)")
                 .long("type")
