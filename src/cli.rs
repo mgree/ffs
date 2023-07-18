@@ -282,6 +282,11 @@ pub fn pack() -> App<'static, 'static> {
                 .long("exact")
         )
         .arg(
+            Arg::with_name("NOXATTR")
+                .help("Don't use extended attributes to track metadata (see `man xattr`)")
+                .long("no-xattr")
+        )
+        .arg(
             Arg::with_name("KEEPMACOSDOT")
                 .help("Include ._* extended attribute/resource fork files on macOS")
                 .long("keep-macos-xattr")
