@@ -74,8 +74,6 @@ jobs:
         run: |
           if [ "$RUNNER_OS" = "Linux" ]; then
             sudo apt-get install fuse libfuse-dev pkg-config attr
-          elif [ "$RUNNER_OS" = "macOS" ]; then
-            brew install macfuse pkg-config
           else
             echo Unsupported RUNNER_OS=$RUNNER_OS
             exit 1
@@ -93,6 +91,7 @@ jobs:
       - name: Benchmarks
         run: |
           Rscript -e "tries <- 0; while (!require('ggplot2') && tries < 3) { cat(sprintf('TRY %d\n', tries)); install.packages('ggplot2', repos = 'https://cloud.r-project.org/'); tries <- tries + 1; }"
+          $(pwd)/ffs --help
           PATH="$(pwd)/ffs.linux:$PATH" FFS="$(pwd)/ffs.linux/ffs" ./run_bench.sh -n 3
           # grab latest directory (output of run_bench)
           DATADIR=bench/$(ls -ct bench/ | head -n 1)
