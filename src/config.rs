@@ -577,7 +577,6 @@ impl Config {
         config.timing = args.is_present("TIMING");
         config.add_newlines = !args.is_present("EXACT");
         config.pad_element_names = !args.is_present("UNPADDED");
-        // config.read_only = args.is_present("READONLY");  TODO (nad) 2023-04-04 maybe handle readonly
         config.allow_xattr = !args.is_present("NOXATTR");
 
         // munging policy
