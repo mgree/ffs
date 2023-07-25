@@ -37,7 +37,7 @@ esac
 
 [ "$(cat $MNT/script)" = "echo hi" ] || fail contents
 
-pack --no-output >"$TGT2" || fail pack2
+pack --no-output >"$TGT2" "$MNT" || fail pack2
 
 [ -f "$TGT2" ] || fail tgt2
 [ -s "$TGT2" ] && fail tgt2_nonempty

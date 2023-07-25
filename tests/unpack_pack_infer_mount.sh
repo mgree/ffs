@@ -25,9 +25,9 @@ esac
 [ "$(cat object/eyes)" -eq 2 ] || fail eyes
 [ "$(cat object/fingernails)" -eq 10 ] || fail fingernails
 [ "$(cat object/human)" = "true" ] || fail human
+pack "$TMP"/object || fail pack
 rm -r "$TMP"/object
 
 [ -d "object" ] && fail cleanup
 cd -
-pack "$MNT" || fail pack
 rm -r "$TMP"

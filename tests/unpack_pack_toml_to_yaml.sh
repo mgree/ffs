@@ -20,7 +20,7 @@ ERR_MSG=$(mktemp)
 for f in $(find ../toml -maxdepth 1 -name '*.toml'); do
     UNPACK_MNT0=$(mktemp -d)
     # using `--exact` because datetime object becomes a string in json and adds a newline when unpacked as json.
-    unpack $f --exact --into "$UNPACK_MNT0" 2>"$ERR_MSG" || fail unpack1
+    unpack $f --exact --into "$UNPACK_MNT0" 2>"$ERR_MSG"
     # skip the issue where it doesn't unpack into a directory structure
     cat "$ERR_MSG" | grep -i -e "the unpacked form must be a directory" >/dev/null 2>&1 && continue
     PACK_FILE0=$(mktemp)

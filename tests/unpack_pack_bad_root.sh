@@ -14,7 +14,7 @@ MNT=$(mktemp -d)
 OUT=$(mktemp)
 MSG=$(mktemp)
 
-unpack --into "$MNT" ../json/null.json >"$OUT" 2>"$MSG" || fail unpack
+unpack --into "$MNT" ../json/null.json >"$OUT" 2>"$MSG"
 
 cat "$MSG" | grep -i -e  "must be a directory" >/dev/null 2>&1 || fail error
 [ -f "$OUT" ] && ! [ -s "$OUT" ] || fail output

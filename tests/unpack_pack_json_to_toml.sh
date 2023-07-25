@@ -23,7 +23,7 @@ ERR_MSG=$(mktemp)
 # object_null.json has a null value
 for f in $(find ../json -maxdepth 1 -name '*.json' ! -name 'json_eg5.json' ! -name 'list*.json' ! -name 'object_null.json'); do
     UNPACK_MNT0=$(mktemp -d)
-    unpack $f --into "$UNPACK_MNT0" 2>"$ERR_MSG" || fail unpack1
+    unpack $f --into "$UNPACK_MNT0" 2>"$ERR_MSG"
     # skip the issue where it doesn't unpack into a directory structure
     cat "$ERR_MSG" | grep -i -e "the unpacked form must be a directory" >/dev/null 2>&1 && continue
     PACK_FILE0=$(mktemp)

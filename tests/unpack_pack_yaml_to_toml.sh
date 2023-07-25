@@ -22,7 +22,7 @@ ERR_MSG=$(mktemp)
 # invoice.yaml's floats get their decimals truncated. Everything else is perfect after unpacking the packed toml version
 for f in $(find ../yaml -maxdepth 1 -name '*.yaml' ! -name 'eg2.7.yaml' ! -name 'invoice.yaml'); do
     UNPACK_MNT0=$(mktemp -d)
-    unpack $f --exact --into "$UNPACK_MNT0" 2>"$ERR_MSG" || fail unpack1
+    unpack $f --exact --into "$UNPACK_MNT0" 2>"$ERR_MSG"
     # skip the issue where it doesn't unpack into a directory structure
     cat "$ERR_MSG" | grep -i -e "the unpacked form must be a directory" >/dev/null 2>&1 && continue
     PACK_FILE0=$(mktemp)

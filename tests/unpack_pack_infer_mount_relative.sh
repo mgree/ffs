@@ -28,9 +28,9 @@ esac
 [ "$(cat object/fingernails)" -eq 10 ] || fail fingernails
 [ "$(cat object/human)" = "true" ] || fail human
 
+pack "$TMP"/nested/object || fail pack
 rm -r "$TMP"/nested/object
 
 [ -d "object" ] && fail cleanup
 cd - >/dev/null 2>&1
-pack "$MNT" || fail pack
 rm -r "$TMP"
