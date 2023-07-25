@@ -13,11 +13,12 @@ fail() {
 MNT=$(mktemp -d)
 ERR=$(mktemp)
 
-unpack --into "$MNT" ../json/object.json
+unpack --into "$MNT" ../json/object.json || fail unpack
 
 touch "$MNT"/name 2>"$ERR" >&2 || { cat "$ERR"; fail touch; }
 [ -s "$ERR" ] && { cat "$ERR"; fail error ; }
 
+pack "$MNT" || fail pack
 rm -r "$MNT" || fail mount
 rm "$ERR"
 

@@ -33,7 +33,7 @@ esac
 diff "${EXP}/name" "${MNT}/name" || fail name
 diff "${EXP}/eyes" "${MNT}/eyes" || fail eyes
 diff "${EXP}/fingernails" "${MNT}/fingernails" || fail fingernails
-diff "${EXP}/human" "${MNT}/human" || fail huma
+diff "${EXP}/human" "${MNT}/human" || fail human
 diff "${EXP}/problems" "${MNT}/problems" || fail problems
 
 cd - >/dev/null 2>&1

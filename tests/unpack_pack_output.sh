@@ -15,12 +15,12 @@ MNT=$(mktemp -d)
 TGT=$(mktemp)
 TGT2=$(mktemp)
 
-unpack --into "$MNT" ../json/object.json
+unpack --into "$MNT" ../json/object.json || fail unpack1
 mkdir "$MNT"/pockets
 echo keys >"$MNT"/pockets/pants
 echo pen >"$MNT"/pockets/shirt
 cd - >/dev/null 2>&1
-pack "$MNT" >"$TGT"
+pack "$MNT" >"$TGT" || fail pack1
 rm -r "$MNT"
 
 # easiest to just test using ffs, but would be cool to get outside validation
@@ -28,7 +28,7 @@ rm -r "$MNT"
 [ -s "$TGT" ] || fail output2
 cat "$TGT"
 stat "$TGT"
-unpack --into "$MNT" "$TGT"
+unpack --into "$MNT" "$TGT" || fail unpack2
 
 case $(ls "$MNT") in
     (eyes*fingernails*human*name*pockets) ;;
@@ -46,7 +46,7 @@ esac
 [ "$(cat $MNT/pockets/pants)" = "keys" ] || fail pants
 [ "$(cat $MNT/pockets/shirt)" = "pen" ] || fail shirt
 
-pack --no-output "$MNT" >"$TGT2"
+pack --no-output "$MNT" >"$TGT2" || fail pack2
 
 stat "$TGT2"
 [ -f "$TGT2" ] || fail tgt2

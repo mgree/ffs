@@ -66,7 +66,7 @@ typeof() {
 MNT=$(mktemp -d)
 OUT=$(mktemp)
 
-unpack --into "$MNT" --no-xattr ../json/object.json
+unpack --into "$MNT" --no-xattr ../json/object.json || fail unpack1
 
 [ "$(typeof $MNT)"             = "named"   ] && fail root
 [ "$(typeof $MNT/name)"        = "string"  ] && fail name
@@ -78,7 +78,7 @@ setattr user.type list "$MNT" || fail set1
 
 [ "$(typeof $MNT)" = "list"   ] || fail "macos override"
 
-pack -o "$OUT" --no-xattr --target json "$MNT"
+pack -o "$OUT" --no-xattr --target json "$MNT" || fail pack1
 
 # for all the grep tests in this file, instead of looking for the literal "._.",
 # look for any strings beginning with ._
@@ -88,10 +88,10 @@ rm -rf "$MNT"
 rm "$OUT"
 
 # now try to keep the metadata
-unpack --into "$MNT" --no-xattr ../json/object.json
+unpack --into "$MNT" --no-xattr ../json/object.json || fail unpack2
 setattr user.type list "$MNT"
 
-pack -o "$OUT" --no-xattr --keep-macos-xattr --target json "$MNT"
+pack -o "$OUT" --no-xattr --keep-macos-xattr --target json "$MNT" || fail pack2
 
 # ffs creates a literal ._. file because it can't store the xattr of the root of the fuse filesystem
 # outside the mount. Therefore, there is only one xattr (._.) in the output for the 2nd test for ffs.
@@ -114,11 +114,11 @@ rm -rf "$MNT"
 rm "$OUT"
 
 # now try to keep the metadata but also have the FS store it
-unpack --into "$MNT" ../json/object.json
+unpack --into "$MNT" ../json/object.json || fail unpack3
 
 setattr user.type list "$MNT"
 
-pack -o "$OUT" --keep-macos-xattr --target json "$MNT"
+pack -o "$OUT" --keep-macos-xattr --target json "$MNT" || fail pack3
 
 # technically, the output of pack here still differs from that of ffs on macosdot filesystems because ffs doesn't
 # create xattrs for (eyes, fingernails, human, name).

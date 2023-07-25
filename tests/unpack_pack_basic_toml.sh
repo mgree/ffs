@@ -11,7 +11,7 @@ fail() {
 
 MNT=$(mktemp -d)
 
-unpack --into "$MNT" ../toml/eg.toml
+unpack --into "$MNT" ../toml/eg.toml || fail unpack
 
 case $(ls "$MNT") in
     (clients*database*owner*servers*title) ;;
@@ -20,4 +20,5 @@ esac
 [ "$(cat $MNT/title)" = "TOML Example" ] || fail title
 [ "$(cat $MNT/owner/dob)" = "1979-05-27T07:32:00-08:00" ] || fail dob
 
+pack "$MNT" || fail pack
 rm -r "$MNT" || fail mount

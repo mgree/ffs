@@ -14,7 +14,7 @@ TMP=$(mktemp -d)
 
 cp ../json/object.json "$TMP"
 cd "$TMP"
-unpack object.json
+unpack object.json || fail unpack
 
 [ -d "object" ] || fail mountdir
 case $(ls object) in
@@ -29,4 +29,5 @@ rm -r "$TMP"/object
 
 [ -d "object" ] && fail cleanup
 cd -
+pack "$MNT" || fail pack
 rm -r "$TMP"

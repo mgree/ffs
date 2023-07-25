@@ -16,7 +16,7 @@ EXP=$(mktemp)
 
 printf -- "---\nfield one: 1\nfield two: 2\nfield three: 3" >"$EXP"
 
-unpack --into "$MNT" --munge filter ../yaml/spaces.yaml
+unpack --into "$MNT" --munge filter ../yaml/spaces.yaml || fail unpack
 
 case $(ls "$MNT") in
     (field\ one*field\ two) ;;
@@ -26,7 +26,7 @@ esac
 [ "$(cat $MNT/field\ two)" -eq 2 ] || fail two
 echo 3 >"$MNT"/field\ three
 
-pack --target yaml -o "$OUT" --munge filter "$MNT"
+pack --target yaml -o "$OUT" --munge filter "$MNT" || fail pack
 
 grep "field three: 3" $OUT >/dev/null 2>&1 || fail three
 

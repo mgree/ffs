@@ -23,19 +23,16 @@ printf "true"              >"${EXP}/human"
 printf "hi\n"              >"${EXP}/greeting"
 printf "bye"               >"${EXP}/farewell"
 
-unpack --exact --into "$MNT" ../json/object.json
+unpack --exact --into "$MNT" ../json/object.json || fail unpack1
 
 echo hi >"$MNT"/greeting
 printf "bye" >"$MNT"/farewell
 
-pack --exact "$MNT" -o "$JSON"
-# TODO (nad) 2023-05-30: since there is no unmounting, i have to clear directory by removing it then recreating it
-# check if there is a better way to do this
-rm -r "$MNT" || fail unmount
-mkdir "$MNT"
+pack --exact "$MNT" -o "$JSON" || fail pack1
+rm -r "$MNT"
 
 # remount w/ --exact, confirm that they're not there (except for greeting)
-unpack --exact --into "$MNT" "$JSON"
+unpack --exact --into "$MNT" "$JSON" || fail unpack2
 
 case $(ls "$MNT") in
     (eyes*farewell*fingernails*greeting*human*name) ;;
@@ -46,5 +43,6 @@ do
     diff "$x" "$MNT/$(basename $x)" || fail "$(basename $x)"
 done
 
+pack "$MNT" || fail pack2
 rm -r "$MNT" || fail mount
 rm -r "$EXP"

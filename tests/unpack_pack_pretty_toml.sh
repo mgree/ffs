@@ -13,7 +13,7 @@ fail() {
 MNT=$(mktemp -d)
 OUT=$(mktemp)
 
-unpack --into "$MNT" ../toml/single.toml
+unpack --into "$MNT" ../toml/single.toml || fail unpack
 
 cat >"$MNT"/info <<EOF
 Duncan MacLeod
@@ -21,7 +21,7 @@ as played by
 Adrian Paul
 EOF
 
-pack --target toml -o "$OUT" --pretty "$MNT"
+pack --target toml -o "$OUT" --pretty "$MNT" || fail pack
 
 [ "$(cat $OUT | wc -l)" -eq 5 ] || fail lines
 [ "$(head -n 1 $OUT)" = "info = '''" ] || fail multi

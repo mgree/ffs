@@ -16,7 +16,7 @@ cp ../json/object.json "$TMP"
 mkdir "$TMP"/nested
 cd "$TMP"/nested
 
-unpack ../object.json
+unpack ../object.json || fail unpack
 
 [ -d "object" ] || fail mountdir
 case $(ls object) in
@@ -32,4 +32,5 @@ rm -r "$TMP"/nested/object
 
 [ -d "object" ] && fail cleanup
 cd - >/dev/null 2>&1
+pack "$MNT" || fail pack
 rm -r "$TMP"

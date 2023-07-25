@@ -16,9 +16,9 @@ TGT=$(mktemp)
 
 cp ../toml/single.toml "$SRC"
 
-unpack --type toml --into "$MNT" "$SRC"
+unpack --type toml --into "$MNT" "$SRC" || fail unpack
 
-pack --target json -o "$TGT" "$MNT"
+pack --target json -o "$TGT" "$MNT" || fail pack
 
 diff "$TGT" ../json/single.json || fail diff
 

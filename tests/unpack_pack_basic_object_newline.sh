@@ -20,7 +20,7 @@ printf "10\n"                >"${EXP}/fingernails"
 printf "true\n"              >"${EXP}/human"
 printf ""                    >"${EXP}/problems"
 
-unpack --into "$MNT" ../json/object_null.json
+unpack --into "$MNT" ../json/object_null.json || fail unpack
 
 cd "$MNT"
 case $(ls) in
@@ -35,5 +35,6 @@ diff "${EXP}/problems" "${MNT}/problems" || fail problems
 
 cd - >/dev/null 2>&1
 
+pack "$MNT" || fail pack
 rm -r "$MNT" || fail mount
 rm -r "$EXP"

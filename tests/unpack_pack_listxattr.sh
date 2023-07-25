@@ -28,7 +28,7 @@ listattr_ok() {
 
 MNT=$(mktemp -d)
 
-unpack --into "$MNT" ../json/object.json
+unpack --into "$MNT" ../json/object.json || fail unpack
 
 listattr_ok "$MNT" || fail root
 listattr_ok "$MNT"/name || fail name
@@ -36,4 +36,5 @@ listattr_ok "$MNT"/eyes || fail eyes
 listattr_ok "$MNT"/fingernails || fail fingernails
 listattr_ok "$MNT"/human || fail human
 
+pack "$MNT" || fail pack
 rm -r "$MNT" || fail mount

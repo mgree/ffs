@@ -4,7 +4,6 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
-        # cd
         rm -r "$MNT"
     fi
     exit 1
@@ -12,7 +11,7 @@ fail() {
 
 MNT=$(mktemp -d)
 
-unpack --into "$MNT" ../json/list.json
+unpack --into "$MNT" ../json/list.json || fail unpack
 
 cd "$MNT"
 case $(ls) in
@@ -25,4 +24,5 @@ esac
 [ "$(cat 3)" = "false" ] || fail 3
 cd - >/dev/null 2>&1
 
+pack "$MNT" || fail pack
 rm -r "$MNT" || fail mount

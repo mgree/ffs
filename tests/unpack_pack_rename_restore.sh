@@ -16,7 +16,7 @@ EXP=$(mktemp)
 
 printf '{".":"primo","..":"secondo","dot":"terzo","dotdot":"quarto"}' >"$EXP"
 
-unpack --into "$MNT" ../json/obj_rename.json
+unpack --into "$MNT" ../json/obj_rename.json || fail unpack
 
 case $(ls "$MNT") in
     (_.*_..*dot*dotdot) ;;
@@ -32,7 +32,7 @@ echo secondo >"$MNT"/_..
 echo terzo >"$MNT"/dot
 echo quarto >"$MNT"/dotdot
 
-pack -o "$OUT" --target json "$MNT"
+pack -o "$OUT" --target json "$MNT" || fail pack
 
 diff "$OUT" "$EXP" || fail diff
 

@@ -11,7 +11,7 @@ fail() {
 
 MNT=$(mktemp -d)
 
-unpack --into "$MNT" --munge filter ../json/obj_rename.json
+unpack --into "$MNT" --munge filter ../json/obj_rename.json || fail unpack
 
 case $(ls "$MNT") in
     (dot*dotdot) ;;
@@ -20,4 +20,5 @@ esac
 [ "$(cat $MNT/dot)" = "third" ] || fail dot
 [ "$(cat $MNT/dotdot)" = "fourth" ] || fail dotdot
 
+pack "$MNT" || fail pack
 rm -r "$MNT" || fail mount

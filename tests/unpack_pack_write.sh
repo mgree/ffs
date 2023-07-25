@@ -18,7 +18,7 @@ hi
 hello
 EOF
 
-unpack --into "$MNT" ../json/list.json
+unpack --into "$MNT" ../json/list.json || fail unpack
 cd "$MNT"
 case $(ls) in
     (0*1*2*3) ;;
@@ -29,7 +29,7 @@ echo hi >4
 echo hello >>4
 diff 4 "${EXP}/4" || fail write2
 cd - >/dev/null 2>&1
-pack "$MNT"
+pack "$MNT" || fail pack
 
 rm -r "$MNT" || fail mount
 rm -rf "$EXP"

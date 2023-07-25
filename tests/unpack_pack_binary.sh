@@ -28,17 +28,17 @@ MNT=$(mktemp -d)
 TGT=$(mktemp)
 TGT2=$(mktemp)
 
-unpack --into "$MNT" ../json/object.json
+unpack --into "$MNT" ../json/object.json || fail unpack1
 
 cp ../binary/twitter.ico "$MNT"/favicon
-pack "$MNT" >"$TGT"
+pack "$MNT" >"$TGT" || fail pack1
 rm -r "$MNT"
 
 # easiest to just test using ffs, but would be cool to get outside validation
 [ -f "$TGT" ] || fail output1
 [ -s "$TGT" ] || fail output2
 grep favicon "$TGT" >/dev/null 2>&1 || fail text
-unpack --into "$MNT" "$TGT"
+unpack --into "$MNT" "$TGT" || fail unpack2
 
 ICO=$(mktemp)
 
@@ -46,7 +46,7 @@ ls "$MNT" | grep favicon >/dev/null 2>&1 || fail field
 decode "$MNT"/favicon "$ICO"
 diff ../binary/twitter.ico "$ICO" || fail diff
 
-pack --no-output "$MNT" >"$TGT2"
+pack --no-output "$MNT" >"$TGT2" || fail pack2
 
 [ -f "$TGT2" ] || fail tgt2
 [ -s "$TGT2" ] && fail tgt2_nonempty

@@ -11,7 +11,7 @@ fail() {
 
 MNT=$(mktemp -d)
 
-cat ../json/object.json | unpack --into "$MNT"
+cat ../json/object.json | unpack --into "$MNT" || fail unpack
 
 cd "$MNT"
 case $(ls) in
@@ -24,4 +24,5 @@ esac
 [ "$(cat human)" = "true" ] || fail human
 cd - >/dev/null 2>&1
 
+pack "$MNT" || fail pack
 rm -r "$MNT" || fail mount

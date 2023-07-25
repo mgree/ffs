@@ -32,7 +32,7 @@ typeof() {
 
 MNT=$(mktemp -d)
 
-unpack --into "$MNT" ../json/object.json
+unpack --into "$MNT" ../json/object.json || fail unpack
 
 [ "$(typeof $MNT)"             = "named"   ] || fail root
 [ "$(typeof $MNT/name)"        = "string"  ] || fail name
@@ -40,4 +40,5 @@ unpack --into "$MNT" ../json/object.json
 [ "$(typeof $MNT/fingernails)" = "float"   ] || fail fingernails
 [ "$(typeof $MNT/human)"       = "boolean" ] || fail human
 
+pack "$MNT" || fail pack
 rm -r "$MNT" || fail mount

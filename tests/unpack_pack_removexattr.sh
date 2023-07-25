@@ -28,12 +28,12 @@ fi
 
 MNT=$(mktemp -d)
 
-unpack --into "$MNT" ../json/object.json
+unpack --into "$MNT" ../json/object.json || fail unpack
 
 rmattr user.type "$MNT" || fail "root user.type"
 rmattr user.fake "$MNT" && fail "root user.fake"
 rmattr user.type "$MNT"/name || fail "user.type"
 
-pack "$MNT"
+pack "$MNT" || fail pack
 
 rm -r "$MNT" || fail mount

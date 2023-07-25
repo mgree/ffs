@@ -23,16 +23,16 @@ printf "true"              >"${EXP}/human"
 printf "hi"                >"${EXP}/greeting"
 printf "bye"               >"${EXP}/farewell"
 
-unpack --into "$MNT" ../json/object.json
+unpack --into "$MNT" ../json/object.json || fail unpack1
 
 echo hi >"$MNT"/greeting
 printf "bye" >"$MNT"/farewell
 
-pack -o "$JSON" "$MNT"
+pack -o "$JSON" "$MNT" || fail pack1
 rm -r "$MNT"
 
 # remount w/ --exact, confirm that they're not there
-unpack --exact --into "$MNT" "$JSON"
+unpack --exact --into "$MNT" "$JSON" || fail unpack2
 
 case $(ls "$MNT") in
     (eyes*farewell*fingernails*greeting*human*name) ;;
@@ -43,5 +43,6 @@ do
     diff "$x" "$MNT/$(basename $x)" || fail "$(basename $x)"
 done
 
+pack "$MNT" || fail pack2
 rm -r "$MNT" || fail mount
 rm -r "$EXP"

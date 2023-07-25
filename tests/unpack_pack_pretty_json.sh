@@ -13,11 +13,11 @@ fail() {
 MNT=$(mktemp -d)
 OUT=$(mktemp)
 
-unpack --into "$MNT" ../json/object.json
+unpack --into "$MNT" ../json/object.json || fail unpack
 
 echo mgree >"$MNT"/handle
 
-pack --target json -o "$OUT" --pretty "$MNT"
+pack --target json -o "$OUT" --pretty "$MNT" || fail pack
 
 [ "$(cat $OUT | wc -l)" -eq 6 ] || fail lines
 grep '^\s*"handle": "mgree",$' "$OUT" >/dev/null 2>&1 || fail handle

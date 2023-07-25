@@ -20,7 +20,7 @@ printf "10"                >"${EXP}/fingernails"
 printf "true"              >"${EXP}/human"
 printf ""                  >"${EXP}/problems"
 
-unpack --exact --into "$MNT" ../json/object_null.json
+unpack --exact --into "$MNT" ../json/object_null.json || fail unpack
 
 cd "$MNT"
 case $(ls) in
@@ -30,10 +30,11 @@ esac
 diff "${EXP}/name" "${MNT}/name" || fail name
 diff "${EXP}/eyes" "${MNT}/eyes" || fail eyes
 diff "${EXP}/fingernails" "${MNT}/fingernails" || fail fingernails
-diff "${EXP}/human" "${MNT}/human" || fail huma
+diff "${EXP}/human" "${MNT}/human" || fail human
 diff "${EXP}/problems" "${MNT}/problems" || fail problems
 
 cd - >/dev/null 2>&1
 
+pack "$MNT" || fail pack
 rm -r "$MNT" || fail mount
 rm -r "$EXP"

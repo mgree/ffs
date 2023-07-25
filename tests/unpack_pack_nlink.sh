@@ -23,7 +23,7 @@ fi
 
 MNT=$(mktemp -d)
 
-unpack --into "$MNT" ../json/nlink.json
+unpack --into "$MNT" ../json/nlink.json || fail unpack
 
 cd "$MNT"
 case $(ls) in
@@ -44,4 +44,5 @@ fi
 [ $(num_links child3) -eq $((2 + MACOS_DIR)) ] || fail child3 # parent + self
 cd - >/dev/null 2>&1
 
+pack "$MNT" || fail pack
 rm -r "$MNT" || fail mount

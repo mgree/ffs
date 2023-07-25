@@ -16,7 +16,7 @@ EXP=$(mktemp)
 
 printf '{"he":{"dot":"shlishi"},"imnewhere":"derp","it":{".":"primo","..":"secondo"}}' >"$EXP"
 
-unpack --into "$MNT" ../json/obj_rename.json
+unpack --into "$MNT" ../json/obj_rename.json || fail unpack
 
 case $(ls "$MNT") in
     (_.*_..*dot*dotdot) ;;
@@ -42,7 +42,7 @@ mv "$MNT"/dot    "$MNT"/he
 
 mv "$MNT"/dotdot "$MNT"/imnewhere
 
-pack --target json -o "$OUT" "$MNT"
+pack --target json -o "$OUT" "$MNT" || fail pack
 
 diff "$OUT" "$EXP" || fail diff
 

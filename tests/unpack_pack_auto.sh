@@ -19,7 +19,7 @@ EXP=$(mktemp)
 
 printf '{"favorite_number":47,"likes":{"cats":false,"dogs":true},"mistakes":null,"name":"Michael Greenberg","website":"https://mgree.github.io"}' >"$EXP"
 
-unpack "$FILE" --into "$MNT"
+unpack "$FILE" --into "$MNT" || fail unpack
 
 ls "$MNT"
 [ $(ls $MNT) ] && fail nonempty1
@@ -33,7 +33,7 @@ touch "$MNT"/mistakes
 echo Michael Greenberg >"$MNT"/name
 echo https://mgree.github.io >"$MNT"/website
 
-pack "$MNT" -o "$FILE"
+pack "$MNT" -o "$FILE" || fail pack
 
 cat "$FILE"
 diff "$FILE" "$EXP" || fail diff

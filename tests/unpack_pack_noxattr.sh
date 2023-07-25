@@ -66,7 +66,7 @@ typeof() {
 
 MNT=$(mktemp -d)
 
-unpack --into "$MNT" --no-xattr ../json/object.json
+unpack --into "$MNT" --no-xattr ../json/object.json || fail unpack1
 
 [ "$(typeof $MNT)"             = "named"   ] && fail root
 [ "$(typeof $MNT/name)"        = "string"  ] && fail name
@@ -99,10 +99,11 @@ rmattr user.type "$MNT"/name && fail "root user.type"
 
 
 GOT="$(mktemp)"
-pack "$MNT" >"$GOT"
+pack "$MNT" >"$GOT" || fail pack1
 MNT2="$(mktemp -d)"
-unpack --into "$MNT2" "$GOT"
+unpack --into "$MNT2" "$GOT" || fail unpack2
 diff -r "$MNT" "$MNT2" || fail "modified output"
 
+pack "$MNT2" || fail pack2
 rm -r "$MNT" || fail mount
 rm -r "$MNT2" || fail mount2
