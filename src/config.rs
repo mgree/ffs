@@ -565,7 +565,7 @@ impl Config {
                 } else {
                     EnvFilter::new("unpack=warn")
                 }
-            });
+            }).add_directive("ffs::config=error".parse().unwrap());
             let fmt_layer = fmt::layer().with_writer(std::io::stderr);
             tracing_subscriber::registry()
                 .with(filter_layer)
@@ -634,9 +634,7 @@ impl Config {
                         std::process::exit(ERROR_STATUS_CLI);
                     }
                     Input::Empty => {
-                        error!(
-                            "You must specify a mount point when reading an empty file."
-                        );
+                        error!("--new is not an option for `unpack`, so the input should never be Empty and this error should never be seen.");
                         std::process::exit(ERROR_STATUS_CLI);
                     }
                     Input::File(file) => {
@@ -752,7 +750,7 @@ impl Config {
                 } else {
                     EnvFilter::new("pack=warn")
                 }
-            });
+            }).add_directive("ffs::config=error".parse().unwrap());
             let fmt_layer = fmt::layer().with_writer(std::io::stderr);
             tracing_subscriber::registry()
                 .with(filter_layer)
@@ -800,7 +798,7 @@ impl Config {
         config.mount = match &config.input {
             Input::File(file) => Some(file.clone()),
             _ => {
-                error!("Input must be a directory.");
+                error!("Input must be a file or directory.");
                 std::process::exit(ERROR_STATUS_CLI);
             }
         };
