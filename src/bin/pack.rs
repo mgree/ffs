@@ -25,39 +25,71 @@ use ::xattr;
 
 #[allow(dead_code)]
 #[allow(unused_variables)]
-fn pack<V>(path: PathBuf, config: &Config) -> std::io::Result<V>
+fn pack<V>(mut path: PathBuf, config: &Config) -> std::io::Result<V>
 where
     V: Nodelike + std::fmt::Display + Default,
 {
+    // if the path is a symlink, resolve the xattr of the destination
+    if path.is_symlink() {
+        match path.try_exists() {
+            Ok(true) => {
+                let canonicalized = std::fs::canonicalize(path.clone())?;
+                if path.starts_with(&canonicalized) {
+                    error!(
+                        "The symlink '{:?}' points to some ancestor directory: '{:?}'",
+                        path, canonicalized
+                    );
+                    std::process::exit(ERROR_STATUS_FUSE);
+                }
+                if path != canonicalized {
+                    info!("To avoid errors, pack uses canonicalized paths after encountering symlinks. \
+                          This will increase the time for filename comparison.");
+                }
+                path = canonicalized;
+            }
+            Ok(false) => {
+                error!("Symlink destination missing.");
+                std::process::exit(ERROR_STATUS_FUSE);
+            }
+            Err(_) => {
+                error!("Cannot read destination or symlink loop detected.");
+                std::process::exit(ERROR_STATUS_FUSE);
+            }
+        }
+    }
+
     // get type of directory or file by xattr
     let path_type = match xattr::get(&path, "user.type") {
-        Ok(optional_xattr) => {
-            if config.allow_xattr {
-                optional_xattr.unwrap_or(b"detect".to_vec())
-            } else {
-                b"detect".to_vec()
-            }
-        },
+        Ok(Some(xattr_type)) if config.allow_xattr => xattr_type,
+        Ok(_) => b"detect".to_vec(),
         Err(_) => {
             // Cannot call xattr::get on ._ file
-            warn!("._ files, like {:?}, prevent xattr calls. It will be encoded in base64.", path);
+            warn!(
+                "._ files, like {:?}, prevent xattr calls. It will be encoded in base64.",
+                path
+            );
             b"bytes".to_vec()
         }
     };
-    info!("packing {:?} of path type {:?}", path, path_type);
+
     let mut path_type = str::from_utf8(&path_type).unwrap();
 
     // resolve type if it is 'detect'
     if path_type == "detect" {
-        let path_file_type = path.metadata().unwrap().file_type();
-
-        if path_file_type.is_file() {
+        if path.is_file() {
             path_type = "auto";
-        } else if path_file_type.is_dir() {
+        } else if path.is_dir() {
             let try_parsing_to_int = fs::read_dir(path.clone())?
                 .map(|res| res.map(|e| e.path()))
-                .map(|e| e.unwrap().file_name().unwrap().to_str().unwrap().parse::<u32>())
-                .collect::<Result<Vec<_>,_>>();
+                .map(|e| {
+                    e.unwrap()
+                        .file_name()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .parse::<u32>()
+                })
+                .collect::<Result<Vec<_>, _>>();
             info!("parsed names or parse error: {:?}", try_parsing_to_int);
             match try_parsing_to_int {
                 Ok(mut parsed_ints) => {
@@ -65,7 +97,11 @@ where
                     let mut i = 0;
                     for parsed_int in parsed_ints.clone() {
                         if parsed_int != i {
-                            info!("file {} is missing from the range of the number of files [0,{})", i, parsed_ints.len() as u32);
+                            info!(
+                                "file {} is missing from the range of the number of files [0,{})",
+                                i,
+                                parsed_ints.len() as u32
+                            );
                             path_type = "map";
                             break;
                         }
@@ -79,25 +115,20 @@ where
                     path_type = "named";
                 }
             }
-        } else if path_file_type.is_symlink() {
-            // TODO (nad) 2023-05-21 implement symlink support
-            // is the exit status code name appropriate?
-            error!("symlink file {:?} are not supported yet!", path.display());
-            std::process::exit(ERROR_STATUS_FUSE);
         } else {
-            error!("{:?} has unknown type and it is an unsupported file type (i.e. not file, directory, or symlink).", path.display());
+            error!("{:?} has unknown type and it is an unsupported file type (i.e. not file, directory).", path.display());
             std::process::exit(ERROR_STATUS_FUSE);
         }
     }
 
-    info!("type of {:?} as {}", path.display(), path_type);
+    info!("type of {:?} is {}", path, path_type);
 
     match path_type {
         "named" => {
             let mut children = fs::read_dir(path.clone())?
                 .map(|res| res.map(|e| e.path()))
                 .collect::<Result<Vec<_>, Error>>()?;
-            children.sort_unstable_by(|a,b| a.file_name().cmp(&b.file_name()));
+            children.sort_unstable_by(|a, b| a.file_name().cmp(&b.file_name()));
 
             // println!("{:?}", children);
             let mut entries = BTreeMap::new();
@@ -121,7 +152,7 @@ where
                             // in case it was renamed
                             name = child_name.to_string();
                         }
-                    },
+                    }
                     Ok(_) | Err(_) => {
                         // use current name because xattr is None or getting xattr on files (like ._ files) errors
                         name = child_name.to_string();
@@ -137,8 +168,13 @@ where
             let mut children = fs::read_dir(path.clone())?
                 .map(|res| res.map(|e| e.path()))
                 .collect::<Result<Vec<_>, Error>>()?;
-            children.sort_unstable_by(|a,b| a.file_name().unwrap().to_str().unwrap()
-                                      .cmp(&b.file_name().unwrap().to_str().unwrap()));
+            children.sort_unstable_by(|a, b| {
+                a.file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .cmp(&b.file_name().unwrap().to_str().unwrap())
+            });
 
             let mut entries = Vec::with_capacity(children.len());
 
@@ -167,18 +203,19 @@ where
                         }
                         Ok(V::from_string(t, contents, &config))
                     }
-                    Ok(_) | Err(_) => {
-                        Ok(V::from_bytes(contents, &config))
-                    }
+                    Ok(_) | Err(_) => Ok(V::from_bytes(contents, &config)),
                 }
             } else {
-                error!("Very bad error. Received undetected and unknown type '{}' for file '{:?}'", typ, path.display());
+                error!(
+                    "Very bad error. Received undetected and unknown type '{}' for file '{:?}'",
+                    typ,
+                    path.display()
+                );
                 std::process::exit(ERROR_STATUS_FUSE);
             }
         }
     }
 }
-
 
 fn main() -> std::io::Result<()> {
     let config = Config::from_pack_args();
