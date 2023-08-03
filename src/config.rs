@@ -2,6 +2,8 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
+// use path_absolutize::*;
+
 use tracing::{debug, error, warn};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::EnvFilter, fmt};
@@ -38,6 +40,8 @@ pub struct Config {
     pub try_decode_base64: bool,
     pub allow_xattr: bool,
     pub keep_macos_xattr_file: bool,
+    pub symlink: Symlink,
+    pub max_depth: Option<u32>,
     pub munge: Munge,
     pub read_only: bool,
     pub input: Input,
@@ -101,6 +105,12 @@ impl FromStr for Munge {
             Err(())
         }
     }
+}
+
+#[derive(Debug)]
+pub enum Symlink {
+    NoFollow,
+    Follow(Option<Vec<PathBuf>>),
 }
 
 impl Config {
@@ -559,13 +569,15 @@ impl Config {
 
         // logging
         if !args.is_present("QUIET") {
-            let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
-                if args.is_present("DEBUG") {
-                    EnvFilter::new("unpack=debug")
-                } else {
-                    EnvFilter::new("unpack=warn")
-                }
-            }).add_directive("ffs::config=error".parse().unwrap());
+            let filter_layer = EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_e| {
+                    if args.is_present("DEBUG") {
+                        EnvFilter::new("unpack=debug")
+                    } else {
+                        EnvFilter::new("unpack=warn")
+                    }
+                })
+                .add_directive("ffs::config=error".parse().unwrap());
             let fmt_layer = fmt::layer().with_writer(std::io::stderr);
             tracing_subscriber::registry()
                 .with(filter_layer)
@@ -621,7 +633,10 @@ impl Config {
                             Some(PathBuf::from(mount_point))
                         } else {
                             // dir exists but is not empty
-                            error!("Directory `{}` already exists and is not empty.", mount_point);
+                            error!(
+                                "Directory `{}` already exists and is not empty.",
+                                mount_point
+                            );
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                     }
@@ -744,13 +759,15 @@ impl Config {
 
         // logging
         if !args.is_present("QUIET") {
-            let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
-                if args.is_present("DEBUG") {
-                    EnvFilter::new("pack=debug")
-                } else {
-                    EnvFilter::new("pack=warn")
-                }
-            }).add_directive("ffs::config=error".parse().unwrap());
+            let filter_layer = EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_e| {
+                    if args.is_present("DEBUG") {
+                        EnvFilter::new("pack=debug")
+                    } else {
+                        EnvFilter::new("pack=warn")
+                    }
+                })
+                .add_directive("ffs::config=error".parse().unwrap());
             let fmt_layer = fmt::layer().with_writer(std::io::stderr);
             tracing_subscriber::registry()
                 .with(filter_layer)
@@ -765,6 +782,37 @@ impl Config {
         config.allow_xattr = !args.is_present("NOXATTR");
         config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
         config.pretty = args.is_present("PRETTY");
+
+        config.symlink = if args.is_present("FOLLOW_SYMLINKS") {
+            Symlink::Follow(None)
+        } else if args.is_present("FOLLOW_SPECIFIED_SYMLINKS") {
+            let cwd = std::env::current_dir().unwrap();
+            Symlink::Follow(Some(
+                args.values_of("FOLLOW_SPECIFIED_SYMLINKS")
+                    .unwrap()
+                    .map(|p| {
+                        if PathBuf::from(p).is_absolute() {
+                            PathBuf::from(p)
+                        } else {
+                            cwd.join(p)
+                        }
+                    })
+                    .collect(),
+            ))
+        } else {
+            Symlink::NoFollow
+        };
+
+        config.max_depth = match args.value_of("MAXDEPTH") {
+            Some(s) => match str::parse(s) {
+                Ok(depth) if depth > 0 => Some(depth),
+                Ok(_) | Err(_) => {
+                    warn!("Invalid `--max-depth` '{}', using no limit.", s);
+                    None
+                }
+            },
+            None => None,
+        };
 
         // munging policy
         config.munge = match args.value_of("MUNGE") {
@@ -965,6 +1013,8 @@ impl Default for Config {
             try_decode_base64: false,
             allow_xattr: true,
             keep_macos_xattr_file: false,
+            symlink: Symlink::NoFollow,
+            max_depth: None,
             munge: Munge::Rename,
             read_only: false,
             input: Input::Stdin,
