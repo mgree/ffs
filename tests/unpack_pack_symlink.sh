@@ -255,6 +255,12 @@ ln -s e f
 setattr user.type integer a
 setattr user.type string c
 setattr user.type bytes e
+typeof a
+typeof b
+typeof c
+typeof d
+typeof e
+typeof f
 
 printf '{"a":4}' >"$EXP"
 pack -o "$OUT" -- "$MNT" || fail pack14
