@@ -41,6 +41,8 @@ impl Pack {
     where
         V: Nodelike + std::fmt::Display + Default,
     {
+        // resolve symlink once and map the path to the linked file or
+        // to itself if it is not a symlink
         if !self.symlinks.contains_key(&path) {
             if !path.is_symlink() {
                 self.symlinks.insert(path.clone(), path.clone());
@@ -55,7 +57,7 @@ impl Pack {
             }
         }
 
-        // resolve the xattr of the file
+        // get the xattr of the file
         let mut path_type: Vec<u8> = Vec::new();
         // if it is a symlink
         if path.is_symlink() {
@@ -69,6 +71,7 @@ impl Pack {
                             .iter()
                             .find(|link| {
                                 // find by inode to avoid PathBuf comparison issue
+                                // because of . or .. being unresolved.
                                 link.symlink_metadata().unwrap().ino()
                                     == path.symlink_metadata().unwrap().ino()
                             })
@@ -85,9 +88,14 @@ impl Pack {
                             link_trail.push(link_follower.clone());
 
                             if path_type.is_empty() {
+                                // get the xattr of the first symlink that has it.
+                                // this has the effect of inheriting xattrs from links down the
+                                // chain.
                                 match xattr::get(&link_follower, "user.type") {
                                     Ok(Some(xattr)) if config.allow_xattr => path_type = xattr,
                                     Ok(_) => (),
+                                    // TODO(nad) 2023-08-07: maybe unnecessary to check for ._ as
+                                    // symlink?
                                     Err(_) => {
                                         // Cannot call xattr::get on ._ file
                                         warn!(
@@ -99,6 +107,7 @@ impl Pack {
                                 };
                             }
 
+                            // add the link to the mapping here if it wasn't already added above
                             if !self.symlinks.contains_key(&link_follower) {
                                 let link = link_follower.read_link()?;
                                 if link.is_absolute() {
@@ -127,6 +136,8 @@ impl Pack {
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                     } else {
+                        // optional links exist but path inode doesn't match that of any
+                        // of the specified paths.
                         // early return because we want to ignore this symlink
                         // but we still add it to self.symlinks above
                         return Ok(None);
@@ -134,8 +145,9 @@ impl Pack {
                 }
             }
         }
-
-        if !path.is_symlink() || path_type.is_empty() {
+        // if the xattr isn't detected yet, either path is not a symlink or
+        // none of the symlinks on the chain have an xattr.
+        if path_type.is_empty() {
             let canonicalized = path.canonicalize()?;
             path_type = match xattr::get(&canonicalized, "user.type") {
                 Ok(Some(xattr_type)) if config.allow_xattr => xattr_type,
@@ -151,8 +163,8 @@ impl Pack {
             };
         }
 
-        // get type of directory or file by xattr
-        let mut path_type = str::from_utf8(&path_type).unwrap();
+        // convert detected xattr from Vec to str
+        let mut path_type: &str = str::from_utf8(&path_type).unwrap();
 
         // resolve type if it is 'detect'
         if path_type == "detect" {
@@ -243,6 +255,7 @@ impl Pack {
                         None => continue,
                     }
                 }
+
                 Ok(Some(V::from_named_dir(entries, &config)))
             }
             "list" => {
