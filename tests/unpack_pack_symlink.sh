@@ -233,47 +233,44 @@ diff "$EXP" "$OUT" || fail "test4 no-follow"
 pack -L -- "$MNT" >/dev/null 2>"$OUT" && fail "pack13 symlink loop error"
 cat "$OUT" | grep "Symlink loop detected" >/dev/null 2>&1 || fail "test4 follow expected error"
 
-rm -r "$MNT"
-mkdir "$MNT"
+if [ "$RUNNER_OS" = "macOS" ] || [ "$(uname)" = "Darwin" ]; then
+    rm -r "$MNT"
+    mkdir "$MNT"
 
-# xattr propagates up the symlink chain unless redefined
-# test5
-# ├── a
-# ├── b -> a
-# ├── c -> b
-# ├── d -> c
-# ├── e -> d
-# └── f -> e
+    # xattr propagates up the symlink chain unless redefined
+    # setting xattr for symlinks in linux doesn't work
+    # test5
+    # ├── a
+    # ├── b -> a
+    # ├── c -> b
+    # ├── d -> c
+    # ├── e -> d
+    # └── f -> e
 
-cd "$MNT"
-echo '4' >a
-ln -s a b
-ln -s b c
-ln -s c d
-ln -s d e
-ln -s e f
-setattr user.type integer a
-setattr user.type string c
-setattr user.type bytes e
-echo $(typeof a)
-echo $(typeof b)
-echo $(typeof c)
-echo $(typeof d)
-echo $(typeof e)
-echo $(typeof f)
+    cd "$MNT"
+    echo '4' >a
+    ln -s a b
+    ln -s b c
+    ln -s c d
+    ln -s d e
+    ln -s e f
+    setattr user.type integer a
+    setattr user.type string c
+    setattr user.type bytes e
 
-printf '{"a":4}' >"$EXP"
-pack -o "$OUT" -- "$MNT" || fail pack14
-diff "$EXP" "$OUT" || fail "test5 no-follow"
+    printf '{"a":4}' >"$EXP"
+    pack -o "$OUT" -- "$MNT" || fail pack14
+    diff "$EXP" "$OUT" || fail "test5 no-follow"
 
-printf '{"a":4,"b":4,"c":"4","d":"4","e":"NAo=","f":"NAo="}' >"$EXP"
-pack -o "$OUT" -L -- "$MNT" || fail pack15
-diff "$EXP" "$OUT" || fail "test5 follow"
+    printf '{"a":4,"b":4,"c":"4","d":"4","e":"NAo=","f":"NAo="}' >"$EXP"
+    pack -o "$OUT" -L -- "$MNT" || fail pack15
+    diff "$EXP" "$OUT" || fail "test5 follow"
 
-# TODO(nad) 2023-08-08: maybe only xattrs from followed symlinks are allowed.
-printf '{"a":4,"b":4,"d":"4","f":"NAo="}' >"$EXP"
-pack -o "$OUT" -H "$MNT"/b "$MNT"/d "$MNT"/f -- "$MNT" || fail pack16
-diff "$EXP" "$OUT" || fail "test5 follow-specified"
+    # TODO(nad) 2023-08-08: maybe only xattrs from followed symlinks are allowed.
+    printf '{"a":4,"b":4,"d":"4","f":"NAo="}' >"$EXP"
+    pack -o "$OUT" -H "$MNT"/b "$MNT"/d "$MNT"/f -- "$MNT" || fail pack16
+    diff "$EXP" "$OUT" || fail "test5 follow-specified"
+fi
 
 rm "$EXP" "$OUT"
 rm -r "$MNT"
