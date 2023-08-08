@@ -219,13 +219,12 @@ mkdir "$MNT"
 # └── f -> e
 
 cd "$MNT"
-touch a
 ln -s a b
 ln -s b c
 ln -s c d
 ln -s d e
 ln -s e f
-ln -s -f b a
+ln -s b a
 
 printf '{}' >"$EXP"
 pack -o "$OUT" -- "$MNT" || fail pack12
