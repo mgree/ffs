@@ -96,9 +96,9 @@ printf '{"a":"a","b":"a","c":"a","d":"a","e":"a","tree":{"about":"tree about","r
 pack -o "$OUT" -L -- "$MNT" || fail pack2
 diff "$EXP" "$OUT" || fail "test0 follow"
 
-printf '{"a":"a","d":"a","tree":{"about":"tree about","root":"tree root"}}' >"$EXP"
-pack -o "$OUT" -H "$MNT"/d -- "$MNT" || fail pack3
-diff "$EXP" "$OUT" || fail "test0 follow-specified"
+# printf '{"a":"a","d":"a","tree":{"about":"tree about","root":"tree root"}}' >"$EXP"
+# pack -o "$OUT" -H "$MNT"/d -- "$MNT" || fail pack3
+# diff "$EXP" "$OUT" || fail "test0 follow-specified"
 
 rm -r "$MNT"
 mkdir "$MNT"
@@ -141,9 +141,9 @@ printf '{"ascending":[4,4,4,4,4],"descending":[0,0,0,0,0]}' >"$EXP"
 pack -o "$OUT" -L -- "$MNT" || fail pack5
 diff "$EXP" "$OUT" || fail "test1 follow"
 
-printf '{"ascending":[4,4],"descending":[0,0]}' >"$EXP"
-pack -o "$OUT" -H "$MNT"/ascending/2 "$MNT"/descending/3 -- "$MNT" || fail pack6
-diff "$EXP" "$OUT" || fail "test1 follow-specified"
+# printf '{"ascending":[4,4],"descending":[0,0]}' >"$EXP"
+# pack -o "$OUT" -H "$MNT"/ascending/2 "$MNT"/descending/3 -- "$MNT" || fail pack6
+# diff "$EXP" "$OUT" || fail "test1 follow-specified"
 
 rm -r "$MNT"
 mkdir "$MNT"
@@ -175,9 +175,9 @@ printf '{"path":{"to":{"other":{"file":{"data":null}},"some":{"link":{"abs":null
 pack -o "$OUT" -L -- "$MNT" || fail pack8
 diff "$EXP" "$OUT" || fail "test2 follow"
 
-printf '{"path":{"to":{"other":{"file":{"data":null}},"some":{"link":{"abs":null}}}}}' >"$EXP"
-pack -o "$OUT" -H "$MNT"/path/to/some/link/abs -- "$MNT" || fail pack9
-diff "$EXP" "$OUT" || fail "test2 follow-specified"
+# printf '{"path":{"to":{"other":{"file":{"data":null}},"some":{"link":{"abs":null}}}}}' >"$EXP"
+# pack -o "$OUT" -H "$MNT"/path/to/some/link/abs -- "$MNT" || fail pack9
+# diff "$EXP" "$OUT" || fail "test2 follow-specified"
 
 rm -r "$MNT"
 mkdir "$MNT"
@@ -266,10 +266,9 @@ if [ "$RUNNER_OS" = "macOS" ] || [ "$(uname)" = "Darwin" ]; then
     pack -o "$OUT" -L -- "$MNT" || fail pack15
     diff "$EXP" "$OUT" || fail "test5 follow"
 
-    # TODO(nad) 2023-08-08: maybe only xattrs from followed symlinks are allowed.
-    printf '{"a":4,"b":4,"d":"4","f":"NAo="}' >"$EXP"
-    pack -o "$OUT" -H "$MNT"/b "$MNT"/d "$MNT"/f -- "$MNT" || fail pack16
-    diff "$EXP" "$OUT" || fail "test5 follow-specified"
+    # printf '{"a":4,"b":4,"d":"4","f":"NAo="}' >"$EXP"
+    # pack -o "$OUT" -H "$MNT"/b "$MNT"/d "$MNT"/f -- "$MNT" || fail pack16
+    # diff "$EXP" "$OUT" || fail "test5 follow-specified"
 fi
 
 rm "$EXP" "$OUT"

@@ -1,5 +1,5 @@
 use std::fs;
-use std::os::unix::fs::MetadataExt;
+// use std::os::unix::fs::MetadataExt;
 
 use std::collections::BTreeMap;
 use std::collections::HashMap;
@@ -28,12 +28,14 @@ use ::xattr;
 
 pub struct Pack {
     pub symlinks: HashMap<PathBuf, PathBuf>,
+    depth: u32,
 }
 
 impl Pack {
     pub fn new() -> Self {
         Self {
             symlinks: HashMap::new(),
+            depth: 0,
         }
     }
 
@@ -41,6 +43,14 @@ impl Pack {
     where
         V: Nodelike + std::fmt::Display + Default,
     {
+        if config
+            .max_depth
+            .is_some_and(|max_depth| self.depth > max_depth)
+        {
+            self.depth -= 1;
+            return Ok(None);
+        }
+
         // resolve symlink once and map the path to the linked file or
         // to itself if it is not a symlink
         if !self.symlinks.contains_key(&path) {
@@ -64,87 +74,81 @@ impl Pack {
             match &config.symlink {
                 // early return because we want to ignore this symlink,
                 // but we still add it to self.symlinks above
-                Symlink::NoFollow => return Ok(None),
-                Symlink::Follow(optional_links) => {
-                    if optional_links.clone().is_some_and(|links| {
-                        links
-                            .iter()
-                            .find(|link| {
-                                // find by inode to avoid PathBuf comparison issue
-                                // because of . or .. being unresolved.
-                                link.symlink_metadata().unwrap().ino()
-                                    == path.symlink_metadata().unwrap().ino()
-                            })
-                            .is_some()
-                    }) || optional_links.is_none()
-                    {
-                        let mut link_trail = Vec::new();
-                        let mut link_follower = path.clone();
-                        while link_follower.is_symlink() {
-                            if link_trail.contains(&link_follower) {
-                                error!("Symlink loop detected at {:?}.", link_follower);
-                                std::process::exit(ERROR_STATUS_FUSE);
-                            }
-                            link_trail.push(link_follower.clone());
+                Symlink::NoFollow => {
+                    self.depth -= 1;
+                    return Ok(None);
+                }
+                Symlink::Follow => {
+                    let mut link_trail = Vec::new();
+                    let mut link_follower = path.clone();
+                    while link_follower.is_symlink() {
+                        if link_trail.contains(&link_follower) {
+                            error!("Symlink loop detected at {:?}.", link_follower);
+                            std::process::exit(ERROR_STATUS_FUSE);
+                        }
+                        link_trail.push(link_follower.clone());
 
-                            if path_type.is_empty() {
-                                // get the xattr of the first symlink that has it.
-                                // this has the effect of inheriting xattrs from links down the
-                                // chain.
-                                match xattr::get(&link_follower, "user.type") {
-                                    Ok(Some(xattr)) if config.allow_xattr => path_type = xattr,
-                                    Ok(_) => (),
-                                    // TODO(nad) 2023-08-07: maybe unnecessary to check for ._ as
-                                    // symlink?
-                                    Err(_) => {
-                                        // Cannot call xattr::get on ._ file
-                                        warn!(
-                                            "._ files, like {:?}, prevent xattr calls. It will be encoded in base64.",
-                                            link_follower
-                                        );
-                                        path_type = b"bytes".to_vec()
-                                    }
-                                };
-                            }
-
-                            // add the link to the mapping here if it wasn't already added above
-                            if !self.symlinks.contains_key(&link_follower) {
-                                let link = link_follower.read_link()?;
-                                if link.is_absolute() {
-                                    self.symlinks.insert(link_follower.clone(), link);
-                                } else {
-                                    self.symlinks.insert(
-                                        link_follower.clone(),
-                                        link_follower.clone().parent().unwrap().join(link),
+                        if path_type.is_empty() {
+                            // get the xattr of the first symlink that has it.
+                            // this has the effect of inheriting xattrs from links down the
+                            // chain.
+                            match xattr::get(&link_follower, "user.type") {
+                                Ok(Some(xattr)) if config.allow_xattr => path_type = xattr,
+                                Ok(_) => (),
+                                // TODO(nad) 2023-08-07: maybe unnecessary to check for ._ as
+                                // symlink?
+                                Err(_) => {
+                                    // Cannot call xattr::get on ._ file
+                                    warn!(
+                                        "._ files, like {:?}, prevent xattr calls. It will be encoded in base64.",
+                                        link_follower
                                     );
+                                    path_type = b"bytes".to_vec()
                                 }
+                            };
+                        }
+
+                        // add the link to the mapping here if it wasn't already added above
+                        if !self.symlinks.contains_key(&link_follower) {
+                            let link = link_follower.read_link()?;
+                            if link.is_absolute() {
+                                self.symlinks.insert(link_follower.clone(), link);
+                            } else {
+                                self.symlinks.insert(
+                                    link_follower.clone(),
+                                    link_follower.clone().parent().unwrap().join(link),
+                                );
                             }
-                            link_follower = self.symlinks[&link_follower].clone();
                         }
+                        link_follower = self.symlinks[&link_follower].clone();
+                    }
 
-                        if !link_follower.exists() {
-                            error!("The symlink {:?} is broken.", path);
-                            std::process::exit(ERROR_STATUS_FUSE);
-                        }
+                    if !link_follower.exists() {
+                        error!("The symlink {:?} is broken.", path);
+                        std::process::exit(ERROR_STATUS_FUSE);
+                    }
 
-                        let canonicalized = link_follower.canonicalize()?;
-                        if path.starts_with(&canonicalized) {
-                            error!(
-                                "The symlink {:?} points to some ancestor directory: {:?}",
-                                path, canonicalized
-                            );
-                            std::process::exit(ERROR_STATUS_FUSE);
-                        }
-                    } else {
-                        // optional links exist but path inode doesn't match that of any
-                        // of the specified paths.
-                        // early return because we want to ignore this symlink
-                        // but we still add it to self.symlinks above
+                    // we reached the actual destination
+                    let canonicalized = link_follower.canonicalize()?;
+                    if path.starts_with(&canonicalized) {
+                        error!(
+                            "The symlink {:?} points to some ancestor directory: {:?}",
+                            path, canonicalized
+                        );
+                        std::process::exit(ERROR_STATUS_FUSE);
+                    }
+                    if !config.allow_symlink_escape
+                        && !canonicalized.starts_with(config.mount.clone().unwrap())
+                    {
+                        warn!("The symlink {:?} points to some file outside of the directory being packed. \
+                              Specify --allow-symlink-escape to allow pack to follow this symlink.", path);
+                        self.depth -= 1;
                         return Ok(None);
                     }
                 }
             }
         }
+
         // if the xattr isn't detected yet, either path is not a symlink or
         // none of the symlinks on the chain have an xattr.
         if path_type.is_empty() {
@@ -214,6 +218,7 @@ impl Pack {
 
         info!("type of {:?} is {}", path, path_type);
 
+        // return the value
         match path_type {
             "named" => {
                 let mut children = fs::read_dir(path.clone())?
@@ -247,6 +252,7 @@ impl Pack {
                             name = child_name.to_string();
                         }
                     }
+                    self.depth += 1;
                     let value = self.pack(child.clone(), &config)?;
                     match value {
                         Some(value) => {
@@ -278,6 +284,7 @@ impl Pack {
                         warn!("skipping ignored file {:?}", child_name);
                         continue;
                     }
+                    self.depth += 1;
                     let value = self.pack(child, &config)?;
                     match value {
                         Some(value) => {
@@ -300,9 +307,13 @@ impl Pack {
                             if config.add_newlines && contents.ends_with('\n') {
                                 contents.truncate(contents.len() - 1);
                             }
+                            self.depth -= 1;
                             Ok(Some(V::from_string(t, contents, &config)))
                         }
-                        Ok(_) | Err(_) => Ok(Some(V::from_bytes(contents, &config))),
+                        Ok(_) | Err(_) => {
+                            self.depth -= 1;
+                            Ok(Some(V::from_bytes(contents, &config)))
+                        }
                     }
                 } else {
                     error!(

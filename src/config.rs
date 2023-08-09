@@ -42,6 +42,7 @@ pub struct Config {
     pub keep_macos_xattr_file: bool,
     pub symlink: Symlink,
     pub max_depth: Option<u32>,
+    pub allow_symlink_escape: bool,
     pub munge: Munge,
     pub read_only: bool,
     pub input: Input,
@@ -110,7 +111,7 @@ impl FromStr for Munge {
 #[derive(Debug)]
 pub enum Symlink {
     NoFollow,
-    Follow(Option<Vec<PathBuf>>),
+    Follow,
 }
 
 impl Config {
@@ -780,25 +781,12 @@ impl Config {
         config.add_newlines = !args.is_present("EXACT");
         config.read_only = args.is_present("READONLY");
         config.allow_xattr = !args.is_present("NOXATTR");
+        config.allow_symlink_escape = args.is_present("ALLOW_SYMLINK_ESCAPE");
         config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
         config.pretty = args.is_present("PRETTY");
 
         config.symlink = if args.is_present("FOLLOW_SYMLINKS") {
-            Symlink::Follow(None)
-        } else if args.is_present("FOLLOW_SPECIFIED_SYMLINKS") {
-            let cwd = std::env::current_dir().unwrap();
-            Symlink::Follow(Some(
-                args.values_of("FOLLOW_SPECIFIED_SYMLINKS")
-                    .unwrap()
-                    .map(|p| {
-                        if PathBuf::from(p).is_absolute() {
-                            PathBuf::from(p)
-                        } else {
-                            cwd.join(p)
-                        }
-                    })
-                    .collect(),
-            ))
+            Symlink::Follow
         } else {
             Symlink::NoFollow
         };
@@ -1015,6 +1003,7 @@ impl Default for Config {
             keep_macos_xattr_file: false,
             symlink: Symlink::NoFollow,
             max_depth: None,
+            allow_symlink_escape: false,
             munge: Munge::Rename,
             read_only: false,
             input: Input::Stdin,
