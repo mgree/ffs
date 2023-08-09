@@ -1,5 +1,4 @@
 use std::fs;
-// use std::os::unix::fs::MetadataExt;
 
 use std::collections::BTreeMap;
 use std::collections::HashMap;
@@ -138,7 +137,8 @@ impl Pack {
                         std::process::exit(ERROR_STATUS_FUSE);
                     }
                     if !config.allow_symlink_escape
-                        && !canonicalized.starts_with(config.mount.clone().unwrap())
+                        && !canonicalized
+                            .starts_with(config.mount.clone().unwrap().canonicalize().unwrap())
                     {
                         warn!("The symlink {:?} points to some file outside of the directory being packed. \
                               Specify --allow-symlink-escape to allow pack to follow this symlink.", path);
