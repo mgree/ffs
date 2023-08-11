@@ -197,7 +197,7 @@ impl Pack {
                                     "file {} is missing from the range of the number of files [0,{})",
                                     i, parsed_ints.len() as u32
                                 );
-                                path_type = "map";
+                                path_type = "named";
                                 break;
                             }
                             i += 1;

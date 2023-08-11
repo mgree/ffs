@@ -271,5 +271,33 @@ if [ "$RUNNER_OS" = "macOS" ] || [ "$(uname)" = "Darwin" ]; then
     # diff "$EXP" "$OUT" || fail "test5 follow-specified"
 fi
 
+rm -r "$MNT"
+mkdir "$MNT"
+
+# test for allowing symlink to escape packed directory
+# test6
+# ├── a
+# │  ├── a
+# │  ├── b
+# │  └── c -> ../b/c
+# └── b
+#    └── c
+
+cd "$MNT"
+mkdir a b
+echo "a" >a/a
+echo "b" >a/b
+echo "c" >b/c
+cd a
+ln -s ../b/c c
+
+pack -L -- "$MNT"/a >/dev/null 2>"$OUT" || fail pack17
+cat "$OUT" | grep "Specify --allow-symlink-escape" >/dev/null 2>&1 || fail "test6 follow but no escape"
+
+printf '{"a":"a","b":"b","c":"c"}' >"$EXP"
+pack -L --allow-symlink-escape -- "$MNT"/a >"$OUT" || fail pack18
+diff "$EXP" "$OUT" || fail "test6 follow and escape"
+
+
 rm "$EXP" "$OUT"
 rm -r "$MNT"
