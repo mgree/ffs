@@ -16,7 +16,6 @@ use format::{Format, Nodelike, Typ};
 
 use ::xattr;
 
-#[allow(dead_code)]
 fn unpack<V>(root: V, root_path: PathBuf, config: &Config) -> std::io::Result<()>
 where
     V: Nodelike + std::fmt::Display + Default,
@@ -140,7 +139,6 @@ fn main() -> std::io::Result<()> {
     let config = Config::from_unpack_args();
     info!("received config: {:?}", config);
 
-    assert!(config.mount.is_some());
     let mount = match &config.mount {
         Some(mount) => mount.clone(),
         None => {
@@ -158,8 +156,6 @@ fn main() -> std::io::Result<()> {
         }
     };
 
-    // TODO (nad) add subdirectory check not just root directory check
-    // TODO (nad) 2023-03-16 fix the amount of clones maybe
     let result = match &config.input_format {
         Format::Json => {
             let value = JsonValue::from_reader(reader);

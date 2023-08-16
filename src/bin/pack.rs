@@ -42,39 +42,26 @@ impl Pack {
     where
         V: Nodelike + std::fmt::Display + Default,
     {
+        // don't continue packing if max depth is reached
         if config
             .max_depth
             .is_some_and(|max_depth| self.depth > max_depth)
         {
-            self.depth -= 1;
             return Ok(None);
         }
 
-        // resolve symlink once and map the path to the linked file or
-        // to itself if it is not a symlink
-        if !self.symlinks.contains_key(&path) {
-            if !path.is_symlink() {
-                self.symlinks.insert(path.clone(), path.clone());
-            } else {
-                let link = path.read_link()?;
-                if link.is_absolute() {
-                    self.symlinks.insert(path.clone(), link);
-                } else {
-                    self.symlinks
-                        .insert(path.clone(), path.clone().parent().unwrap().join(link));
-                }
-            }
-        }
-
-        // get the xattr of the file
+        // get the type of data from xattr if it exists
         let mut path_type: Vec<u8> = Vec::new();
-        // if it is a symlink
-        if path.is_symlink() {
+
+        if !path.is_symlink() {
+            // add the path to the mapping for this non-symlink file.
+            if !self.symlinks.contains_key(&path) {
+                self.symlinks.insert(path.clone(), path.clone());
+            }
+        } else {
             match &config.symlink {
-                // early return because we want to ignore this symlink,
-                // but we still add it to self.symlinks above
                 Symlink::NoFollow => {
-                    self.depth -= 1;
+                    // early return because we want to ignore symlinks,
                     return Ok(None);
                 }
                 Symlink::Follow => {
@@ -88,26 +75,27 @@ impl Pack {
                         link_trail.push(link_follower.clone());
 
                         if path_type.is_empty() {
-                            // get the xattr of the first symlink that has it.
+                            // get the xattr of the first symlink that has it defined.
                             // this has the effect of inheriting xattrs from links down the
                             // chain.
                             match xattr::get(&link_follower, "user.type") {
                                 Ok(Some(xattr)) if config.allow_xattr => path_type = xattr,
-                                Ok(_) => (),
+                                Ok(_) | Err(_) => (),
                                 // TODO(nad) 2023-08-07: maybe unnecessary to check for ._ as
                                 // symlink?
-                                Err(_) => {
-                                    // Cannot call xattr::get on ._ file
-                                    warn!(
-                                        "._ files, like {:?}, prevent xattr calls. It will be encoded in base64.",
-                                        link_follower
-                                    );
-                                    path_type = b"bytes".to_vec()
-                                }
+                                // Err(_) => {
+                                //     // Cannot call xattr::get on ._ file
+                                //     warn!(
+                                //         "._ files, like {:?}, prevent xattr calls. It will be encoded in base64.",
+                                //         link_follower
+                                //     );
+                                //     path_type = b"bytes".to_vec()
+                                // }
                             };
                         }
 
-                        // add the link to the mapping here if it wasn't already added above
+                        // add the link to the mapping to reduce future read_link calls for each
+                        // symlink on the chain.
                         if !self.symlinks.contains_key(&link_follower) {
                             let link = link_follower.read_link()?;
                             if link.is_absolute() {
@@ -127,7 +115,7 @@ impl Pack {
                         std::process::exit(ERROR_STATUS_FUSE);
                     }
 
-                    // we reached the actual destination
+                    // pack reached the actual destination
                     let canonicalized = link_follower.canonicalize()?;
                     if path.starts_with(&canonicalized) {
                         error!(
@@ -137,20 +125,18 @@ impl Pack {
                         std::process::exit(ERROR_STATUS_FUSE);
                     }
                     if !config.allow_symlink_escape
-                        && !canonicalized
-                            .starts_with(config.mount.clone().unwrap().canonicalize().unwrap())
+                        && !canonicalized.starts_with(config.mount.clone().unwrap())
                     {
                         warn!("The symlink {:?} points to some file outside of the directory being packed. \
                               Specify --allow-symlink-escape to allow pack to follow this symlink.", path);
-                        self.depth -= 1;
                         return Ok(None);
                     }
                 }
             }
         }
 
-        // if the xattr isn't detected yet, either path is not a symlink or
-        // none of the symlinks on the chain have an xattr.
+        // if the xattr is still not set, either path is not a symlink or
+        // none of the symlinks on the chain have an xattr. Use the actual file's xattr
         if path_type.is_empty() {
             let canonicalized = path.canonicalize()?;
             path_type = match xattr::get(&canonicalized, "user.type") {
@@ -218,7 +204,7 @@ impl Pack {
 
         info!("type of {:?} is {}", path, path_type);
 
-        // return the value
+        // return the value based on determined type
         match path_type {
             "named" => {
                 let mut children = fs::read_dir(path.clone())?
@@ -236,7 +222,7 @@ impl Pack {
                     }
                     let name: String;
                     match xattr::get(&child, "user.original_name") {
-                        Ok(Some(original_name)) => {
+                        Ok(Some(original_name)) if config.allow_xattr => {
                             let old_name = str::from_utf8(&original_name).unwrap();
                             if !config.valid_name(old_name) {
                                 // original name must have been munged, so restore original
@@ -248,17 +234,16 @@ impl Pack {
                             }
                         }
                         Ok(_) | Err(_) => {
-                            // use current name because xattr is None or getting xattr on files (like ._ files) errors
+                            // use current name because either --no-xattr is set,
+                            // xattr is None, or getting xattr on file (like ._ files) errors
                             name = child_name.to_string();
                         }
                     }
                     self.depth += 1;
                     let value = self.pack(child.clone(), &config)?;
-                    match value {
-                        Some(value) => {
-                            entries.insert(name, value);
-                        }
-                        None => continue,
+                    self.depth -= 1;
+                    if let Some(value) = value {
+                        entries.insert(name, value);
                     }
                 }
 
@@ -286,11 +271,9 @@ impl Pack {
                     }
                     self.depth += 1;
                     let value = self.pack(child, &config)?;
-                    match value {
-                        Some(value) => {
-                            entries.push(value);
-                        }
-                        None => continue,
+                    self.depth -= 1;
+                    if let Some(value) = value {
+                        entries.push(value);
                     }
                 }
 
@@ -307,13 +290,9 @@ impl Pack {
                             if config.add_newlines && contents.ends_with('\n') {
                                 contents.truncate(contents.len() - 1);
                             }
-                            self.depth -= 1;
                             Ok(Some(V::from_string(t, contents, &config)))
                         }
-                        Ok(_) | Err(_) => {
-                            self.depth -= 1;
-                            Ok(Some(V::from_bytes(contents, &config)))
-                        }
+                        Ok(_) | Err(_) => Ok(Some(V::from_bytes(contents, &config))),
                     }
                 } else {
                     error!(
@@ -340,8 +319,7 @@ fn main() -> std::io::Result<()> {
         }
     };
 
-    let mut folder = PathBuf::from(mount);
-    folder = folder.canonicalize()?;
+    let folder = PathBuf::from(mount);
 
     let writer = match config.output_writer() {
         Some(writer) => writer,

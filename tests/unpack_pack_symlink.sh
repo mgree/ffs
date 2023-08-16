@@ -63,6 +63,8 @@ typeof() {
 MNT=$(mktemp -d)
 EXP=$(mktemp)
 OUT=$(mktemp)
+mv "$OUT" "$OUT".json
+OUT="$OUT".json
 
 # chain of symlinks and symlink to directory
 # test0
@@ -95,10 +97,6 @@ diff "$EXP" "$OUT" || fail "test0 no-follow"
 printf '{"a":"a","b":"a","c":"a","d":"a","e":"a","tree":{"about":"tree about","root":"tree root"},"treecopy":{"about":"tree about","root":"tree root"}}' >"$EXP"
 pack -o "$OUT" -L -- "$MNT" || fail pack2
 diff "$EXP" "$OUT" || fail "test0 follow"
-
-# printf '{"a":"a","d":"a","tree":{"about":"tree about","root":"tree root"}}' >"$EXP"
-# pack -o "$OUT" -H "$MNT"/d -- "$MNT" || fail pack3
-# diff "$EXP" "$OUT" || fail "test0 follow-specified"
 
 rm -r "$MNT"
 mkdir "$MNT"
@@ -134,16 +132,12 @@ ln -s 2 3
 ln -s 3 4
 
 printf '{"ascending":[4],"descending":[0]}' >"$EXP"
-pack -o "$OUT" -- "$MNT" || fail pack4
+pack -o "$OUT" -- "$MNT" || fail pack3
 diff "$EXP" "$OUT" || fail "test1 no-follow"
 
 printf '{"ascending":[4,4,4,4,4],"descending":[0,0,0,0,0]}' >"$EXP"
-pack -o "$OUT" -L -- "$MNT" || fail pack5
+pack -o "$OUT" -L -- "$MNT" || fail pack4
 diff "$EXP" "$OUT" || fail "test1 follow"
-
-# printf '{"ascending":[4,4],"descending":[0,0]}' >"$EXP"
-# pack -o "$OUT" -H "$MNT"/ascending/2 "$MNT"/descending/3 -- "$MNT" || fail pack6
-# diff "$EXP" "$OUT" || fail "test1 follow-specified"
 
 rm -r "$MNT"
 mkdir "$MNT"
@@ -168,16 +162,12 @@ ln -s ../../other/file/data rel
 ln -s "$MNT"/path/to/other/file/data abs
 
 printf '{"path":{"to":{"other":{"file":{"data":null}},"some":{"link":{}}}}}' >"$EXP"
-pack -o "$OUT" -- "$MNT" || fail pack7
+pack -o "$OUT" -- "$MNT" || fail pack5
 diff "$EXP" "$OUT" || fail "test2 no-follow"
 
 printf '{"path":{"to":{"other":{"file":{"data":null}},"some":{"link":{"abs":null,"rel":null}}}}}' >"$EXP"
-pack -o "$OUT" -L -- "$MNT" || fail pack8
+pack -o "$OUT" -L -- "$MNT" || fail pack6
 diff "$EXP" "$OUT" || fail "test2 follow"
-
-# printf '{"path":{"to":{"other":{"file":{"data":null}},"some":{"link":{"abs":null}}}}}' >"$EXP"
-# pack -o "$OUT" -H "$MNT"/path/to/some/link/abs -- "$MNT" || fail pack9
-# diff "$EXP" "$OUT" || fail "test2 follow-specified"
 
 rm -r "$MNT"
 mkdir "$MNT"
@@ -200,10 +190,10 @@ cd path/to/some/link
 ln -s ../../some linkfile
 
 printf '{"path":{"to":{"other":{"file":{"data":null}},"some":{"link":{}}}}}' >"$EXP"
-pack -o "$OUT" -- "$MNT" || fail pack10
+pack -o "$OUT" -- "$MNT" || fail pack7
 diff "$EXP" "$OUT" || fail "test3 no-follow"
 
-pack -L -- "$MNT" >/dev/null 2>"$OUT" && fail "pack11 symlink to ancestor error"
+pack -L -- "$MNT" >/dev/null 2>"$OUT" && fail "pack8 symlink to ancestor error"
 cat "$OUT" | grep "ancestor directory" >/dev/null 2>&1 || fail "test3 follow expected error"
 
 rm -r "$MNT"
@@ -227,10 +217,10 @@ ln -s e f
 ln -s b a
 
 printf '{}' >"$EXP"
-pack -o "$OUT" -- "$MNT" || fail pack12
+pack -o "$OUT" -- "$MNT" || fail pack9
 diff "$EXP" "$OUT" || fail "test4 no-follow"
 
-pack -L -- "$MNT" >/dev/null 2>"$OUT" && fail "pack13 symlink loop error"
+pack -L -- "$MNT" >/dev/null 2>"$OUT" && fail "pack10 symlink loop error"
 cat "$OUT" | grep "Symlink loop detected" >/dev/null 2>&1 || fail "test4 follow expected error"
 
 if [ "$RUNNER_OS" = "macOS" ] || [ "$(uname)" = "Darwin" ]; then
@@ -259,16 +249,12 @@ if [ "$RUNNER_OS" = "macOS" ] || [ "$(uname)" = "Darwin" ]; then
     setattr user.type bytes e
 
     printf '{"a":4}' >"$EXP"
-    pack -o "$OUT" -- "$MNT" || fail pack14
+    pack -o "$OUT" -- "$MNT" || fail pack11
     diff "$EXP" "$OUT" || fail "test5 no-follow"
 
     printf '{"a":4,"b":4,"c":"4","d":"4","e":"NAo=","f":"NAo="}' >"$EXP"
-    pack -o "$OUT" -L -- "$MNT" || fail pack15
+    pack -o "$OUT" -L -- "$MNT" || fail pack12
     diff "$EXP" "$OUT" || fail "test5 follow"
-
-    # printf '{"a":4,"b":4,"d":"4","f":"NAo="}' >"$EXP"
-    # pack -o "$OUT" -H "$MNT"/b "$MNT"/d "$MNT"/f -- "$MNT" || fail pack16
-    # diff "$EXP" "$OUT" || fail "test5 follow-specified"
 fi
 
 rm -r "$MNT"
@@ -291,11 +277,11 @@ echo "c" >b/c
 cd a
 ln -s ../b/c c
 
-pack -L -- "$MNT"/a >/dev/null 2>"$OUT" || fail pack17
+pack -L -- "$MNT"/a >/dev/null 2>"$OUT" || fail pack13
 cat "$OUT" | grep "Specify --allow-symlink-escape" >/dev/null 2>&1 || fail "test6 follow but no escape"
 
 printf '{"a":"a","b":"b","c":"c"}' >"$EXP"
-pack -L --allow-symlink-escape -- "$MNT"/a >"$OUT" || fail pack18
+pack -L --allow-symlink-escape -- "$MNT"/a >"$OUT" || fail pack14
 diff "$EXP" "$OUT" || fail "test6 follow and escape"
 
 

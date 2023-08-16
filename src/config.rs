@@ -578,7 +578,7 @@ impl Config {
                         EnvFilter::new("unpack=warn")
                     }
                 })
-                .add_directive("ffs::config=error".parse().unwrap());
+                .add_directive("ffs::config=warn".parse().unwrap());
             let fmt_layer = fmt::layer().with_writer(std::io::stderr);
             tracing_subscriber::registry()
                 .with(filter_layer)
@@ -768,7 +768,7 @@ impl Config {
                         EnvFilter::new("pack=warn")
                     }
                 })
-                .add_directive("ffs::config=error".parse().unwrap());
+                .add_directive("ffs::config=warn".parse().unwrap());
             let fmt_layer = fmt::layer().with_writer(std::io::stderr);
             tracing_subscriber::registry()
                 .with(filter_layer)
@@ -793,10 +793,13 @@ impl Config {
 
         config.max_depth = match args.value_of("MAXDEPTH") {
             Some(s) => match str::parse(s) {
-                Ok(depth) if depth > 0 => Some(depth),
-                Ok(_) | Err(_) => {
-                    warn!("Invalid `--max-depth` '{}', using no limit.", s);
-                    None
+                Ok(depth) => Some(depth),
+                Err(_) => {
+                    error!(
+                        "Invalid `--max-depth` '{}', must be a non-negative integer.",
+                        s
+                    );
+                    std::process::exit(ERROR_STATUS_CLI);
                 }
             },
             None => None,
@@ -832,7 +835,7 @@ impl Config {
 
         // set the mount from the input directory
         config.mount = match &config.input {
-            Input::File(file) => Some(file.clone()),
+            Input::File(file) => Some(file.clone().canonicalize().unwrap()),
             _ => {
                 error!("Input must be a file or directory.");
                 std::process::exit(ERROR_STATUS_CLI);
