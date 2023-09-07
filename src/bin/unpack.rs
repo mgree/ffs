@@ -1,5 +1,5 @@
 use fuser::FileType;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 use std::collections::VecDeque;
 use std::fs;
@@ -35,7 +35,7 @@ where
                     .open(&path)?;
 
                 // write `s` into that file
-                write!(f, "{}", s)?;
+                f.write(s.as_bytes())?;
 
                 // set metadata according to `t`
                 if config.allow_xattr {
@@ -125,9 +125,9 @@ where
             }
         }
 
-        if let Some(_original_name) = original_name {
+        if let Some(original_name) = original_name {
             if config.allow_xattr {
-                xattr::set(&path, "user.original_name", _original_name.as_bytes())?;
+                xattr::set(&path, "user.original_name", original_name.as_bytes())?;
             }
         }
     }
@@ -137,7 +137,7 @@ where
 
 fn main() -> std::io::Result<()> {
     let config = Config::from_unpack_args();
-    info!("received config: {:?}", config);
+    debug!("received config: {:?}", config);
 
     let mount = match &config.mount {
         Some(mount) => mount.clone(),

@@ -13,7 +13,7 @@ pub fn ffs() -> App<'static, 'static> {
         .about("file fileystem")
         .arg(
             Arg::with_name("SHELL")
-                .help("Generate shell completions (and exits)")
+                .help("Generate shell completions (and exit)")
                 .long("completions")
                 .takes_value(true)
                 .possible_values(&["bash", "fish", "zsh"])
@@ -177,7 +177,7 @@ pub fn unpack() -> App<'static, 'static> {
         .about("unpack structured data into a directory")
         .arg(
             Arg::with_name("SHELL")
-                .help("Generate shell completions (and exits)")
+                .help("Generate shell completions (and exit)")
                 .long("completions")
                 .takes_value(true)
                 .possible_values(&["bash", "fish", "zsh"])
@@ -253,7 +253,7 @@ pub fn pack() -> App<'static, 'static> {
         .about("pack directory")
         .arg(
             Arg::with_name("SHELL")
-                .help("Generate shell completions (and exits)")
+                .help("Generate shell completions (and exit)")
                 .long("completions")
                 .takes_value(true)
                 .possible_values(&["bash", "fish", "zsh"])

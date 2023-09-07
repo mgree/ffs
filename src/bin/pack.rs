@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use std::str;
 use std::str::FromStr;
 
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 use ffs::config::Config;
 use ffs::config::Symlink;
@@ -119,7 +119,7 @@ impl Pack {
                     let canonicalized = link_follower.canonicalize()?;
                     if path.starts_with(&canonicalized) {
                         error!(
-                            "The symlink {:?} points to some ancestor directory: {:?}",
+                            "The symlink {:?} points to some ancestor directory: {:?}, causing an infinite loop.",
                             path, canonicalized
                         );
                         std::process::exit(ERROR_STATUS_FUSE);
@@ -309,7 +309,7 @@ impl Pack {
 
 fn main() -> std::io::Result<()> {
     let config = Config::from_pack_args();
-    info!("received config: {:?}", config);
+    debug!("received config: {:?}", config);
 
     let mount = match &config.mount {
         Some(mount) => mount,

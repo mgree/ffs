@@ -160,7 +160,6 @@ where
             Node::String(t, s) => (Entry::File(t, s.into_bytes()), Option::None),
             Node::List(vs) => {
                 let mut children = BTreeMap::new();
-                // children.reserve(vs.len()); TODO (nad) 2023-04-04 deal with BTree and capacity
                 let num_elts = vs.len() as f64;
                 let width = num_elts.log10().ceil() as usize;
 
@@ -200,8 +199,6 @@ where
             }
             Node::Map(fvs) => {
                 let mut children = BTreeMap::new();
-                // children.reserve(fvs.len()); TODO (nad) 2023-04-04 deal with BTree and capacity
-
                 let mut new_nodes = Vec::with_capacity(fvs.len());
                 for (field, child) in fvs.into_iter() {
                     let original = field.clone();
@@ -525,7 +522,7 @@ where
                 V::from_list_dir(entries, &self.config)
             }
             Entry::Directory(DirType::Named, files) => {
-                let mut entries = BTreeMap::new();// TODO (nad) 2023-04-04 deal with BTree and capacity
+                let mut entries = BTreeMap::new();
                 for (
                     name,
                     DirEntry {
@@ -589,7 +586,7 @@ where
                 U::from_list_dir(entries, &self.config)
             }
             Entry::Directory(DirType::Named, files) => {
-                let mut entries = BTreeMap::new();// TODO (nad) 2023-04-04 deal with BTree and capacity
+                let mut entries = BTreeMap::new();
 
                 let files = files
                     .iter()
@@ -1386,7 +1383,7 @@ where
         } else {
             assert_eq!(file_type, libc::S_IFDIR as u32);
             (
-                Entry::Directory(DirType::Named, BTreeMap::new()), // TODO (nad) 2023-04-04 deal with BTree and capacity
+                Entry::Directory(DirType::Named, BTreeMap::new()),
                 FileType::Directory,
             )
         };
@@ -1466,7 +1463,7 @@ where
         };
 
         // create the inode entry
-        let entry = Entry::Directory(DirType::Named, BTreeMap::new()); // TODO (nad) 2023-04-04 deal with BTree and capacity
+        let entry = Entry::Directory(DirType::Named, BTreeMap::new());
         let kind = FileType::Directory;
 
         // allocate the inode (sets dirty bit)
