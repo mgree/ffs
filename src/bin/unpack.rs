@@ -23,9 +23,7 @@ where
     let mut queue: VecDeque<(V, PathBuf, Option<String>)> = VecDeque::new();
     queue.push_back((root, root_path.clone(), None));
 
-    while !queue.is_empty() {
-        let (v, path, original_name) = queue.pop_front().unwrap();
-
+    while let Some((v, path, original_name)) = queue.pop_front() {
         match v.node(config) {
             format::Node::String(t, s) => {
                 // make a regular file at `path`
