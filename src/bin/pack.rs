@@ -152,7 +152,13 @@ impl Pack {
         let mut path_type: &str = str::from_utf8(&path_type).unwrap();
 
         // resolve path type if it is 'auto'
-        if path_type == "auto" && path.is_dir() {
+        if path.is_dir() && (path_type == "auto" || path_type != "named" && path_type != "list") {
+            if path_type != "auto" {
+                warn!(
+                    "Unknown directory type '{}'. Possible types are 'named' or 'list'. Resolving type automatically.",
+                    path_type
+                );
+            }
             let try_parsing_to_int = fs::read_dir(path.clone())?
                 .map(|res| res.map(|e| e.path()))
                 .map(|e| {
@@ -189,12 +195,6 @@ impl Pack {
                     path_type = "named";
                 }
             }
-        } else if path_type == "auto" && !path.is_file() {
-            // TODO(nad) 2023-09-08 Is this even necessary to check?
-            // I'm not sure whether pipes and other special files could
-            // cause problems or even count as files in the .is_file() check.
-            error!("{:?} has unknown type and it is an unsupported file type (i.e. not file, directory).", path.display());
-            std::process::exit(ERROR_STATUS_FUSE);
         }
 
         info!("type of {:?} is {}", path, path_type);
