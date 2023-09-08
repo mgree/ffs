@@ -107,7 +107,10 @@ impl Pack {
 
                     if !link_follower.exists() {
                         // the symlink is broken, so don't pack this file.
-                        warn!("The symlink {:?} is broken.", path);
+                        warn!(
+                            "The symlink at the end of the chain starting from '{:?}' is broken.",
+                            path
+                        );
                         return Ok(None);
                         // TODO(nad) 2023-09-08 maybe add a bool for `broken` in the mapping,
                         // so for all symlinks on the chain that you take, no future attempt would
