@@ -106,8 +106,13 @@ impl Pack {
                     }
 
                     if !link_follower.exists() {
-                        error!("The symlink {:?} is broken.", path);
-                        std::process::exit(ERROR_STATUS_FUSE);
+                        // the symlink is broken, so don't pack this file.
+                        warn!("The symlink {:?} is broken.", path);
+                        return Ok(None);
+                        // TODO(nad) 2023-09-08 maybe add a bool for `broken` in the mapping,
+                        // so for all symlinks on the chain that you take, no future attempt would
+                        // have to loop all the way to the link that is actually broken.
+                        // Not sure about memory/runtime tradeoff yet.
                     }
 
                     // pack reached the actual destination
