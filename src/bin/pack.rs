@@ -53,12 +53,7 @@ impl Pack {
         // get the type of data from xattr if it exists
         let mut path_type: Vec<u8> = Vec::new();
 
-        if !path.is_symlink() {
-            // add the path to the mapping for this non-symlink file.
-            if !self.symlinks.contains_key(&path) {
-                self.symlinks.insert(path.clone(), path.clone());
-            }
-        } else {
+        if path.is_symlink() {
             match &config.symlink {
                 Symlink::NoFollow => {
                     // early return because we want to ignore symlinks,
@@ -125,7 +120,7 @@ impl Pack {
                         std::process::exit(ERROR_STATUS_FUSE);
                     }
                     if !config.allow_symlink_escape
-                        && !canonicalized.starts_with(config.mount.clone().unwrap())
+                        && !canonicalized.starts_with(config.mount.as_ref().unwrap())
                     {
                         warn!("The symlink {:?} points to some file outside of the directory being packed. \
                               Specify --allow-symlink-escape to allow pack to follow this symlink.", path);
@@ -141,7 +136,7 @@ impl Pack {
             let canonicalized = path.canonicalize()?;
             path_type = match xattr::get(&canonicalized, "user.type") {
                 Ok(Some(xattr_type)) if config.allow_xattr => xattr_type,
-                Ok(_) => b"detect".to_vec(),
+                Ok(_) => b"auto".to_vec(),
                 Err(_) => {
                     // Cannot call xattr::get on ._ file
                     warn!(
@@ -156,50 +151,50 @@ impl Pack {
         // convert detected xattr from Vec to str
         let mut path_type: &str = str::from_utf8(&path_type).unwrap();
 
-        // resolve type if it is 'detect'
-        if path_type == "detect" {
-            if path.is_file() {
-                path_type = "auto";
-            } else if path.is_dir() {
-                let try_parsing_to_int = fs::read_dir(path.clone())?
-                    .map(|res| res.map(|e| e.path()))
-                    .map(|e| {
-                        e.unwrap()
-                            .file_name()
-                            .unwrap()
-                            .to_str()
-                            .unwrap()
-                            .parse::<u32>()
-                    })
-                    .collect::<Result<Vec<_>, _>>();
-                info!("parsed names or parse error: {:?}", try_parsing_to_int);
-                match try_parsing_to_int {
-                    Ok(mut parsed_ints) => {
-                        parsed_ints.sort_unstable();
-                        let mut i = 0;
-                        for parsed_int in parsed_ints.clone() {
-                            if parsed_int != i {
-                                info!(
-                                    "file {} is missing from the range of the number of files [0,{})",
-                                    i, parsed_ints.len() as u32
-                                );
-                                path_type = "named";
-                                break;
-                            }
-                            i += 1;
+        // resolve path type if it is 'auto'
+        if path_type == "auto" && path.is_dir() {
+            let try_parsing_to_int = fs::read_dir(path.clone())?
+                .map(|res| res.map(|e| e.path()))
+                .map(|e| {
+                    e.unwrap()
+                        .file_name()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .parse::<u32>()
+                })
+                .collect::<Result<Vec<_>, _>>();
+            info!("parsed names or parse error: {:?}", try_parsing_to_int);
+            match try_parsing_to_int {
+                Ok(mut parsed_ints) => {
+                    parsed_ints.sort_unstable();
+                    let mut i = 0;
+                    for parsed_int in parsed_ints.clone() {
+                        if parsed_int != i {
+                            info!(
+                                "file {} is missing from the range of the number of files [0,{})",
+                                i,
+                                parsed_ints.len() as u32
+                            );
+                            path_type = "named";
+                            break;
                         }
-                        if i == parsed_ints.len() as u32 {
-                            path_type = "list";
-                        }
+                        i += 1;
                     }
-                    Err(_) => {
-                        path_type = "named";
+                    if i == parsed_ints.len() as u32 {
+                        path_type = "list";
                     }
                 }
-            } else {
-                error!("{:?} has unknown type and it is an unsupported file type (i.e. not file, directory).", path.display());
-                std::process::exit(ERROR_STATUS_FUSE);
+                Err(_) => {
+                    path_type = "named";
+                }
             }
+        } else if path_type == "auto" && !path.is_file() {
+            // TODO(nad) 2023-09-08 Is this even necessary to check?
+            // I'm not sure whether pipes and other special files could
+            // cause problems or even count as files in the .is_file() check.
+            error!("{:?} has unknown type and it is an unsupported file type (i.e. not file, directory).", path.display());
+            std::process::exit(ERROR_STATUS_FUSE);
         }
 
         info!("type of {:?} is {}", path, path_type);
