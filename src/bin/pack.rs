@@ -26,7 +26,10 @@ use format::Typ;
 use ::xattr;
 
 pub struct Pack {
-    pub symlinks: HashMap<PathBuf, PathBuf>,
+    // mapping of symlink to:
+    // PathBuf of link destination
+    // bool of whether symlink chain ends in a broken link
+    pub symlinks: HashMap<PathBuf, (PathBuf, bool)>,
     depth: u32,
 }
 
@@ -94,28 +97,34 @@ impl Pack {
                         if !self.symlinks.contains_key(&link_follower) {
                             let link = link_follower.read_link()?;
                             if link.is_absolute() {
-                                self.symlinks.insert(link_follower.clone(), link);
+                                self.symlinks.insert(link_follower.clone(), (link, false));
                             } else {
                                 self.symlinks.insert(
                                     link_follower.clone(),
-                                    link_follower.clone().parent().unwrap().join(link),
+                                    (link_follower.clone().parent().unwrap().join(link), false),
                                 );
                             }
                         }
-                        link_follower = self.symlinks[&link_follower].clone();
+                        if self.symlinks[&link_follower].1 {
+                            // .1 is a bool to tell if symlink is broken
+                            // the symlink either is broken or links to a broken symlink.
+                            // stop the traversal immediately and update mapping if possible
+                            break;
+                        }
+                        link_follower = self.symlinks[&link_follower].0.clone();
                     }
 
-                    if !link_follower.exists() {
+                    if self.symlinks[link_trail.last().unwrap()].1 || !link_follower.exists() {
                         // the symlink is broken, so don't pack this file.
                         warn!(
                             "The symlink at the end of the chain starting from '{:?}' is broken.",
                             path
                         );
+                        for link in link_trail {
+                            let (next_link, _) = &self.symlinks[&link];
+                            self.symlinks.insert(link, (next_link.to_path_buf(), true));
+                        }
                         return Ok(None);
-                        // TODO(nad) 2023-09-08 maybe add a bool for `broken` in the mapping,
-                        // so for all symlinks on the chain that you take, no future attempt would
-                        // have to loop all the way to the link that is actually broken.
-                        // Not sure about memory/runtime tradeoff yet.
                     }
 
                     // pack reached the actual destination
