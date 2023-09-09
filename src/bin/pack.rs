@@ -24,6 +24,7 @@ use format::Nodelike;
 use format::Typ;
 
 use ::xattr;
+use regex::Regex;
 
 pub struct SymlinkMapData {
     link: PathBuf,
@@ -36,6 +37,7 @@ pub struct Pack {
     // bool of whether symlink chain ends in a broken link
     pub symlinks: HashMap<PathBuf, SymlinkMapData>,
     depth: u32,
+    regex: Regex,
 }
 
 impl Pack {
@@ -43,6 +45,7 @@ impl Pack {
         Self {
             symlinks: HashMap::new(),
             depth: 0,
+            regex: Regex::new("^-?[0-9]+").unwrap(),
         }
     }
 
@@ -188,46 +191,20 @@ impl Pack {
         if path.is_dir() && (path_type == "auto" || path_type != "named" && path_type != "list") {
             if path_type != "auto" {
                 warn!(
-                    "Unknown directory type '{}'. Possible types are 'named' or 'list'. Resolving type automatically.",
+                    "Unknown directory type '{}'. Possible types are 'named' or 'list'. \
+                    Resolving type automatically.",
                     path_type
                 );
             }
-            let try_parsing_to_int = fs::read_dir(path.clone())?
+            let all_files_begin_with_num = fs::read_dir(path.clone())?
                 .map(|res| res.map(|e| e.path()))
-                .map(|e| {
-                    e.unwrap()
-                        .file_name()
-                        .unwrap()
-                        .to_str()
-                        .unwrap()
-                        .parse::<u32>()
-                })
-                .collect::<Result<Vec<_>, _>>();
-            info!("parsed names or parse error: {:?}", try_parsing_to_int);
-            match try_parsing_to_int {
-                Ok(mut parsed_ints) => {
-                    parsed_ints.sort_unstable();
-                    let mut i = 0;
-                    for parsed_int in parsed_ints.clone() {
-                        if parsed_int != i {
-                            info!(
-                                "file {} is missing from the range of the number of files [0,{})",
-                                i,
-                                parsed_ints.len() as u32
-                            );
-                            path_type = "named";
-                            break;
-                        }
-                        i += 1;
-                    }
-                    if i == parsed_ints.len() as u32 {
-                        path_type = "list";
-                    }
-                }
-                Err(_) => {
-                    path_type = "named";
-                }
-            }
+                .map(|e| e.unwrap().file_name().unwrap().to_str().unwrap().to_owned())
+                .all(|filename| self.regex.is_match(&filename));
+            if all_files_begin_with_num {
+                path_type = "list"
+            } else {
+                path_type = "named"
+            };
         }
 
         info!("type of {:?} is {}", path, path_type);
@@ -278,23 +255,50 @@ impl Pack {
                 Ok(Some(V::from_named_dir(entries, &config)))
             }
             "list" => {
-                let mut children = fs::read_dir(path.clone())?
+                // TODO(nad) 2023-09-09 regex matching done twice
+                // is this efficient?
+                let mut numbers_filenames_paths = fs::read_dir(path.clone())?
                     .map(|res| res.map(|e| e.path()))
-                    .collect::<Result<Vec<_>, Error>>()?;
-                children.sort_unstable_by(|a, b| {
-                    a.file_name()
-                        .unwrap()
-                        .to_str()
-                        .unwrap()
-                        .cmp(&b.file_name().unwrap().to_str().unwrap())
-                });
+                    .map(|p| {
+                        (
+                            p.as_ref()
+                                .unwrap()
+                                .file_name()
+                                .unwrap()
+                                .to_str()
+                                .unwrap()
+                                .to_owned(),
+                            p.unwrap(),
+                        )
+                    })
+                    .map(|(filename, p)| {
+                        // store a triple (integer, file basename, full pathbuf)
+                        // full pathbuf must be retained for symlink support.
+                        (
+                            match self.regex.find(&filename) {
+                                Some(m) => filename[m.range()].parse::<i32>().unwrap(),
+                                // use max i32 to give a default functionality for directories
+                                // that are forced into being lists, which doesn't guarantee
+                                // that filenames start with integers.
+                                None => i32::MAX,
+                            },
+                            // filenames in a directory are guaranteed to be different, so it
+                            // probably is the case that the PathBuf is never compared. Also,
+                            // filename is much shorter than the entire path, so that also saves
+                            // time.
+                            filename,
+                            p,
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                numbers_filenames_paths.sort();
 
-                let mut entries = Vec::with_capacity(children.len());
+                info!("parsed numbers and filenames {:?}", numbers_filenames_paths);
 
-                for child in children {
-                    let child_name = child.file_name().unwrap().to_str().unwrap();
-                    if config.ignored_file(child_name) {
-                        warn!("skipping ignored file {:?}", child_name);
+                let mut entries = Vec::with_capacity(numbers_filenames_paths.len());
+                for (_, filename, child) in numbers_filenames_paths {
+                    if config.ignored_file(&filename) {
+                        warn!("skipping ignored file {:?}", child);
                         continue;
                     }
                     self.depth += 1;
