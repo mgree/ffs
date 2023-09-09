@@ -25,11 +25,16 @@ use format::Typ;
 
 use ::xattr;
 
+pub struct SymlinkMapData {
+    link: PathBuf,
+    is_broken: bool,
+}
+
 pub struct Pack {
     // mapping of symlink to:
     // PathBuf of link destination
     // bool of whether symlink chain ends in a broken link
-    pub symlinks: HashMap<PathBuf, (PathBuf, bool)>,
+    pub symlinks: HashMap<PathBuf, SymlinkMapData>,
     depth: u32,
 }
 
@@ -96,33 +101,44 @@ impl Pack {
                         // symlink on the chain.
                         if !self.symlinks.contains_key(&link_follower) {
                             let link = link_follower.read_link()?;
-                            if link.is_absolute() {
-                                self.symlinks.insert(link_follower.clone(), (link, false));
-                            } else {
-                                self.symlinks.insert(
-                                    link_follower.clone(),
-                                    (link_follower.clone().parent().unwrap().join(link), false),
-                                );
-                            }
+                            self.symlinks.insert(
+                                link_follower.clone(),
+                                SymlinkMapData {
+                                    link: if link.is_absolute() {
+                                        link
+                                    } else {
+                                        link_follower.clone().parent().unwrap().join(link)
+                                    },
+                                    is_broken: false,
+                                },
+                            );
                         }
-                        if self.symlinks[&link_follower].1 {
+                        if self.symlinks[&link_follower].is_broken {
                             // .1 is a bool to tell if symlink is broken
                             // the symlink either is broken or links to a broken symlink.
                             // stop the traversal immediately and update mapping if possible
                             break;
                         }
-                        link_follower = self.symlinks[&link_follower].0.clone();
+                        link_follower = self.symlinks[&link_follower].link.clone();
                     }
 
-                    if self.symlinks[link_trail.last().unwrap()].1 || !link_follower.exists() {
+                    if self.symlinks[link_trail.last().unwrap()].is_broken
+                        || !link_follower.exists()
+                    {
                         // the symlink is broken, so don't pack this file.
                         warn!(
                             "The symlink at the end of the chain starting from '{:?}' is broken.",
                             path
                         );
                         for link in link_trail {
-                            let (next_link, _) = &self.symlinks[&link];
-                            self.symlinks.insert(link, (next_link.to_path_buf(), true));
+                            let symlink_map_data = &self.symlinks[&link];
+                            self.symlinks.insert(
+                                link,
+                                SymlinkMapData {
+                                    link: symlink_map_data.link.to_path_buf(),
+                                    is_broken: true,
+                                },
+                            );
                         }
                         return Ok(None);
                     }
