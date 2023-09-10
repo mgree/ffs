@@ -199,7 +199,12 @@ impl Pack {
             let all_files_begin_with_num = fs::read_dir(path.clone())?
                 .map(|res| res.map(|e| e.path()))
                 .map(|e| e.unwrap().file_name().unwrap().to_str().unwrap().to_owned())
-                .all(|filename| self.regex.is_match(&filename));
+                .all(|filename| {
+                    filename.chars().nth(0).unwrap().is_digit(10)
+                        || filename.len() > 1
+                            && filename.chars().nth(0).unwrap() == '-'
+                            && filename.chars().nth(1).unwrap().is_digit(10)
+                });
             if all_files_begin_with_num {
                 path_type = "list"
             } else {
@@ -255,8 +260,6 @@ impl Pack {
                 Ok(Some(V::from_named_dir(entries, &config)))
             }
             "list" => {
-                // TODO(nad) 2023-09-09 regex matching done twice
-                // is this efficient?
                 let mut numbers_filenames_paths = fs::read_dir(path.clone())?
                     .map(|res| res.map(|e| e.path()))
                     .map(|p| {
