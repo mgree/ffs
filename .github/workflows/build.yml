@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-#          - macos-11
+          - macos-11
           - ubuntu-latest
 
     runs-on: ${{ matrix.os }}
@@ -32,13 +32,58 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Build ffs and run unit tests
+      - name: Build ffs/pack/unpack and run unit tests
         run: |
           cargo build --verbose --all --release
           cargo test
         
-      - name: Integration tests
+      - name: Integration tests for ffs and pack/unpack (Linux)
+        if: contains(matrix.os, 'ubuntu')
         run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
+
+      - name: Integration tests for pack/unpack only (macOS)
+        if: contains(matrix.os, 'macos')
+        run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh unpack
+         
+      - name: Upload macOS release build
+        uses: actions/upload-artifact@v2
+        if: contains(matrix.os, 'macos')
+        with:
+          name: ffs.macos
+          path: |
+              target/release/ffs
+              target/release/pack
+              target/release/unpack
+
+      - name: Upload Linux release build
+        uses: actions/upload-artifact@v2
+        if: contains(matrix.os, 'ubuntu')
+        with:
+          name: ffs.linux
+          path: |
+              target/release/ffs
+              target/release/pack
+              target/release/unpack
+
+  benchmarks:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies (FUSE, attr)
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get install fuse libfuse-dev pkg-config attr
+          else
+            echo Unsupported RUNNER_OS=$RUNNER_OS
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Download binaries
+        uses: actions/download-artifact@v2
 
       - name: Install R
         uses: r-lib/actions/setup-r@v2
@@ -46,7 +91,8 @@ jobs:
       - name: Benchmarks
         run: |
           Rscript -e "tries <- 0; while (!require('ggplot2') && tries < 3) { cat(sprintf('TRY %d\n', tries)); install.packages('ggplot2', repos = 'https://cloud.r-project.org/'); tries <- tries + 1; }"
-          PATH="$(pwd)/target/release:$PATH" ./run_bench.sh -n 3
+          chmod +x $(pwd)/ffs.linux/ffs
+          PATH="$(pwd)/ffs.linux:$PATH" FFS="$(pwd)/ffs.linux/ffs" ./run_bench.sh -n 3
           # grab latest directory (output of run_bench)
           DATADIR=bench/$(ls -ct bench/ | head -n 1)
           [ -d $DATADIR ] && ls $DATADIR | grep log >/dev/null || { echo "No log files found in $DATADIR. What's going on?"; tree bench; exit 1; }
@@ -55,35 +101,14 @@ jobs:
           do
             mv $x data/${x##*_}
           done
-          
-      - name: Upload macOS release build
-        uses: actions/upload-artifact@v2
-        if: contains(matrix.os, 'macos')
-        with:
-          name: ffs.macos
-          path: target/release/ffs
 
-      - name: Upload Linux release build
-        uses: actions/upload-artifact@v2
-        if: contains(matrix.os, 'ubuntu')
-        with:
-          name: ffs.linux
-          path: target/release/ffs            
-
-      - name: Upload macOS benchmark data
-        uses: actions/upload-artifact@v2
-        if: contains(matrix.os, 'macos')
-        with:
-          name: benchmarks.macos
-          path: data
-            
       - name: Upload Linux benchmark data
         uses: actions/upload-artifact@v2
         if: contains(matrix.os, 'ubuntu')
         with:
           name: benchmarks.linux
-          path: data
-            
+          path: data            
+      
   prerelease:
     needs: build
     runs-on: ubuntu-latest
@@ -96,8 +121,17 @@ jobs:
       - name: Rename binaries
         run: |
           mkdir ffs
-          mv ffs.linux/ffs ffs/ffs.linux
-          [ -d ffs.macos ] && [ -f ffs.macos/ffs ] && ffs.macos/ffs ffs/ffs.macos || echo "macOS is disabled 😢"
+          mv ffs.linux/ffs    ffs/ffs.linux
+          mv ffs.linux/pack   ffs/pack.linux
+          mv ffs.linux/unpack ffs/unpack.linux
+          if [ -d ffs.macos ]
+          then
+            mv ffs.macos/ffs    ffs/ffs.macos
+            mv ffs.macos/pack   ffs/pack.macos
+            mv ffs.macos/unpack ffs/unpack.macos
+          else
+            echo "macOS is disabled 😢"
+          fi
   
       - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -108,6 +142,8 @@ jobs:
           title: "Latest development build"
           files: |
             ffs/ffs.*
+            ffs/pack.*
+            ffs/unpack.*
 
         
         

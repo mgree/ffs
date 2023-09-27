@@ -4,18 +4,15 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
-        cd
-        umount "$MNT"
-        rmdir "$MNT"
+        rm -r "$MNT"
     fi
     exit 1
 }
 
 MNT=$(mktemp -d)
 
-ffs -m "$MNT" ../json/list2.json &
-PID=$!
-sleep 2
+unpack --into "$MNT" ../json/list2.json || fail unpack
+
 cd "$MNT"
 case $(ls) in
     (00*01*02*03*04*05*06*07*08*09*10) ;;
@@ -33,9 +30,6 @@ esac
 [ "$(cat 09)" -eq  9 ] || fail  9
 [ "$(cat 10)" -eq 10 ] || fail 10
 cd - >/dev/null 2>&1
-umount "$MNT" || fail unmount
-sleep 1
 
-kill -0 $PID >/dev/null 2>&1 && fail process
-
-rmdir "$MNT" || fail mount
+pack "$MNT" || fail pack
+rm -r "$MNT" || fail mount

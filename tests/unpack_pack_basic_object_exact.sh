@@ -4,9 +4,7 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
-        cd
-        umount "$MNT"
-        rmdir "$MNT"
+        rm -r "$MNT"
         rm -r "$EXP"
     fi
     exit 1
@@ -22,9 +20,8 @@ printf "10"                >"${EXP}/fingernails"
 printf "true"              >"${EXP}/human"
 printf ""                  >"${EXP}/problems"
 
-ffs --exact -m "$MNT" ../json/object_null.json &
-PID=$!
-sleep 2
+unpack --exact --into "$MNT" ../json/object_null.json || fail unpack
+
 cd "$MNT"
 case $(ls) in
     (eyes*fingernails*human*name*problems) ;;
@@ -37,10 +34,7 @@ diff "${EXP}/human" "${MNT}/human" || fail human
 diff "${EXP}/problems" "${MNT}/problems" || fail problems
 
 cd - >/dev/null 2>&1
-umount "$MNT" || fail unmount
-sleep 1
 
-kill -0 $PID >/dev/null 2>&1 && fail process
-
-rmdir "$MNT" || fail mount
+pack "$MNT" || fail pack
+rm -r "$MNT" || fail mount
 rm -r "$EXP"

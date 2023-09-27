@@ -2,6 +2,8 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
+// use path_absolutize::*;
+
 use tracing::{debug, error, warn};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::EnvFilter, fmt};
@@ -38,6 +40,9 @@ pub struct Config {
     pub try_decode_base64: bool,
     pub allow_xattr: bool,
     pub keep_macos_xattr_file: bool,
+    pub symlink: Symlink,
+    pub max_depth: Option<u32>,
+    pub allow_symlink_escape: bool,
     pub munge: Munge,
     pub read_only: bool,
     pub input: Input,
@@ -103,10 +108,16 @@ impl FromStr for Munge {
     }
 }
 
+#[derive(Debug)]
+pub enum Symlink {
+    NoFollow,
+    Follow,
+}
+
 impl Config {
     /// Parses arguments from `std::env::Args`, via `cli::app().get_matches()`
-    pub fn from_args() -> Self {
-        let args = cli::app().get_matches_safe().unwrap_or_else(|e| {
+    pub fn from_ffs_args() -> Self {
+        let args = cli::ffs().get_matches_safe().unwrap_or_else(|e| {
             eprintln!("{}", e.message);
             std::process::exit(ERROR_STATUS_CLI)
         });
@@ -126,7 +137,7 @@ impl Config {
                 eprintln!("Can't generate completions for '{}'.", shell);
                 std::process::exit(ERROR_STATUS_CLI);
             };
-            cli::app().gen_completions_to("ffs", shell, &mut std::io::stdout());
+            cli::ffs().gen_completions_to("ffs", shell, &mut std::io::stdout());
             std::process::exit(0);
         }
 
@@ -280,9 +291,9 @@ impl Config {
                             Ok(format) => format,
                             Err(_) => {
                                 error!(
-                        "Unrecognized format '{}'; use --target or a known extension to specify a format.",
-                        output.display()
-                    );
+                                    "Unrecognized format '{}'; use --target or a known extension to specify a format.",
+                                    output.display()
+                                );
                                 std::process::exit(ERROR_STATUS_CLI);
                             }
                         }
@@ -416,10 +427,10 @@ impl Config {
                                 // If the mountpoint can't be created, give up and tell the user about --mount.
                                 if let Err(e) = std::fs::create_dir(&mount_dir) {
                                     error!(
-                                    "Couldn't create mountpoint '{}': {}. Use `--mount MOUNT` to specify a mountpoint.",
-                                    mount_dir.display(),
-                                    e
-                                );
+                                        "Couldn't create mountpoint '{}': {}. Use `--mount MOUNT` to specify a mountpoint.",
+                                        mount_dir.display(),
+                                        e
+                                    );
                                     std::process::exit(ERROR_STATUS_FUSE);
                                 }
                                 // We did it!
@@ -532,6 +543,369 @@ impl Config {
         config
     }
 
+    pub fn from_unpack_args() -> Self {
+        let args = cli::unpack().get_matches_safe().unwrap_or_else(|e| {
+            eprintln!("{}", e.message);
+            std::process::exit(ERROR_STATUS_CLI)
+        });
+
+        let mut config = Config::default();
+        // generate completions?
+        //
+        // TODO 2021-07-06 good candidate for a subcommand
+        if let Some(shell) = args.value_of("SHELL") {
+            let shell = if shell == "bash" {
+                clap::Shell::Bash
+            } else if shell == "fish" {
+                clap::Shell::Fish
+            } else if shell == "zsh" {
+                clap::Shell::Zsh
+            } else {
+                eprintln!("Can't generate completions for '{}'.", shell);
+                std::process::exit(ERROR_STATUS_CLI);
+            };
+            cli::unpack().gen_completions_to("unpack", shell, &mut std::io::stdout());
+            std::process::exit(0);
+        }
+
+        // logging
+        if !args.is_present("QUIET") {
+            let filter_layer = EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_e| {
+                    if args.is_present("DEBUG") {
+                        EnvFilter::new("unpack=debug")
+                    } else {
+                        EnvFilter::new("unpack=warn")
+                    }
+                })
+                .add_directive("ffs::config=warn".parse().unwrap());
+            let fmt_layer = fmt::layer().with_writer(std::io::stderr);
+            tracing_subscriber::registry()
+                .with(filter_layer)
+                .with(fmt_layer)
+                .init();
+        }
+
+        // simple flags
+        config.timing = args.is_present("TIMING");
+        config.add_newlines = !args.is_present("EXACT");
+        config.pad_element_names = !args.is_present("UNPADDED");
+        config.allow_xattr = !args.is_present("NOXATTR");
+
+        // munging policy
+        config.munge = match args.value_of("MUNGE") {
+            None => Munge::Filter,
+            Some(s) => match str::parse(s) {
+                Ok(munge) => munge,
+                Err(_) => {
+                    warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
+                    Munge::Rename
+                }
+            },
+        };
+
+        // configure input
+        config.input = match args.value_of("INPUT") {
+            Some(input_source) => {
+                if input_source == "-" {
+                    Input::Stdin
+                } else {
+                    let input_source = PathBuf::from(input_source);
+                    if !input_source.exists() {
+                        error!("Input file {} does not exist.", input_source.display());
+                        std::process::exit(ERROR_STATUS_FUSE);
+                    }
+                    Input::File(input_source)
+                }
+            }
+            None => Input::Stdin,
+        };
+
+        // infer and create mountpoint from filename as possible
+        config.mount = match args.value_of("INTO") {
+            Some(mount_point) => {
+                match std::fs::create_dir(&mount_point) {
+                    Ok(_) => Some(PathBuf::from(mount_point)),
+                    Err(_) => {
+                        // if dir is empty then we can use it
+                        let mount = PathBuf::from(mount_point);
+                        if mount.read_dir().unwrap().next().is_none() {
+                            // dir exists and is empty
+                            Some(PathBuf::from(mount_point))
+                        } else {
+                            // dir exists but is not empty
+                            error!(
+                                "Directory `{}` already exists and is not empty.",
+                                mount_point
+                            );
+                            std::process::exit(ERROR_STATUS_FUSE);
+                        }
+                    }
+                }
+            }
+            None => {
+                match &config.input {
+                    Input::Stdin => {
+                        error!("You must specify a mount point when reading from stdin.");
+                        std::process::exit(ERROR_STATUS_CLI);
+                    }
+                    Input::Empty => {
+                        error!("--new is not an option for `unpack`, so the input should never be Empty and this error should never be seen.");
+                        std::process::exit(ERROR_STATUS_CLI);
+                    }
+                    Input::File(file) => {
+                        // If the input is from a file foo.EXT, then try to make a directory foo.
+                        let stem = file.file_stem().unwrap_or_else(|| {
+                            error!("Couldn't infer the directory to unpack into from input '{}'. Use `--into DIRECTORY` to specify a directory.", file.display());
+                            std::process::exit(ERROR_STATUS_FUSE);
+                        });
+                        let mount_dir = PathBuf::from(stem);
+                        debug!("inferred mount_dir {}", mount_dir.display());
+
+                        // If that file already exists, give up and tell the user about --mount.
+                        if mount_dir.exists() {
+                            error!("Inferred directory '{mount}' for input file '{file}', but '{mount}' already exists. Use `--into DIRECTORY` to specify a directory.",
+                            mount = mount_dir.display(), file = file.display());
+                            std::process::exit(ERROR_STATUS_FUSE);
+                        }
+                        // If the mountpoint can't be created, give up and tell the user about --mount.
+                        if let Err(e) = std::fs::create_dir(&mount_dir) {
+                            error!(
+                                "Couldn't create directory '{}': {}. Use `--into DIRECTORY` to specify a directory.",
+                                mount_dir.display(),
+                                e
+                            );
+                            std::process::exit(ERROR_STATUS_FUSE);
+                        }
+
+                        // We did it!
+                        Some(mount_dir)
+                    }
+                }
+            }
+        };
+        assert!(config.mount.is_some());
+
+        // try to autodetect the input format.
+        //
+        // first see if it's specified and parses okay.
+        //
+        // then see if we can pull it out of the extension.
+        //
+        // then give up and use json
+        config.input_format = match args
+            .value_of("TYPE")
+            .ok_or(format::ParseFormatError::NoFormatProvided)
+            .and_then(|s| s.parse::<Format>())
+        {
+            Ok(source_format) => source_format,
+            Err(e) => {
+                match e {
+                    format::ParseFormatError::NoSuchFormat(s) => {
+                        warn!("Unrecognized format '{}', inferring from input.", s)
+                    }
+                    format::ParseFormatError::NoFormatProvided => {
+                        debug!("Inferring format from input.")
+                    }
+                };
+                match &config.input {
+                    Input::Stdin => Format::Json,
+                    Input::Empty => Format::Json,
+                    Input::File(input_source) => match input_source
+                        .extension()
+                        .and_then(|s| s.to_str())
+                        .ok_or(format::ParseFormatError::NoFormatProvided)
+                        .and_then(|s| s.parse::<Format>())
+                    {
+                        Ok(format) => format,
+                        Err(_) => {
+                            warn!(
+                                "Unrecognized format {}, defaulting to JSON.",
+                                input_source.display()
+                            );
+                            Format::Json
+                        }
+                    },
+                }
+            }
+        };
+
+        config
+    }
+
+    pub fn from_pack_args() -> Self {
+        let args = cli::pack().get_matches_safe().unwrap_or_else(|e| {
+            eprintln!("{}", e.message);
+            std::process::exit(ERROR_STATUS_CLI)
+        });
+
+        let mut config = Config::default();
+        // generate completions?
+        //
+        // TODO 2021-07-06 good candidate for a subcommand
+        if let Some(shell) = args.value_of("SHELL") {
+            let shell = if shell == "bash" {
+                clap::Shell::Bash
+            } else if shell == "fish" {
+                clap::Shell::Fish
+            } else if shell == "zsh" {
+                clap::Shell::Zsh
+            } else {
+                eprintln!("Can't generate completions for '{}'.", shell);
+                std::process::exit(ERROR_STATUS_CLI);
+            };
+            cli::pack().gen_completions_to("pack", shell, &mut std::io::stdout());
+            std::process::exit(0);
+        }
+
+        // logging
+        if !args.is_present("QUIET") {
+            let filter_layer = EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_e| {
+                    if args.is_present("DEBUG") {
+                        EnvFilter::new("pack=debug")
+                    } else {
+                        EnvFilter::new("pack=warn")
+                    }
+                })
+                .add_directive("ffs::config=warn".parse().unwrap());
+            let fmt_layer = fmt::layer().with_writer(std::io::stderr);
+            tracing_subscriber::registry()
+                .with(filter_layer)
+                .with(fmt_layer)
+                .init();
+        }
+
+        // simple flags
+        config.timing = args.is_present("TIMING");
+        config.add_newlines = !args.is_present("EXACT");
+        config.read_only = args.is_present("READONLY");
+        config.allow_xattr = !args.is_present("NOXATTR");
+        config.allow_symlink_escape = args.is_present("ALLOW_SYMLINK_ESCAPE");
+        config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
+        config.pretty = args.is_present("PRETTY");
+
+        config.symlink = if args.is_present("FOLLOW_SYMLINKS") {
+            Symlink::Follow
+        } else {
+            Symlink::NoFollow
+        };
+
+        config.max_depth = match args.value_of("MAXDEPTH") {
+            Some(s) => match str::parse(s) {
+                Ok(depth) => Some(depth),
+                Err(_) => {
+                    error!(
+                        "Invalid `--max-depth` '{}', must be a non-negative integer.",
+                        s
+                    );
+                    std::process::exit(ERROR_STATUS_CLI);
+                }
+            },
+            None => None,
+        };
+
+        // munging policy
+        config.munge = match args.value_of("MUNGE") {
+            None => Munge::Filter,
+            Some(s) => match str::parse(s) {
+                Ok(munge) => munge,
+                Err(_) => {
+                    warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
+                    Munge::Rename
+                }
+            },
+        };
+
+        // configure input
+        config.input = match args.value_of("INPUT") {
+            Some(input_source) => {
+                let input_source = PathBuf::from(input_source);
+                if !input_source.exists() {
+                    error!("Input file {} does not exist.", input_source.display());
+                    std::process::exit(ERROR_STATUS_FUSE);
+                }
+                Input::File(input_source)
+            }
+            None => {
+                error!("The directory to pack must be specified.");
+                std::process::exit(ERROR_STATUS_CLI);
+            }
+        };
+
+        // set the mount from the input directory
+        config.mount = match &config.input {
+            Input::File(file) => Some(file.clone().canonicalize().unwrap()),
+            _ => {
+                error!("Input must be a file or directory.");
+                std::process::exit(ERROR_STATUS_CLI);
+            }
+        };
+
+        // configure output
+        config.output = if let Some(output) = args.value_of("OUTPUT") {
+            Output::File(PathBuf::from(output))
+        } else if args.is_present("NOOUTPUT") || args.is_present("QUIET") {
+            Output::Quiet
+        } else {
+            Output::Stdout
+        };
+
+        // try to autodetect the output format.
+        //
+        // first see if it's specified and parses okay.
+        //
+        // then see if we can pull it out of the extension (if specified)
+        //
+        // then give up and use the input format
+        config.output_format = match args
+            .value_of("TARGET_FORMAT")
+            .ok_or(format::ParseFormatError::NoFormatProvided)
+            .and_then(|s| s.parse::<Format>())
+        {
+            Ok(target_format) => target_format,
+            Err(e) => {
+                match e {
+                    format::ParseFormatError::NoSuchFormat(s) => {
+                        warn!(
+                            "Unrecognized format '{}', inferring from input and output.",
+                            s
+                        )
+                    }
+                    format::ParseFormatError::NoFormatProvided => {
+                        debug!("Inferring output format from input.")
+                    }
+                };
+                match args
+                    .value_of("OUTPUT")
+                    .and_then(|s| Path::new(s).extension())
+                    .and_then(|s| s.to_str())
+                {
+                    Some(s) => match s.parse::<Format>() {
+                        Ok(format) => format,
+                        Err(_) => {
+                            warn!(
+                                "Unrecognized format {}, defaulting to input format '{}'.",
+                                s, config.input_format
+                            );
+                            config.input_format
+                        }
+                    },
+                    None => config.input_format,
+                }
+            }
+        };
+
+        if config.pretty && !config.output_format.can_be_pretty() {
+            warn!(
+                "There is no pretty printing routine for {}.",
+                config.output_format
+            )
+        }
+
+        config
+    }
+
     pub fn valid_name(&self, s: &str) -> bool {
         s != "." && s != ".." && !s.contains('\0') && !s.contains('/')
     }
@@ -630,6 +1004,9 @@ impl Default for Config {
             try_decode_base64: false,
             allow_xattr: true,
             keep_macos_xattr_file: false,
+            symlink: Symlink::NoFollow,
+            max_depth: None,
+            allow_symlink_escape: false,
             munge: Munge::Rename,
             read_only: false,
             input: Input::Stdin,

@@ -1,9 +1,8 @@
 use tracing::{error, info, warn};
 
-mod cli;
-mod config;
-mod format;
-mod fs;
+use ffs::config;
+use ffs::format;
+use ffs::fs;
 
 use config::{Config, ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
 use format::Format;
@@ -12,7 +11,7 @@ use fs::FS;
 use fuser::MountOption;
 
 fn main() {
-    let config = Config::from_args();
+    let config = Config::from_ffs_args();
     let mut options = vec![MountOption::FSName(format!("{}", config.input))];
     if config.read_only {
         options.push(MountOption::RO);

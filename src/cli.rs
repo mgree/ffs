@@ -6,14 +6,14 @@ pub const POSSIBLE_FORMATS: &[&str] = &["json", "toml", "yaml"];
 /// The possible name munging policies.
 pub const MUNGE_POLICIES: &[&str] = &["filter", "rename"];
 
-pub fn app() -> App<'static, 'static> {
+pub fn ffs() -> App<'static, 'static> {
     App::new("ffs")
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
         .about("file fileystem")
         .arg(
             Arg::with_name("SHELL")
-                .help("Generate shell completions (and exits)")
+                .help("Generate shell completions (and exit)")
                 .long("completions")
                 .takes_value(true)
                 .possible_values(&["bash", "fish", "zsh"])
@@ -120,7 +120,7 @@ pub fn app() -> App<'static, 'static> {
                 .help("Writes the output back over the input file")
                 .long("in-place")
                 .short("i")
-                .overrides_with("OUTPUT")            
+                .overrides_with("OUTPUT")
                 .overrides_with("NOOUTPUT")
         )
         .arg(
@@ -166,6 +166,193 @@ pub fn app() -> App<'static, 'static> {
             Arg::with_name("INPUT")
                 .help("Sets the input file ('-' means STDIN)")
                 .default_value("-")
+                .index(1),
+        )
+}
+
+pub fn unpack() -> App<'static, 'static> {
+    App::new("unpack")
+        .version(env!("CARGO_PKG_VERSION"))
+        .author(env!("CARGO_PKG_AUTHORS"))
+        .about("unpack structured data into a directory")
+        .arg(
+            Arg::with_name("SHELL")
+                .help("Generate shell completions (and exit)")
+                .long("completions")
+                .takes_value(true)
+                .possible_values(&["bash", "fish", "zsh"])
+        )
+        .arg(
+            Arg::with_name("QUIET")
+                .help("Quiet mode (turns off all errors and warnings, enables `--no-output`)")
+                .long("quiet")
+                .short("q")
+                .overrides_with("DEBUG")
+        )
+        .arg(
+            Arg::with_name("TIMING")
+                .help("Emit timing information on stderr in an 'event,time' format; time is in nanoseconds")
+                .long("time")
+        )
+        .arg(
+            Arg::with_name("DEBUG")
+                .help("Give debug output on stderr")
+                .long("debug")
+                .short("d")
+        )
+        .arg(
+            Arg::with_name("EXACT")
+                .help("Don't add newlines to the end of values that don't already have them (or strip them when loading)")
+                .long("exact")
+        )
+        .arg(
+            Arg::with_name("NOXATTR")
+                .help("Don't use extended attributes to track metadata (see `man xattr`)")
+                .long("no-xattr")
+        )
+        .arg(
+            Arg::with_name("MUNGE")
+                .help("Set the name munging policy; applies to '.', '..', and files with NUL and '/' in them")
+                .long("munge")
+                .takes_value(true)
+                .default_value("rename")
+                .possible_values(MUNGE_POLICIES)
+        )
+        .arg(
+            Arg::with_name("UNPADDED")
+                .help("Don't pad the numeric names of list elements with zeroes; will not sort properly")
+                .long("unpadded")
+        )
+        .arg(
+            Arg::with_name("TYPE")
+                .help("Specify the format type explicitly (by default, automatically inferred from filename extension)")
+                .long("type")
+                .short("t")
+                .takes_value(true)
+                .possible_values(POSSIBLE_FORMATS)
+        )
+        .arg(
+            Arg::with_name("INTO")
+                .help("Sets the directory in which to unpack the file; will be inferred when using a file, but must be specified when running on stdin")
+                .long("into")
+                .short("i")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::with_name("INPUT")
+                .help("Sets the input file ('-' means STDIN)")
+                .default_value("-")
+                .index(1),
+        )
+}
+
+pub fn pack() -> App<'static, 'static> {
+    App::new("pack")
+        .version(env!("CARGO_PKG_VERSION"))
+        .author(env!("CARGO_PKG_AUTHORS"))
+        .about("pack directory")
+        .arg(
+            Arg::with_name("SHELL")
+                .help("Generate shell completions (and exit)")
+                .long("completions")
+                .takes_value(true)
+                .possible_values(&["bash", "fish", "zsh"])
+        )
+        .arg(
+            Arg::with_name("QUIET")
+                .help("Quiet mode (turns off all errors and warnings, enables `--no-output`)")
+                .long("quiet")
+                .short("q")
+                .overrides_with("DEBUG")
+        )
+        .arg(
+            Arg::with_name("TIMING")
+                .help("Emit timing information on stderr in an 'event,time' format; time is in nanoseconds")
+                .long("time")
+        )
+        .arg(
+            Arg::with_name("DEBUG")
+                .help("Give debug output on stderr")
+                .long("debug")
+                .short("d")
+        )
+        .arg(
+            Arg::with_name("EXACT")
+                .help("Don't add newlines to the end of values that don't already have them (or strip them when loading)")
+                .long("exact")
+        )
+        .arg(
+            Arg::with_name("NOFOLLOW_SYMLINKS")
+                .help("Never follow symbolic links. This is the default behaviour. `pack` will ignore all symbolic links.")
+                .short("P")
+                .overrides_with("FOLLOW_SYMLINKS")
+        )
+        .arg(
+            Arg::with_name("FOLLOW_SYMLINKS")
+                .help("Follow all symlinks. For safety, you can also specify a --max-depth value.")
+                .short("L")
+                .overrides_with("NOFOLLOW_SYMLINKS")
+        )
+        .arg(
+            Arg::with_name("MAXDEPTH")
+                .help("Maximum depth of filesystem traversal allowed for `pack`")
+                .long("max-depth")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::with_name("ALLOW_SYMLINK_ESCAPE")
+                .help("Allows pack to follow symlinks outside of the directory being packed.")
+                .long("allow-symlink-escape")
+        )
+        .arg(
+            Arg::with_name("NOXATTR")
+                .help("Don't use extended attributes to track metadata (see `man xattr`)")
+                .long("no-xattr")
+        )
+        .arg(
+            Arg::with_name("KEEPMACOSDOT")
+                .help("Include ._* extended attribute/resource fork files on macOS")
+                .long("keep-macos-xattr")
+        )
+        .arg(
+            Arg::with_name("MUNGE")
+                .help("Set the name munging policy; applies to '.', '..', and files with NUL and '/' in them")
+                .long("munge")
+                .takes_value(true)
+                .default_value("rename")
+                .possible_values(MUNGE_POLICIES)
+        )
+        .arg(
+            Arg::with_name("OUTPUT")
+                .help("Sets the output file for saving changes (defaults to stdout)")
+                .long("output")
+                .short("o")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::with_name("NOOUTPUT")
+                .help("Disables output of filesystem (normally on stdout)")
+                .long("no-output")
+                .overrides_with("OUTPUT")
+        )
+        .arg(
+            Arg::with_name("TARGET_FORMAT")
+                .help("Specify the target format explicitly (by default, automatically inferred from filename extension)")
+                .long("target")
+                .short("t")
+                .takes_value(true)
+                .possible_values(POSSIBLE_FORMATS)
+        )
+        .arg(
+            Arg::with_name("PRETTY")
+                .help("Pretty-print output (may increase size)")
+                .long("pretty")
+                .overrides_with("NOOUTPUT")
+                .overrides_with("QUIET")
+        )
+        .arg(
+            Arg::with_name("INPUT")
+                .help("Sets the input folder")
                 .index(1),
         )
 }
