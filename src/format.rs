@@ -200,6 +200,7 @@ where
 /// JSON Nodelike implementation
 pub mod json {
     use super::*;
+    use base64::Engine as _;
     pub use serde_json::Value;
 
     impl Nodelike for Value {
@@ -229,7 +230,7 @@ pub mod json {
                 Value::Number(n) => Node::String(Typ::Float, format!("{}{}", n, nl)),
                 Value::String(s) => {
                     if config.try_decode_base64 {
-                        if let Ok(bytes) = base64::decode_config(&s, config.base64) {
+                        if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
                             return Node::Bytes(bytes);
                         }
                     }
@@ -296,11 +297,11 @@ pub mod json {
             }
         }
 
-        fn from_bytes<T>(contents: T, config: &Config) -> Self
+        fn from_bytes<T>(contents: T, _config: &Config) -> Self
         where
             T: AsRef<[u8]>,
         {
-            Value::String(base64::encode_config(contents, config.base64))
+            Value::String(base64::engine::general_purpose::STANDARD.encode(contents))
         }
 
         fn from_list_dir(files: Vec<Self>, _config: &Config) -> Self {
@@ -328,6 +329,7 @@ pub mod json {
 /// TOML Nodelike implementation
 pub mod toml {
     use super::*;
+    use base64::Engine;
     use serde_toml::Value as Toml;
 
     #[derive(Clone, Debug)]
@@ -379,7 +381,7 @@ pub mod toml {
                 Toml::Integer(n) => Node::String(Typ::Integer, format!("{}{}", n, nl)),
                 Toml::String(s) => {
                     if config.try_decode_base64 {
-                        if let Ok(bytes) = base64::decode_config(&s, config.base64) {
+                        if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
                             return Node::Bytes(bytes);
                         }
                     }
@@ -461,11 +463,13 @@ pub mod toml {
             Value(v)
         }
 
-        fn from_bytes<T>(contents: T, config: &Config) -> Self
+        fn from_bytes<T>(contents: T, _config: &Config) -> Self
         where
             T: AsRef<[u8]>,
         {
-            Value(Toml::String(base64::encode_config(contents, config.base64)))
+            Value(Toml::String(
+                base64::engine::general_purpose::STANDARD.encode(contents),
+            ))
         }
 
         fn from_list_dir(files: Vec<Self>, _config: &Config) -> Self {
@@ -499,6 +503,7 @@ pub mod toml {
 /// YAML Nodelike implementation
 pub mod yaml {
     use super::*;
+    use base64::Engine;
     use std::hash::{Hash, Hasher};
     use yaml_rust::Yaml;
 
@@ -581,7 +586,7 @@ pub mod yaml {
                 Yaml::Integer(n) => Node::String(Typ::Integer, format!("{}{}", n, nl)),
                 Yaml::String(s) => {
                     if config.try_decode_base64 {
-                        if let Ok(bytes) = base64::decode_config(&s, config.base64) {
+                        if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
                             return Node::Bytes(bytes);
                         }
                     }
@@ -657,11 +662,13 @@ pub mod yaml {
             }
         }
 
-        fn from_bytes<T>(contents: T, config: &Config) -> Self
+        fn from_bytes<T>(contents: T, _config: &Config) -> Self
         where
             T: AsRef<[u8]>,
         {
-            Value(Yaml::String(base64::encode_config(contents, config.base64)))
+            Value(Yaml::String(
+                base64::engine::general_purpose::STANDARD.encode(contents),
+            ))
         }
 
         fn from_list_dir(vs: Vec<Self>, _config: &Config) -> Self {

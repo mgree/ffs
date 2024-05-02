@@ -24,7 +24,7 @@ EOF
 pack --target toml -o "$OUT" --pretty "$MNT" || fail pack
 
 [ "$(cat $OUT | wc -l)" -eq 5 ] || fail lines
-[ "$(head -n 1 $OUT)" = "info = '''" ] || fail multi
+[ "$(head -n 1 $OUT)" = 'info = """' ] || fail multi
 
 rm -r "$MNT" || fail mount
 rm "$OUT"
