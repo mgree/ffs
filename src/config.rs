@@ -133,7 +133,7 @@ impl Config {
             } else if shell == "zsh" {
                 clap::Shell::Zsh
             } else {
-                eprintln!("Can't generate completions for '{}'.", shell);
+                eprintln!("Can't generate completions for '{shell}'.");
                 std::process::exit(ERROR_STATUS_CLI);
             };
             cli::ffs().gen_completions_to("ffs", shell, &mut std::io::stdout());
@@ -172,7 +172,7 @@ impl Config {
             Some(s) => match str::parse(s) {
                 Ok(munge) => munge,
                 Err(_) => {
-                    warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
+                    warn!("Invalid `--munge` mode '{s}', using 'rename'.");
                     Munge::Rename
                 }
             },
@@ -183,9 +183,8 @@ impl Config {
             Ok(filemode) => filemode,
             Err(e) => {
                 error!(
-                    "Couldn't parse `--mode {}`: {}.",
-                    args.value_of("FILEMODE").unwrap(),
-                    e
+                    "Couldn't parse `--mode {}`: {e}.",
+                    args.value_of("FILEMODE").unwrap()
                 );
                 std::process::exit(ERROR_STATUS_CLI)
             }
@@ -207,9 +206,8 @@ impl Config {
                 Ok(filemode) => filemode,
                 Err(e) => {
                     error!(
-                        "Couldn't parse `--dirmode {}`: {}.",
-                        args.value_of("DIRMODE").unwrap(),
-                        e
+                        "Couldn't parse `--dirmode {}`: {e}.",
+                        args.value_of("DIRMODE").unwrap()
                     );
                     std::process::exit(ERROR_STATUS_CLI)
                 }
@@ -223,8 +221,7 @@ impl Config {
                 Err(e) => {
                     let euid = unsafe { libc::geteuid() };
                     warn!(
-                        "Couldn't parse '{}' as a uid ({}), defaulting to effective uid ({})",
-                        uid_string, e, euid
+                        "Couldn't parse '{uid_string}' as a uid ({e}), defaulting to effective uid ({euid})"
                     );
                     config.uid = euid;
                 }
@@ -237,8 +234,7 @@ impl Config {
                 Err(e) => {
                     let egid = unsafe { libc::getegid() };
                     warn!(
-                        "Couldn't parse '{}' as a gid ({}), defaulting to effective gid ({})",
-                        gid_string, e, egid
+                        "Couldn't parse '{gid_string}' as a gid ({e}), defaulting to effective gid ({egid})"
                     );
                     config.gid = egid;
                 }
@@ -272,8 +268,7 @@ impl Config {
                         match e {
                             format::ParseFormatError::NoSuchFormat(s) => {
                                 warn!(
-                                    "Unrecognized format '{}', inferring from {}.",
-                                    s,
+                                    "Unrecognized format '{s}', inferring from {}.",
                                     output.display(),
                                 )
                             }
@@ -323,10 +318,9 @@ impl Config {
                         }
                         // If the mountpoint can't be created, give up and tell the user about --mount.
                         if let Err(e) = std::fs::create_dir(&mount_dir) {
-                            error!("Couldn't create mountpoint '{}': {}. Use `--mount MOUNT` to specify a mountpoint.",
-                                 mount_dir.display(),
-                                    e
-                                );
+                            error!("Couldn't create mountpoint '{}': {e}. Use `--mount MOUNT` to specify a mountpoint.",
+                                   mount_dir.display(),
+                                  );
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                         // We did it!
@@ -426,9 +420,8 @@ impl Config {
                                 // If the mountpoint can't be created, give up and tell the user about --mount.
                                 if let Err(e) = std::fs::create_dir(&mount_dir) {
                                     error!(
-                                        "Couldn't create mountpoint '{}': {}. Use `--mount MOUNT` to specify a mountpoint.",
-                                        mount_dir.display(),
-                                        e
+                                        "Couldn't create mountpoint '{}': {e}. Use `--mount MOUNT` to specify a mountpoint.",
+                                        mount_dir.display()
                                     );
                                     std::process::exit(ERROR_STATUS_FUSE);
                                 }
@@ -473,11 +466,15 @@ impl Config {
                                 .and_then(|s| s.parse::<Format>())
                             {
                                 Ok(format) => format,
-                                Err(_) => {
-                                    warn!(
-                                        "Unrecognized format {}, defaulting to JSON.",
-                                        input_source.display()
-                                    );
+                                Err(e) => {
+                                    match e {
+                                        format::ParseFormatError::NoFormatProvided => {
+                                            warn!("No extension detected, defaulting to JSON.")
+                                        }
+                                        format::ParseFormatError::NoSuchFormat(s) => {
+                                            warn!("Unrecognized extension {s}, defaulting to JSON.")
+                                        }
+                                    };
                                     Format::Json
                                 }
                             },
@@ -501,10 +498,7 @@ impl Config {
                     Err(e) => {
                         match e {
                             format::ParseFormatError::NoSuchFormat(s) => {
-                                warn!(
-                                    "Unrecognized format '{}', inferring from input and output.",
-                                    s
-                                )
+                                warn!("Unrecognized format '{s}', inferring from input and output.")
                             }
                             format::ParseFormatError::NoFormatProvided => {
                                 debug!("Inferring output format from input.")
@@ -519,8 +513,8 @@ impl Config {
                                 Ok(format) => format,
                                 Err(_) => {
                                     warn!(
-                                        "Unrecognized format {}, defaulting to input format '{}'.",
-                                        s, config.input_format
+                                        "Unrecognized format {s}, defaulting to input format '{}'.",
+                                        config.input_format
                                     );
                                     config.input_format
                                 }
@@ -560,7 +554,7 @@ impl Config {
             } else if shell == "zsh" {
                 clap::Shell::Zsh
             } else {
-                eprintln!("Can't generate completions for '{}'.", shell);
+                eprintln!("Can't generate completions for '{shell}'.");
                 std::process::exit(ERROR_STATUS_CLI);
             };
             cli::unpack().gen_completions_to("unpack", shell, &mut std::io::stdout());
@@ -597,7 +591,7 @@ impl Config {
             Some(s) => match str::parse(s) {
                 Ok(munge) => munge,
                 Err(_) => {
-                    warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
+                    warn!("Invalid `--munge` mode '{s}', using 'rename'.");
                     Munge::Rename
                 }
             },
@@ -623,7 +617,7 @@ impl Config {
         // infer and create mountpoint from filename as possible
         config.mount = match args.value_of("INTO") {
             Some(mount_point) => {
-                match std::fs::create_dir(&mount_point) {
+                match std::fs::create_dir(mount_point) {
                     Ok(_) => Some(PathBuf::from(mount_point)),
                     Err(_) => {
                         // if dir is empty then we can use it
@@ -633,10 +627,7 @@ impl Config {
                             Some(PathBuf::from(mount_point))
                         } else {
                             // dir exists but is not empty
-                            error!(
-                                "Directory `{}` already exists and is not empty.",
-                                mount_point
-                            );
+                            error!("Directory `{mount_point}` already exists and is not empty.");
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                     }
@@ -670,9 +661,8 @@ impl Config {
                         // If the mountpoint can't be created, give up and tell the user about --mount.
                         if let Err(e) = std::fs::create_dir(&mount_dir) {
                             error!(
-                                "Couldn't create directory '{}': {}. Use `--into DIRECTORY` to specify a directory.",
-                                mount_dir.display(),
-                                e
+                                "Couldn't create directory '{}': {e}. Use `--into DIRECTORY` to specify a directory.",
+                                mount_dir.display()
                             );
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
@@ -701,7 +691,7 @@ impl Config {
             Err(e) => {
                 match e {
                     format::ParseFormatError::NoSuchFormat(s) => {
-                        warn!("Unrecognized format '{}', inferring from input.", s)
+                        warn!("Unrecognized format '{s}', inferring from input.")
                     }
                     format::ParseFormatError::NoFormatProvided => {
                         debug!("Inferring format from input.")
@@ -750,7 +740,7 @@ impl Config {
             } else if shell == "zsh" {
                 clap::Shell::Zsh
             } else {
-                eprintln!("Can't generate completions for '{}'.", shell);
+                eprintln!("Can't generate completions for '{shell}'.");
                 std::process::exit(ERROR_STATUS_CLI);
             };
             cli::pack().gen_completions_to("pack", shell, &mut std::io::stdout());
@@ -794,10 +784,7 @@ impl Config {
             Some(s) => match str::parse(s) {
                 Ok(depth) => Some(depth),
                 Err(_) => {
-                    error!(
-                        "Invalid `--max-depth` '{}', must be a non-negative integer.",
-                        s
-                    );
+                    error!("Invalid `--max-depth` '{s}', must be a non-negative integer.");
                     std::process::exit(ERROR_STATUS_CLI);
                 }
             },
@@ -810,7 +797,7 @@ impl Config {
             Some(s) => match str::parse(s) {
                 Ok(munge) => munge,
                 Err(_) => {
-                    warn!("Invalid `--munge` mode '{}', using 'rename'.", s);
+                    warn!("Invalid `--munge` mode '{s}', using 'rename'.");
                     Munge::Rename
                 }
             },
@@ -866,10 +853,7 @@ impl Config {
             Err(e) => {
                 match e {
                     format::ParseFormatError::NoSuchFormat(s) => {
-                        warn!(
-                            "Unrecognized format '{}', inferring from input and output.",
-                            s
-                        )
+                        warn!("Unrecognized format '{s}', inferring from input and output.")
                     }
                     format::ParseFormatError::NoFormatProvided => {
                         debug!("Inferring output format from input.")
@@ -884,8 +868,8 @@ impl Config {
                         Ok(format) => format,
                         Err(_) => {
                             warn!(
-                                "Unrecognized format {}, defaulting to input format '{}'.",
-                                s, config.input_format
+                                "Unrecognized format {s}, defaulting to input format '{}'.",
+                                config.input_format
                             );
                             config.input_format
                         }
@@ -915,7 +899,7 @@ impl Config {
         } else if s == ".." {
             "_..".into()
         } else {
-            s.replace("\0", "_NUL_").replace("/", "_SLASH_")
+            s.replace('\0', "_NUL_").replace('/', "_SLASH_")
         }
     }
 
@@ -956,8 +940,8 @@ impl Config {
             Input::Stdin => Some(Box::new(std::io::stdin())),
             Input::File(file) => {
                 let fmt = self.input_format;
-                let file = std::fs::File::open(&file).unwrap_or_else(|e| {
-                    error!("Unable to open {} for {} input: {}", file.display(), fmt, e);
+                let file = std::fs::File::open(file).unwrap_or_else(|e| {
+                    error!("Unable to open {} for {fmt} input: {e}", file.display());
                     std::process::exit(ERROR_STATUS_FUSE);
                 });
                 Some(Box::new(file))

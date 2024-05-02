@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use std::str;
 use std::str::FromStr;
 
-use tracing::{debug, error, info, warn};
+use tracing::{error, info, warn};
 
 use ffs::config::Config;
 use ffs::config::Symlink;
@@ -38,6 +38,12 @@ pub struct Pack {
     pub symlinks: HashMap<PathBuf, SymlinkMapData>,
     depth: u32,
     regex: Regex,
+}
+
+impl Default for Pack {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Pack {
@@ -75,7 +81,7 @@ impl Pack {
                     let mut link_follower = path.clone();
                     while link_follower.is_symlink() {
                         if link_trail.contains(&link_follower) {
-                            error!("Symlink loop detected at {:?}.", link_follower);
+                            error!("Symlink loop detected at {}.", link_follower.display());
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                         link_trail.push(link_follower.clone());
@@ -92,8 +98,8 @@ impl Pack {
                                 // Err(_) => {
                                 //     // Cannot call xattr::get on ._ file
                                 //     warn!(
-                                //         "._ files, like {:?}, prevent xattr calls. It will be encoded in base64.",
-                                //         link_follower
+                                //         "._ files, like {}, prevent xattr calls. It will be encoded in base64.",
+                                //         link_follower.display()
                                 //     );
                                 //     path_type = b"bytes".to_vec()
                                 // }
@@ -130,8 +136,8 @@ impl Pack {
                     {
                         // the symlink is broken, so don't pack this file.
                         warn!(
-                            "The symlink at the end of the chain starting from '{:?}' is broken.",
-                            path
+                            "The symlink at the end of the chain starting from '{}' is broken.",
+                            path.display()
                         );
                         for link in link_trail {
                             let symlink_map_data = &self.symlinks[&link];
@@ -150,16 +156,16 @@ impl Pack {
                     let canonicalized = link_follower.canonicalize()?;
                     if path.starts_with(&canonicalized) {
                         error!(
-                            "The symlink {:?} points to some ancestor directory: {:?}, causing an infinite loop.",
-                            path, canonicalized
+                            "The symlink {} points to some ancestor directory: {}, causing an infinite loop.",
+                            path.display(), canonicalized.display(),
                         );
                         std::process::exit(ERROR_STATUS_FUSE);
                     }
                     if !config.allow_symlink_escape
                         && !canonicalized.starts_with(config.mount.as_ref().unwrap())
                     {
-                        warn!("The symlink {:?} points to some file outside of the directory being packed. \
-                              Specify --allow-symlink-escape to allow pack to follow this symlink.", path);
+                        warn!("The symlink {} points to some file outside of the directory being packed. \
+                              Specify --allow-symlink-escape to allow pack to follow this symlink.", path.display());
                         return Ok(None);
                     }
                 }
@@ -170,14 +176,14 @@ impl Pack {
         // none of the symlinks on the chain have an xattr. Use the actual file's xattr
         if path_type.is_empty() {
             let canonicalized = path.canonicalize()?;
-            path_type = match xattr::get(&canonicalized, "user.type") {
+            path_type = match xattr::get(canonicalized, "user.type") {
                 Ok(Some(xattr_type)) if config.allow_xattr => xattr_type,
                 Ok(_) => b"auto".to_vec(),
                 Err(_) => {
                     // Cannot call xattr::get on ._ file
                     warn!(
-                        "._ files, like {:?}, prevent xattr calls. It will be encoded in base64.",
-                        path
+                        "._ files, like {}, prevent xattr calls. It will be encoded in base64.",
+                        path.display(),
                     );
                     b"bytes".to_vec()
                 }
@@ -191,19 +197,18 @@ impl Pack {
         if path.is_dir() && (path_type == "auto" || path_type != "named" && path_type != "list") {
             if path_type != "auto" {
                 warn!(
-                    "Unknown directory type '{}'. Possible types are 'named' or 'list'. \
-                    Resolving type automatically.",
-                    path_type
+                    "Unknown directory type '{path_type}'. Possible types are 'named' or 'list'. \
+                    Resolving type automatically."
                 );
             }
             let all_files_begin_with_num = fs::read_dir(path.clone())?
                 .map(|res| res.map(|e| e.path()))
                 .map(|e| e.unwrap().file_name().unwrap().to_str().unwrap().to_owned())
                 .all(|filename| {
-                    filename.chars().nth(0).unwrap().is_digit(10)
+                    filename.chars().nth(0).unwrap().is_ascii_digit()
                         || filename.len() > 1
                             && filename.chars().nth(0).unwrap() == '-'
-                            && filename.chars().nth(1).unwrap().is_digit(10)
+                            && filename.chars().nth(1).unwrap().is_ascii_digit()
                 });
             if all_files_begin_with_num {
                 path_type = "list"
@@ -211,8 +216,6 @@ impl Pack {
                 path_type = "named"
             };
         }
-
-        info!("type of {:?} is {}", path, path_type);
 
         // return the value based on determined type
         match path_type {
@@ -227,11 +230,11 @@ impl Pack {
                 for child in &children {
                     let child_name = child.file_name().unwrap().to_str().unwrap();
                     if config.ignored_file(child_name) {
-                        warn!("skipping ignored file {:?}", child_name);
+                        warn!("skipping ignored file {}", child.display());
                         continue;
                     }
                     let name: String;
-                    match xattr::get(&child, "user.original_name") {
+                    match xattr::get(child, "user.original_name") {
                         Ok(Some(original_name)) if config.allow_xattr => {
                             let old_name = str::from_utf8(&original_name).unwrap();
                             if !config.valid_name(old_name) {
@@ -250,14 +253,14 @@ impl Pack {
                         }
                     }
                     self.depth += 1;
-                    let value = self.pack(child.clone(), &config)?;
+                    let value = self.pack(child.clone(), config)?;
                     self.depth -= 1;
                     if let Some(value) = value {
                         entries.insert(name, value);
                     }
                 }
 
-                Ok(Some(V::from_named_dir(entries, &config)))
+                Ok(Some(V::from_named_dir(entries, config)))
             }
             "list" => {
                 let mut numbers_filenames_paths = fs::read_dir(path.clone())?
@@ -296,23 +299,21 @@ impl Pack {
                     .collect::<Vec<_>>();
                 numbers_filenames_paths.sort();
 
-                info!("parsed numbers and filenames {:?}", numbers_filenames_paths);
-
                 let mut entries = Vec::with_capacity(numbers_filenames_paths.len());
                 for (_, filename, child) in numbers_filenames_paths {
                     if config.ignored_file(&filename) {
-                        warn!("skipping ignored file {:?}", child);
+                        warn!("skipping ignored file {}", child.display());
                         continue;
                     }
                     self.depth += 1;
-                    let value = self.pack(child, &config)?;
+                    let value = self.pack(child, config)?;
                     self.depth -= 1;
                     if let Some(value) = value {
                         entries.push(value);
                     }
                 }
 
-                Ok(Some(V::from_list_dir(entries, &config)))
+                Ok(Some(V::from_list_dir(entries, config)))
             }
             typ => {
                 if let Ok(t) = Typ::from_str(typ) {
@@ -325,14 +326,13 @@ impl Pack {
                             if config.add_newlines && contents.ends_with('\n') {
                                 contents.truncate(contents.len() - 1);
                             }
-                            Ok(Some(V::from_string(t, contents, &config)))
+                            Ok(Some(V::from_string(t, contents, config)))
                         }
-                        Ok(_) | Err(_) => Ok(Some(V::from_bytes(contents, &config))),
+                        Ok(_) | Err(_) => Ok(Some(V::from_bytes(contents, config))),
                     }
                 } else {
                     error!(
-                        "This error should never be called. Received undetected and unknown type '{}' for file '{}'",
-                        typ,
+                        "Received undetected and unknown type '{typ}' for file '{}'",
                         path.display()
                     );
                     std::process::exit(ERROR_STATUS_FUSE);
@@ -344,12 +344,11 @@ impl Pack {
 
 fn main() -> std::io::Result<()> {
     let config = Config::from_pack_args();
-    debug!("received config: {:?}", config);
 
     let mount = match &config.mount {
         Some(mount) => mount,
         None => {
-            error!("Cannot pack unspecified directory.");
+            error!("You must specify a directory to pack.");
             std::process::exit(ERROR_STATUS_CLI);
         }
     };
