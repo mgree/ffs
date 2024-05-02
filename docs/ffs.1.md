@@ -234,8 +234,8 @@ file. To disable these newlines, use *--exact*.
 
 You can inspect and alter the types of files and directories using the
 extended attribute *user.type* (use *xattr* on macOS and
-*attr*/*getfattr*/*setfattr* on Linux). The names given here are the
-valid values for the *user.type* attribute.
+*attr*/*getfattr*/*setfattr* on Linux; **EXAMPLES** below). The names
+given here are the valid values for the *user.type* attribute.
 
 # ENVIRONMENT
 
@@ -308,9 +308,9 @@ When filenames are present, extensions will be used to infer the
 format being used. You can specify the source and target formats
 explicitly with *--source* and *--target*, respectively.
 
-You can use extended attributes to change a list directory to a named
-one (or vice versa); this example uses macOS, with Linux alternatives
-in comments.
+You can use extended attributes to  change a list directory to a named
+one (or vice versa); this example uses macOS's `xattr` utility to turn
+a list into an object, with Linux alternatives in comments.
 
 ```ShellSession
 $ ffs -i list.json &
@@ -322,9 +322,9 @@ $ mv 0 loneliest_number
 $ mv 1 to_tango
 $ mv 2 three
 $ mv 3 not_true
-$ xattr -l .                    # Linux: getattr --match=- .
+$ xattr -l .                    # Linux: getfattr --match=- .
 user.type: list
-$ xattr -w user.type named .    # Linux: setattr -n user.type -v named .
+$ xattr -w user.type named .    # Linux: setfattr -n user.type -v named .
 $ ls
 loneliest_number not_true         three            to_tango
 $ cd ..
@@ -333,6 +333,26 @@ $
 [1]+  Done                    target/debug/ffs -i list.json
 $ cat list.json
 {"loneliest_number":1,"not_true":false,"three":"3","to_tango":2}
+```
+
+Here, we create a new JSON file and use Linux's `setfattr` to mark a
+directory as being a list (macOS alternatives are in comments):
+
+```ShellSession
+~$ ffs --new l.json &
+[1] 287077
+~$ cd l
+~/l $ echo 'hi' >a
+~/l $ echo 'bye' >b
+~/l $ echo 'hello' >a1
+~/l $ ls
+a  a1  b
+~/l $ cd ..
+~$ setfattr -n user.type -v list l   # macOS: xattr -w user.type list l
+~$ umount l
+[1]+  Done                    ffs --new l.json
+~$ cat l.json
+["hi","hello","bye"]
 ```
 
 # SEE ALSO
@@ -352,4 +372,4 @@ See
 
 # LICENSE
 
-Copyright 2021 (c) Michael Greenberg. GPL-3.0 licensed.
+Copyright 2024 (c) Michael Greenberg. GPL-3.0 licensed.

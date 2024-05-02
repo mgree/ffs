@@ -49,6 +49,29 @@ you can specify an output file with `-o OUTPUT`. You can edit a file
 in place by running `ffs -i file`---when the volume is unmounted, the
 resulting output will be written back to `file`.
 
+You can control whether directories are rendered as objects or arrays
+lists using extended file attributes (xattrs): the `user.type` xattr
+specifies `named` for objects and `list` for arrays. Here, we create a
+new JSON file and use Linux's `setfattr` to mark a directory as being
+a list (macOS alternatives are in comments):
+
+```ShellSession
+~$ ffs --new l.json &
+[1] 287077
+~$ cd l
+~/l $ echo 'hi' >a
+~/l $ echo 'bye' >b
+~/l $ echo 'hello' >a1
+~/l $ ls
+a  a1  b
+~/l $ cd ..
+~$ setfattr -n user.type -v list l   # macOS: xattr -w user.type list l
+~$ umount l
+[1]+  Done                    ffs --new l.json
+~$ cat l.json
+["hi","hello","bye"]
+```
+
 # External dependencies
 
 You need an appropriate [FUSE](https://github.com/libfuse/libfuse) or
