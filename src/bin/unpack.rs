@@ -1,5 +1,5 @@
 use fuser::FileType;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 use std::collections::VecDeque;
 use std::fs;
@@ -33,11 +33,11 @@ where
                     .open(&path)?;
 
                 // write `s` into that file
-                f.write_all(s.as_bytes())?;
+                f.write(s.as_bytes())?;
 
                 // set metadata according to `t`
                 if config.allow_xattr {
-                    xattr::set(&path, "user.type", t.to_string().as_bytes())?;
+                    xattr::set(&path, "user.type", format!("{}", t).as_bytes())?;
                 }
             }
             format::Node::Bytes(b) => {
@@ -52,7 +52,7 @@ where
 
                 // set metadata to bytes
                 if config.allow_xattr {
-                    xattr::set(&path, "user.type", Typ::Bytes.to_string().as_bytes())?;
+                    xattr::set(&path, "user.type", format!("{}", Typ::Bytes).as_bytes())?;
                 }
             }
             format::Node::List(vs) => {
@@ -71,9 +71,9 @@ where
                 for (i, child) in vs.into_iter().enumerate() {
                     // TODO(mmg) 2021-06-08 ability to add prefixes
                     let name = if config.pad_element_names {
-                        format!("{i:0width$}")
+                        format!("{:0width$}", i, width = width)
                     } else {
-                        format!("{i}")
+                        format!("{}", i)
                     };
                     let child_path = path.join(name);
 
@@ -108,7 +108,7 @@ where
                             }
                             ffs::config::Munge::Filter => {
                                 // TODO(mmg) 2023-03-06 support logging
-                                warn!("skipping '{field}'");
+                                warn!("skipping '{}'", field);
                                 continue;
                             }
                         }
@@ -135,11 +135,12 @@ where
 
 fn main() -> std::io::Result<()> {
     let config = Config::from_unpack_args();
+    debug!("received config: {:?}", config);
 
     let mount = match &config.mount {
         Some(mount) => mount.clone(),
         None => {
-            error!("You must specify a directory to unpack.");
+            error!("Directory not specified");
             std::process::exit(ERROR_STATUS_CLI);
         }
     };
@@ -153,7 +154,7 @@ fn main() -> std::io::Result<()> {
         }
     };
 
-    match &config.input_format {
+    let result = match &config.input_format {
         Format::Json => {
             let value = JsonValue::from_reader(reader);
             if value.kind() == FileType::Directory {
@@ -181,5 +182,7 @@ fn main() -> std::io::Result<()> {
                 std::process::exit(ERROR_STATUS_FUSE);
             }
         }
-    }
+    };
+
+    result
 }

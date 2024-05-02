@@ -167,9 +167,9 @@ where
                 for (i, child) in vs.into_iter().enumerate() {
                     // TODO 2021-06-08 ability to add prefixes
                     let name = if self.config.pad_element_names {
-                        format!("{i:0width$}")
+                        format!("{:0width$}", i, width = width)
                     } else {
-                        format!("{i}")
+                        format!("{}", i)
                     };
 
                     let kind = child.kind();
@@ -216,7 +216,7 @@ where
                                 nfield
                             }
                             Munge::Filter => {
-                                warn!("skipping '{field}'");
+                                warn!("skipping '{}'", field);
                                 continue;
                             }
                         }
@@ -234,7 +234,8 @@ where
                     );
                     let original_name = if original != nfield {
                         info!(
-                            "renamed {original} to {nfield} (inode {child_id} with parent {inum})"
+                            "renamed {} to {} (inode {} with parent {})",
+                            original, nfield, child_id, inum
                         );
                         Some(original)
                     } else {
@@ -280,7 +281,8 @@ where
             None => return Ok(()),
         };
 
-        while let Some(node) = worklist.pop() {
+        while !worklist.is_empty() {
+            let node = worklist.pop().unwrap();
             if let Some(nodes) = self.resolve_node(node)? {
                 worklist.extend(nodes);
             }
@@ -351,7 +353,7 @@ where
 
         let v = time_ns!("reading", V::from_reader(reader), config.timing);
         if v.kind() != FileType::Directory {
-            error!("The root of the filesystem must be a directory, but '{v}' only generates a single file.");
+            error!("The root of the filesystem must be a directory, but '{}' only generates a single file.", v);
             std::process::exit(ERROR_STATUS_FUSE);
         }
 
@@ -511,7 +513,7 @@ where
                 files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
                 for (name, DirEntry { inum, .. }) in files.iter() {
                     if self.config.ignored_file(name) {
-                        warn!("skipping ignored file '{name}'");
+                        warn!("skipping ignored file '{}'", name);
                         continue;
                     }
                     let v = self.as_value(*inum);
@@ -531,7 +533,7 @@ where
                 ) in files.iter()
                 {
                     if self.config.ignored_file(name) {
-                        warn!("skipping ignored file '{name}'");
+                        warn!("skipping ignored file '{}'", name);
                         continue;
                     }
                     let v = self.as_value(*inum);
@@ -575,7 +577,7 @@ where
                 files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
                 for (name, inum) in files {
                     if self.config.ignored_file(&name) {
-                        warn!("skipping ignored file '{name}'");
+                        warn!("skipping ignored file '{}'", name);
                         continue;
                     }
                     let v = self.as_other_value(inum);
@@ -592,7 +594,7 @@ where
                     .collect::<Vec<_>>();
                 for (name, inum, original_name) in files.iter() {
                     if self.config.ignored_file(name) {
-                        warn!("skipping ignored file '{name}'");
+                        warn!("skipping ignored file '{}'", name);
                         continue;
                     }
                     let v = self.as_other_value(*inum);
@@ -999,7 +1001,7 @@ where
         }
 
         if let Some(size) = size {
-            info!("truncate() to {size}");
+            info!("truncate() to {}", size);
 
             match self.get_mut(ino) {
                 Ok(inode) => match &mut inode.entry {
@@ -1284,6 +1286,7 @@ where
                 for (i, entry) in dot_entries
                     .into_iter()
                     .chain(entries)
+                    .into_iter()
                     .enumerate()
                     .skip(offset as usize)
                 {
@@ -1334,8 +1337,8 @@ where
         }
 
         // make sure we have a good file type
-        let file_type = mode & libc::S_IFMT;
-        if ![libc::S_IFREG, libc::S_IFDIR].contains(&file_type) {
+        let file_type = mode & libc::S_IFMT as u32;
+        if !vec![libc::S_IFREG as u32, libc::S_IFDIR as u32].contains(&file_type) {
             warn!(
                 "mknod only supports regular files and directories; got {:o}",
                 mode
@@ -1375,10 +1378,10 @@ where
         };
 
         // create the inode entry
-        let (entry, kind) = if file_type == libc::S_IFREG {
+        let (entry, kind) = if file_type == libc::S_IFREG as u32 {
             (Entry::File(Typ::Auto, Vec::new()), FileType::RegularFile)
         } else {
-            assert_eq!(file_type, { libc::S_IFDIR });
+            assert_eq!(file_type, libc::S_IFDIR as u32);
             (
                 Entry::Directory(DirType::Named, BTreeMap::new()),
                 FileType::Directory,
@@ -1891,7 +1894,7 @@ where
         };
 
         // extend the vector
-        let extra_bytes = (offset + length) - contents.len() as i64;
+        let extra_bytes = (offset + length as i64) - contents.len() as i64;
         if extra_bytes > 0 {
             contents.resize(contents.len() + extra_bytes as usize, 0);
         }
