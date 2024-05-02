@@ -18,9 +18,9 @@ macro_rules! time_ns {
         let msg = $msg;
         let elapsed = start.elapsed().as_nanos();
         if $timing {
-            eprintln!("{},{}", msg, elapsed);
+            eprintln!("{msg},{elapsed}");
         } else {
-            info!("{} ({}ns)", msg, elapsed);
+            info!("{msg} ({elapsed}ns)");
         }
         v
     }};
@@ -226,8 +226,8 @@ pub mod json {
 
             match self {
                 Value::Null => Node::String(Typ::Null, "".into()), // always empty
-                Value::Bool(b) => Node::String(Typ::Boolean, format!("{}{}", b, nl)),
-                Value::Number(n) => Node::String(Typ::Float, format!("{}{}", n, nl)),
+                Value::Bool(b) => Node::String(Typ::Boolean, format!("{b}{nl}")),
+                Value::Number(n) => Node::String(Typ::Float, format!("{n}{nl}")),
                 Value::String(s) => {
                     if config.try_decode_base64 {
                         if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
@@ -263,7 +263,7 @@ pub mod json {
                     } else if contents == "false" {
                         Value::Bool(false)
                     } else {
-                        debug!("string '{}' tagged as boolean", contents);
+                        debug!("string '{contents}' tagged as boolean");
                         Value::String(contents)
                     }
                 }
@@ -273,7 +273,7 @@ pub mod json {
                     if let Ok(n) = serde_json::Number::from_str(&contents) {
                         Value::Number(n)
                     } else {
-                        debug!("string '{}' tagged as float", contents);
+                        debug!("string '{contents}' tagged as float");
                         Value::String(contents)
                     }
                 }
@@ -281,7 +281,7 @@ pub mod json {
                     if let Ok(n) = serde_json::Number::from_str(&contents) {
                         Value::Number(n)
                     } else {
-                        debug!("string '{}' tagged as float", contents);
+                        debug!("string '{contents}' tagged as float");
                         Value::String(contents)
                     }
                 }
@@ -289,7 +289,7 @@ pub mod json {
                     if contents.is_empty() {
                         Value::Null
                     } else {
-                        debug!("string '{}' tagged as null", contents);
+                        debug!("string '{contents}' tagged as null");
                         Value::String(contents)
                     }
                 }
@@ -354,7 +354,7 @@ pub mod toml {
             | Toml::Float(_)
             | Toml::Integer(_)
             | Toml::String(_) => 1,
-            Toml::Array(vs) => vs.iter().map(|v| toml_size(v)).sum::<usize>() + 1,
+            Toml::Array(vs) => vs.iter().map(toml_size).sum::<usize>() + 1,
             Toml::Table(fvs) => fvs.iter().map(|(_, v)| toml_size(v)).sum::<usize>() + 1,
         }
     }
@@ -375,10 +375,10 @@ pub mod toml {
             let nl = if config.add_newlines { "\n" } else { "" };
 
             match self.0 {
-                Toml::Boolean(b) => Node::String(Typ::Boolean, format!("{}{}", b, nl)),
+                Toml::Boolean(b) => Node::String(Typ::Boolean, format!("{b}{nl}")),
                 Toml::Datetime(s) => Node::String(Typ::Datetime, s.to_string()),
-                Toml::Float(n) => Node::String(Typ::Float, format!("{}{}", n, nl)),
-                Toml::Integer(n) => Node::String(Typ::Integer, format!("{}{}", n, nl)),
+                Toml::Float(n) => Node::String(Typ::Float, format!("{n}{nl}")),
+                Toml::Integer(n) => Node::String(Typ::Integer, format!("{n}{nl}")),
                 Toml::String(s) => {
                     if config.try_decode_base64 {
                         if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
@@ -418,7 +418,7 @@ pub mod toml {
                     } else if contents == "false" {
                         Toml::Boolean(false)
                     } else {
-                        debug!("string '{}' tagged as boolean", contents);
+                        debug!("string '{contents}' tagged as boolean");
                         Toml::String(contents)
                     }
                 }
@@ -426,10 +426,7 @@ pub mod toml {
                 Typ::Datetime => match str::parse(&contents) {
                     Ok(datetime) => Toml::Datetime(datetime),
                     Err(e) => {
-                        debug!(
-                            "string '{}' tagged as datetime, didn't parse: {}",
-                            contents, e
-                        );
+                        debug!("string '{contents}' tagged as datetime, didn't parse: {e}");
                         Toml::String(contents)
                     }
                 },
@@ -437,7 +434,7 @@ pub mod toml {
                     if let Ok(n) = f64::from_str(&contents) {
                         Toml::Float(n)
                     } else {
-                        debug!("string '{}' tagged as float", contents);
+                        debug!("string '{contents}' tagged as float");
                         Toml::String(contents)
                     }
                 }
@@ -445,7 +442,7 @@ pub mod toml {
                     if let Ok(n) = i64::from_str(&contents) {
                         Toml::Integer(n)
                     } else {
-                        debug!("string '{}' tagged as float", contents);
+                        debug!("string '{contents}' tagged as float");
                         Toml::String(contents)
                     }
                 }
@@ -453,7 +450,7 @@ pub mod toml {
                     if contents.is_empty() {
                         Toml::String(contents)
                     } else {
-                        debug!("string '{}' tagged as null", contents);
+                        debug!("string '{contents}' tagged as null");
                         Toml::String(contents)
                     }
                 }
@@ -537,18 +534,18 @@ pub mod yaml {
             | Yaml::Null
             | Yaml::BadValue
             | Yaml::Alias(_) => 1,
-            Yaml::Array(vs) => vs.iter().map(|v| yaml_size(v)).sum::<usize>() + 1,
+            Yaml::Array(vs) => vs.iter().map(yaml_size).sum::<usize>() + 1,
             Yaml::Hash(fvs) => fvs.iter().map(|(_, v)| yaml_size(v)).sum::<usize>() + 1,
         }
     }
 
     fn yaml_key_to_string(v: Yaml) -> String {
         match v {
-            Yaml::Boolean(b) => format!("{}", b),
+            Yaml::Boolean(b) => format!("{b}"),
             Yaml::Real(s) => s,
-            Yaml::Integer(n) => format!("{}", n),
+            Yaml::Integer(n) => format!("{n}"),
             Yaml::String(s) => s,
-            Yaml::Alias(n) => format!("alias{}", n),
+            Yaml::Alias(n) => format!("alias{n}"),
             Yaml::Array(vs) => {
                 let mut hasher = std::collections::hash_map::DefaultHasher::new();
                 vs.hash(&mut hasher);
@@ -581,9 +578,9 @@ pub mod yaml {
 
             match self.0 {
                 Yaml::Null => Node::String(Typ::Null, "".into()),
-                Yaml::Boolean(b) => Node::String(Typ::Boolean, format!("{}{}", b, nl)),
+                Yaml::Boolean(b) => Node::String(Typ::Boolean, format!("{b}{nl}")),
                 Yaml::Real(s) => Node::String(Typ::Float, s + nl),
-                Yaml::Integer(n) => Node::String(Typ::Integer, format!("{}{}", n, nl)),
+                Yaml::Integer(n) => Node::String(Typ::Integer, format!("{n}{nl}")),
                 Yaml::String(s) => {
                     if config.try_decode_base64 {
                         if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
@@ -600,7 +597,7 @@ pub mod yaml {
                         .collect(),
                 ),
                 // ??? 2021-06-21 support aliases w/hard links?
-                Yaml::Alias(n) => Node::Bytes(format!("alias{}{}", n, nl).into_bytes()),
+                Yaml::Alias(n) => Node::Bytes(format!("alias{n}{nl}").into_bytes()),
                 Yaml::BadValue => Node::Bytes("bad YAML value".into()),
             }
         }
@@ -628,7 +625,7 @@ pub mod yaml {
                     } else if contents == "false" {
                         Value(Yaml::Boolean(false))
                     } else {
-                        debug!("string '{}' tagged as boolean", contents);
+                        debug!("string '{contents}' tagged as boolean");
                         Value(Yaml::String(contents))
                     }
                 }
@@ -638,7 +635,7 @@ pub mod yaml {
                     if let Ok(_n) = f64::from_str(&contents) {
                         Value(Yaml::Real(contents))
                     } else {
-                        debug!("string '{}' tagged as float", contents);
+                        debug!("string '{contents}' tagged as float");
                         Value(Yaml::String(contents))
                     }
                 }
@@ -646,7 +643,7 @@ pub mod yaml {
                     if let Ok(n) = i64::from_str(&contents) {
                         Value(Yaml::Integer(n))
                     } else {
-                        debug!("string '{}' tagged as float", contents);
+                        debug!("string '{contents}' tagged as float");
                         Value(Yaml::String(contents))
                     }
                 }
@@ -654,7 +651,7 @@ pub mod yaml {
                     if contents.is_empty() {
                         Value(Yaml::Null)
                     } else {
-                        debug!("string '{}' tagged as null", contents);
+                        debug!("string '{contents}' tagged as null");
                         Value(Yaml::String(contents))
                     }
                 }
