@@ -29,7 +29,7 @@ sleep 1
 kill -0 $PID >/dev/null 2>&1 && fail process
 
 [ "$(cat $OUT | wc -l)" -eq 5 ] || fail lines
-[ "$(head -n 1 $OUT)" = "info = '''" ] || fail multi
+[ "$(head -n 1 $OUT)" = 'info = """' ] || fail multi
 
 rmdir "$MNT" || fail mount
 rm "$OUT"
