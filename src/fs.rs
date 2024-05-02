@@ -1334,8 +1334,8 @@ where
         }
 
         // make sure we have a good file type
-        let file_type = mode & libc::S_IFMT;
-        if ![libc::S_IFREG, libc::S_IFDIR].contains(&file_type) {
+        let file_type = mode & libc::S_IFMT as u32;
+        if ![libc::S_IFREG as u32, libc::S_IFDIR as u32].contains(&file_type) {
             warn!(
                 "mknod only supports regular files and directories; got {:o}",
                 mode
@@ -1375,10 +1375,10 @@ where
         };
 
         // create the inode entry
-        let (entry, kind) = if file_type == libc::S_IFREG {
+        let (entry, kind) = if file_type == libc::S_IFREG as u32 {
             (Entry::File(Typ::Auto, Vec::new()), FileType::RegularFile)
         } else {
-            assert_eq!(file_type, { libc::S_IFDIR });
+            assert_eq!(file_type, libc::S_IFDIR as u32);
             (
                 Entry::Directory(DirType::Named, BTreeMap::new()),
                 FileType::Directory,
