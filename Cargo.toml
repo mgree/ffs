@@ -31,7 +31,7 @@ fuser = "0.14"
 libc = "0.2"
 regex = "1.10"
 serde_json = "1.0"
-toml = "0.8"
+toml = "0.9"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 xattr = "1.3"
