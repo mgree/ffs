@@ -9,7 +9,7 @@ homepage = "https://mgree.github.io/ffs"
 repository = "https://github.com/mgree/ffs"
 keywords = ["data", "fuse", "json", "shell", "yaml"]
 categories = ["command-line-utilities", "encoding", "filesystem"]
-edition = "2018"
+edition = "2024"
 
 exclude = [
     ".github/*",

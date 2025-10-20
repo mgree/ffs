@@ -268,7 +268,7 @@ where
         inode.entry = entry;
 
         if let Some(nodes) = &new_nodes {
-            debug!("new_nodes = {:?}", nodes);
+            debug!("new_nodes = {nodes:?}");
         }
 
         Ok(new_nodes)
@@ -654,7 +654,7 @@ where
                     .count() as u32
             }
             Entry::File(..) => 1,
-            Entry::Lazy(..) => unreachable!("unresolved lazy value in Inode::attr"),
+            Entry::Lazy(..) => panic!("unresolved lazy value in Inode::attr"),
         };
 
         FileAttr {
@@ -695,7 +695,7 @@ where
         match self {
             Entry::File(_t, s) => s.len() as u64,
             Entry::Directory(DirType::Named, files) => {
-                files.iter().map(|(name, _inum)| name.len() as u64).sum()
+                files.keys().map(|name| name.len() as u64).sum()
             }
             Entry::Directory(DirType::List, files) => files.len() as u64,
             Entry::Lazy(v) => v.size() as u64, // give an answer because we can... but should
@@ -715,7 +715,7 @@ where
         match self {
             Entry::File(t, _) => t.to_string(),
             Entry::Directory(t, _) => t.to_string(),
-            Entry::Lazy(_) => unreachable!("unresolved lazy value in Entry::typ"),
+            Entry::Lazy(_) => panic!("unresolved lazy value in Entry::typ"),
         }
     }
 
@@ -883,7 +883,7 @@ where
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn getattr(&mut self, _req: &Request, ino: u64, reply: ReplyAttr) {
+    fn getattr(&mut self, _req: &Request, ino: u64, _fh: Option<u64>, reply: ReplyAttr) {
         info!("called");
         let file = match self.get(ino) {
             Err(_e) => {
@@ -929,10 +929,10 @@ where
         }
 
         if let Some(mode) = mode {
-            info!("chmod to {:o}", mode);
+            info!("chmod to {mode:o}");
 
             if mode != mode & 0o777 {
-                info!("truncating mode {:o} to {:o}", mode, mode & 0o777);
+                info!("truncating mode {mode:o} to {:o}", mode & 0o777);
             }
             let mode = (mode as u16) & 0o777;
 
@@ -951,7 +951,7 @@ where
 
         // cribbing from https://github.com/cberner/fuser/blob/13557921548930afd6b70e109521044fea98c23b/examples/simple.rs#L594-L639
         if uid.is_some() || gid.is_some() {
-            info!("chown called with uid {:?} guid {:?}", uid, gid);
+            info!("chown called with uid {uid:?} gid {gid:?}");
 
             // gotta be a member of the target group!
             if let Some(gid) = gid {
@@ -971,12 +971,11 @@ where
             };
 
             // non-root owner can only do noop uid changes
-            if let Some(uid) = uid {
-                if req.uid() != 0 && !(uid == inode.uid && req.uid() == inode.uid) {
+            if let Some(uid) = uid
+                && req.uid() != 0 && !(uid == inode.uid && req.uid() == inode.uid) {
                     reply.error(libc::EPERM);
                     return;
                 }
-            }
 
             // only owner may change the group
             if gid.is_some() && req.uid() != 0 && req.uid() != inode.uid {
@@ -1011,7 +1010,7 @@ where
                         reply.error(libc::EISDIR);
                         return;
                     }
-                    Entry::Lazy(..) => unreachable!("unresolved lazy value found in setattr"),
+                    Entry::Lazy(..) => panic!("unresolved lazy value found in setattr"),
                 },
                 Err(_) => {
                     reply.error(libc::ENOENT);
@@ -1293,7 +1292,7 @@ where
                 }
                 reply.ok()
             }
-            Entry::Lazy(..) => unreachable!("unresolved lazy value in readdir"),
+            Entry::Lazy(..) => panic!("unresolved lazy value in readdir"),
         }
     }
 
@@ -1334,12 +1333,9 @@ where
         }
 
         // make sure we have a good file type
-        let file_type = mode & libc::S_IFMT as u32;
-        if ![libc::S_IFREG as u32, libc::S_IFDIR as u32].contains(&file_type) {
-            warn!(
-                "mknod only supports regular files and directories; got {:o}",
-                mode
-            );
+        let file_type: u32 = mode & libc::S_IFMT;
+        if ![libc::S_IFREG, libc::S_IFDIR].contains(&file_type) {
+            warn!("mknod only supports regular files and directories; got {mode:o}");
             reply.error(libc::ENOSYS);
             return;
         }
@@ -1370,15 +1366,15 @@ where
                         return;
                     }
                 }
-                Entry::Lazy(..) => unreachable!("unresolved lazy value in mknod"),
+                Entry::Lazy(..) => panic!("unresolved lazy value in mknod"),
             },
         };
 
         // create the inode entry
-        let (entry, kind) = if file_type == libc::S_IFREG as u32 {
+        let (entry, kind) = if file_type == libc::S_IFREG {
             (Entry::File(Typ::Auto, Vec::new()), FileType::RegularFile)
         } else {
-            assert_eq!(file_type, libc::S_IFDIR as u32);
+            assert_eq!(file_type, libc::S_IFDIR);
             (
                 Entry::Directory(DirType::Named, BTreeMap::new()),
                 FileType::Directory,
@@ -1391,9 +1387,9 @@ where
         // update the parent
         // NB we can't get_mut the parent earlier due to borrowing restrictions
         match self.get_mut(parent) {
-            Err(_e) => unreachable!("error finding parent again"),
+            Err(_e) => panic!("error finding parent again"),
             Ok(inode) => match &mut inode.entry {
-                Entry::File(..) => unreachable!("parent changed to a regular file"),
+                Entry::File(..) => panic!("parent changed to a regular file"),
                 Entry::Directory(_dirtype, files) => {
                     files.insert(
                         filename.into(),
@@ -1404,7 +1400,7 @@ where
                         },
                     );
                 }
-                Entry::Lazy(..) => unreachable!("unresolved lazy value in mknod"),
+                Entry::Lazy(..) => panic!("unresolved lazy value in mknod"),
             },
         };
 
@@ -1455,7 +1451,7 @@ where
                         return;
                     }
                 }
-                Entry::Lazy(..) => unreachable!("unresolved lazy value in mkdir"),
+                Entry::Lazy(..) => panic!("unresolved lazy value in mkdir"),
             },
         };
 
@@ -1469,9 +1465,9 @@ where
         // update the parent
         // NB we can't get_mut the parent earlier due to borrowing restrictions
         match self.get_mut(parent) {
-            Err(_e) => unreachable!("error finding parent again"),
+            Err(_e) => panic!("error finding parent again"),
             Ok(inode) => match &mut inode.entry {
-                Entry::File(..) => unreachable!("parent changed to a regular file"),
+                Entry::File(..) => panic!("parent changed to a regular file"),
                 Entry::Directory(_dirtype, files) => {
                     files.insert(
                         filename.into(),
@@ -1482,7 +1478,7 @@ where
                         },
                     );
                 }
-                Entry::Lazy(..) => unreachable!("unresolved lazy value in mkdir"),
+                Entry::Lazy(..) => panic!("unresolved lazy value in mkdir"),
             },
         };
 
@@ -1529,7 +1525,7 @@ where
                 reply.error(libc::EISDIR);
                 return;
             }
-            Entry::Lazy(..) => unreachable!("unresolved lazy value in write"),
+            Entry::Lazy(..) => panic!("unresolved lazy value in write"),
         };
 
         // make space
@@ -1585,7 +1581,7 @@ where
             Ok(Inode {
                 entry: Entry::Lazy(..),
                 ..
-            }) => unreachable!("unresolved lazy value in unlink"),
+            }) => panic!("unresolved lazy value in unlink"),
         };
 
         // ensure it's a regular file
@@ -1646,7 +1642,7 @@ where
             Ok(Inode {
                 entry: Entry::Lazy(..),
                 ..
-            }) => unreachable!("unresolved lazy value in rmdir"),
+            }) => panic!("unresolved lazy value in rmdir"),
         };
 
         // find the actual directory being deleted
@@ -1677,8 +1673,8 @@ where
                     return;
                 }
             }
-            Ok(_) => unreachable!("mismatched metadata on inode {} in parent {}", inum, parent),
-            _ => unreachable!("couldn't find inode {} in parent {}", inum, parent),
+            Ok(_) => panic!("mismatched metadata on inode {inum} in parent {parent}"),
+            _ => panic!("couldn't find inode {inum} in parent {parent}"),
         };
 
         // find the parent again, mutably
@@ -1687,8 +1683,8 @@ where
                 entry: Entry::Directory(_dirtype, files),
                 ..
             }) => files,
-            Ok(_) => unreachable!("parent changed to a regular file"),
-            Err(_) => unreachable!("error finding parent again"),
+            Ok(_) => panic!("parent changed to a regular file"),
+            Err(_) => panic!("error finding parent again"),
         };
 
         // try to remove it
@@ -1793,7 +1789,7 @@ where
                         return;
                     }
                 }
-                _ => unreachable!("bad metadata on inode {} in {}", tgt_inum, newparent),
+                _ => panic!("bad metadata on inode {tgt_inum} in {newparent}"),
             }
         }
         // remove src from parent
@@ -1802,7 +1798,7 @@ where
                 entry: Entry::Directory(_kind, files),
                 ..
             }) => files.remove(src),
-            _ => unreachable!("parent changed"),
+            _ => panic!("parent changed"),
         };
 
         // add src as tgt to newparent
@@ -1821,15 +1817,14 @@ where
                     inum: src_inum,
                 },
             ),
-            _ => unreachable!("parent changed"),
+            _ => panic!("parent changed"),
         };
 
         // set src's parent inode
         match self.get_mut(src_inum) {
             Ok(inode) => inode.parent = newparent,
-            Err(_) => unreachable!(
-                "missing inode {} moved from {} to {}",
-                src_inum, parent, newparent
+            Err(_) => panic!(
+                "missing inode {src_inum} moved from {parent} to {newparent}"
             ),
         }
 
@@ -1882,7 +1877,7 @@ where
             Ok(Inode {
                 entry: Entry::Lazy(..),
                 ..
-            }) => unreachable!("unresolved lazy value in fallocate"),
+            }) => panic!("unresolved lazy value in fallocate"),
 
             Err(_e) => {
                 reply.error(libc::ENODEV);

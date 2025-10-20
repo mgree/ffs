@@ -123,11 +123,10 @@ where
             }
         }
 
-        if let Some(original_name) = original_name {
-            if config.allow_xattr {
+        if let Some(original_name) = original_name
+            && config.allow_xattr {
                 xattr::set(&path, "user.original_name", original_name.as_bytes())?;
             }
-        }
     }
 
     Ok(())
@@ -143,7 +142,7 @@ fn main() -> std::io::Result<()> {
             std::process::exit(ERROR_STATUS_CLI);
         }
     };
-    info!("mount: {:?}", mount);
+    info!("mount: {mount:?}");
 
     let reader = match config.input_reader() {
         Some(reader) => reader,
