@@ -13,10 +13,7 @@ fail() {
 }
 
 MNT=$(mktemp -d)
-TOML=$(mktemp)
-
-mv "$TOML" "$TOML".toml
-TOML="$TOML".toml
+TOML=$(mktemp).toml
 
 cp ../toml/eg.toml "$TOML"
 
