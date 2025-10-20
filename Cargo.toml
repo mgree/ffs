@@ -38,4 +38,4 @@ xattr = "1.6"
 yaml-rust = "0.4.5"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-fuser = { version = "0.16", features = [] }
+fuser = { version = "0.16", features = [], fuser_mount_impl = "pure-rust" }
