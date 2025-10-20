@@ -4,6 +4,7 @@ use std::str::FromStr;
 
 // use path_absolutize::*;
 
+use clap::parser::ValueSource;
 use clap_complete::{Shell, generate};
 use tracing::{debug, error, warn};
 use tracing_subscriber::prelude::*;
@@ -130,9 +131,9 @@ impl Config {
         }
 
         // logging
-        if !args.contains_id("QUIET") {
+        if !args.get_flag("QUIET") {
             let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
-                if args.contains_id("DEBUG") {
+                if args.get_flag("DEBUG") {
                     EnvFilter::new("ffs=debug")
                 } else {
                     EnvFilter::new("ffs=warn")
@@ -146,14 +147,14 @@ impl Config {
         }
 
         // simple flags
-        config.timing = args.contains_id("TIMING");
-        config.eager = args.contains_id("EAGER");
-        config.add_newlines = !args.contains_id("EXACT");
-        config.pad_element_names = !args.contains_id("UNPADDED");
-        config.read_only = args.contains_id("READONLY");
-        config.allow_xattr = !args.contains_id("NOXATTR");
-        config.keep_macos_xattr_file = args.contains_id("KEEPMACOSDOT");
-        config.pretty = args.contains_id("PRETTY");
+        config.timing = args.get_flag("TIMING");
+        config.eager = args.get_flag("EAGER");
+        config.add_newlines = !args.get_flag("EXACT");
+        config.pad_element_names = !args.get_flag("UNPADDED");
+        config.read_only = args.get_flag("READONLY");
+        config.allow_xattr = !args.get_flag("NOXATTR");
+        config.keep_macos_xattr_file = args.get_flag("KEEPMACOSDOT");
+        config.pretty = args.get_flag("PRETTY");
 
         // munging policy
         config.munge = match args.get_one::<String>("MUNGE") {
@@ -179,7 +180,9 @@ impl Config {
                 std::process::exit(ERROR_STATUS_CLI)
             }
         };
-        if args.contains_id("FILEMODE") && !args.contains_id("DIRMODE") {
+        if args.value_source("FILEMODE") == Some(ValueSource::CommandLine)
+            && args.value_source("DIRMODE") != Some(ValueSource::CommandLine)
+        {
             // wherever a read bit is set, the dirmode should have an execute bit, too
             config.dirmode = config.filemode;
             if config.dirmode & 0o400 != 0 {
@@ -222,7 +225,7 @@ impl Config {
             Some(target_file) => {
                 // `--new` flag, so we'll infer most stuff
 
-                if args.contains_id("INPUT") {
+                if args.value_source("INPUT") == Some(ValueSource::CommandLine) {
                     error!("It doesn't make sense to set `--new` with a specified input file.");
                     std::process::exit(ERROR_STATUS_CLI);
                 }
@@ -334,7 +337,7 @@ impl Config {
                 // configure output
                 config.output = if let Some(output) = args.get_one::<String>("OUTPUT") {
                     Output::File(PathBuf::from(output))
-                } else if args.contains_id("INPLACE") {
+                } else if args.get_flag("INPLACE") {
                     match &config.input {
                         Input::Stdin => {
                             warn!(
@@ -350,7 +353,7 @@ impl Config {
                         }
                         Input::File(input_source) => Output::File(input_source.clone()),
                     }
-                } else if args.contains_id("NOOUTPUT") || args.contains_id("QUIET") {
+                } else if args.get_flag("NOOUTPUT") || args.get_flag("QUIET") {
                     Output::Quiet
                 } else {
                     Output::Stdout
@@ -530,10 +533,10 @@ impl Config {
         }
 
         // logging
-        if !args.contains_id("QUIET") {
+        if !args.get_flag("QUIET") {
             let filter_layer = EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_e| {
-                    if args.contains_id("DEBUG") {
+                    if args.get_flag("DEBUG") {
                         EnvFilter::new("unpack=debug")
                     } else {
                         EnvFilter::new("unpack=warn")
@@ -548,10 +551,10 @@ impl Config {
         }
 
         // simple flags
-        config.timing = args.contains_id("TIMING");
-        config.add_newlines = !args.contains_id("EXACT");
-        config.pad_element_names = !args.contains_id("UNPADDED");
-        config.allow_xattr = !args.contains_id("NOXATTR");
+        config.timing = args.get_flag("TIMING");
+        config.add_newlines = !args.get_flag("EXACT");
+        config.pad_element_names = !args.get_flag("UNPADDED");
+        config.allow_xattr = !args.get_flag("NOXATTR");
 
         // munging policy
         config.munge = match args.get_one::<String>("MUNGE") {
@@ -709,10 +712,10 @@ impl Config {
         }
 
         // logging
-        if !args.contains_id("QUIET") {
+        if !args.get_flag("QUIET") {
             let filter_layer = EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_e| {
-                    if args.contains_id("DEBUG") {
+                    if args.get_flag("DEBUG") {
                         EnvFilter::new("pack=debug")
                     } else {
                         EnvFilter::new("pack=warn")
@@ -727,15 +730,14 @@ impl Config {
         }
 
         // simple flags
-        config.timing = args.contains_id("TIMING");
-        config.add_newlines = !args.contains_id("EXACT");
-        config.read_only = args.contains_id("READONLY");
-        config.allow_xattr = !args.contains_id("NOXATTR");
-        config.allow_symlink_escape = args.contains_id("ALLOW_SYMLINK_ESCAPE");
-        config.keep_macos_xattr_file = args.contains_id("KEEPMACOSDOT");
-        config.pretty = args.contains_id("PRETTY");
+        config.timing = args.get_flag("TIMING");
+        config.add_newlines = !args.get_flag("EXACT");
+        config.allow_xattr = !args.get_flag("NOXATTR");
+        config.allow_symlink_escape = args.get_flag("ALLOW_SYMLINK_ESCAPE");
+        config.keep_macos_xattr_file = args.get_flag("KEEPMACOSDOT");
+        config.pretty = args.get_flag("PRETTY");
 
-        config.symlink = if args.contains_id("FOLLOW_SYMLINKS") {
+        config.symlink = if args.get_flag("FOLLOW_SYMLINKS") {
             Symlink::Follow
         } else {
             Symlink::NoFollow
@@ -783,7 +785,7 @@ impl Config {
         // configure output
         config.output = if let Some(output) = args.get_one::<String>("OUTPUT") {
             Output::File(PathBuf::from(output))
-        } else if args.contains_id("NOOUTPUT") || args.contains_id("QUIET") {
+        } else if args.get_flag("NOOUTPUT") || args.get_flag("QUIET") {
             Output::Quiet
         } else {
             Output::Stdout

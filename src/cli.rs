@@ -1,4 +1,4 @@
-use clap::{Arg, Command, value_parser};
+use clap::{Arg, ArgAction, Command, value_parser};
 use clap_complete::Shell;
 
 /// The possible formats.
@@ -25,22 +25,29 @@ pub fn ffs() -> Command {
                 .long("quiet")
                 .short('q')
                 .overrides_with("DEBUG")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("TIMING")
                 .help("Emit timing information on stderr in an 'event,time' format; time is in nanoseconds")
                 .long("time")
+                .action(ArgAction::SetTrue)
+
         )
         .arg(
             Arg::new("DEBUG")
                 .help("Give debug output on stderr")
                 .long("debug")
                 .short('d')
+                .action(ArgAction::SetTrue)
+
         )
         .arg(
             Arg::new("EAGER")
                 .help("Eagerly load data on startup (data is lazily loaded by default)")
                 .long("eager")
+                .action(ArgAction::SetTrue)
+
         )
         .arg(
             Arg::new("UID")
@@ -77,16 +84,22 @@ pub fn ffs() -> Command {
             Arg::new("EXACT")
                 .help("Don't add newlines to the end of values that don't already have them (or strip them when loading)")
                 .long("exact")
+                .action(ArgAction::SetTrue)
+
         )
         .arg(
             Arg::new("NOXATTR")
                 .help("Don't use extended attributes to track metadata (see `man xattr`)")
                 .long("no-xattr")
+                .action(ArgAction::SetTrue)
+
         )
         .arg(
             Arg::new("KEEPMACOSDOT")
                 .help("Include ._* extended attribute/resource fork files on macOS")
                 .long("keep-macos-xattr")
+                .action(ArgAction::SetTrue)
+
         )
         .arg(
             Arg::new("MUNGE")
@@ -100,11 +113,13 @@ pub fn ffs() -> Command {
             Arg::new("UNPADDED")
                 .help("Don't pad the numeric names of list elements with zeroes; will not sort properly")
                 .long("unpadded")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("READONLY")
                 .help("Mounted filesystem will be readonly")
                 .long("readonly")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("OUTPUT")
@@ -118,6 +133,8 @@ pub fn ffs() -> Command {
                 .help("Disables output of filesystem (normally on stdout)")
                 .long("no-output")
                 .overrides_with("OUTPUT")
+                .action(ArgAction::SetTrue)
+
         )
         .arg(
             Arg::new("INPLACE")
@@ -126,6 +143,8 @@ pub fn ffs() -> Command {
                 .short('i')
                 .overrides_with("OUTPUT")
                 .overrides_with("NOOUTPUT")
+                .action(ArgAction::SetTrue)
+
         )
         .arg(
             Arg::new("SOURCE_FORMAT")
@@ -149,6 +168,8 @@ pub fn ffs() -> Command {
                 .long("pretty")
                 .overrides_with("NOOUTPUT")
                 .overrides_with("QUIET")
+                .action(ArgAction::SetTrue)
+
         )
         .arg(
             Arg::new("MOUNT")
@@ -192,27 +213,32 @@ pub fn unpack() -> Command {
                 .long("quiet")
                 .short('q')
                 .overrides_with("DEBUG")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("TIMING")
                 .help("Emit timing information on stderr in an 'event,time' format; time is in nanoseconds")
                 .long("time")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("DEBUG")
                 .help("Give debug output on stderr")
                 .long("debug")
                 .short('d')
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("EXACT")
                 .help("Don't add newlines to the end of values that don't already have them (or strip them when loading)")
                 .long("exact")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("NOXATTR")
                 .help("Don't use extended attributes to track metadata (see `man xattr`)")
                 .long("no-xattr")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("MUNGE")
@@ -226,6 +252,7 @@ pub fn unpack() -> Command {
             Arg::new("UNPADDED")
                 .help("Don't pad the numeric names of list elements with zeroes; will not sort properly")
                 .long("unpadded")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("TYPE")
@@ -268,34 +295,40 @@ pub fn pack() -> Command {
                 .long("quiet")
                 .short('q')
                 .overrides_with("DEBUG")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("TIMING")
                 .help("Emit timing information on stderr in an 'event,time' format; time is in nanoseconds")
                 .long("time")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("DEBUG")
                 .help("Give debug output on stderr")
                 .long("debug")
                 .short('d')
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("EXACT")
                 .help("Don't add newlines to the end of values that don't already have them (or strip them when loading)")
                 .long("exact")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("NOFOLLOW_SYMLINKS")
                 .help("Never follow symbolic links. This is the default behaviour. `pack` will ignore all symbolic links.")
                 .short('P')
                 .overrides_with("FOLLOW_SYMLINKS")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("FOLLOW_SYMLINKS")
                 .help("Follow all symlinks. For safety, you can also specify a --max-depth value.")
                 .short('L')
                 .overrides_with("NOFOLLOW_SYMLINKS")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("MAXDEPTH")
@@ -308,16 +341,19 @@ pub fn pack() -> Command {
             Arg::new("ALLOW_SYMLINK_ESCAPE")
                 .help("Allows pack to follow symlinks outside of the directory being packed.")
                 .long("allow-symlink-escape")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("NOXATTR")
                 .help("Don't use extended attributes to track metadata (see `man xattr`)")
                 .long("no-xattr")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("KEEPMACOSDOT")
                 .help("Include ._* extended attribute/resource fork files on macOS")
                 .long("keep-macos-xattr")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("MUNGE")
@@ -339,6 +375,7 @@ pub fn pack() -> Command {
                 .help("Disables output of filesystem (normally on stdout)")
                 .long("no-output")
                 .overrides_with("OUTPUT")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("TARGET_FORMAT")
@@ -354,10 +391,11 @@ pub fn pack() -> Command {
                 .long("pretty")
                 .overrides_with("NOOUTPUT")
                 .overrides_with("QUIET")
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new("INPUT")
-                .help("Sets the input folder")
+                .help("The directory to be packed")
                 .index(1),
         )
 }
