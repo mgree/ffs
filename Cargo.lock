@@ -107,6 +107,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "clap_complete"
+version = "4.5.59"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2348487adcd4631696ced64ccdb40d38ac4d31cae7f2eec8817fcea1b9d1c43c"
+dependencies = [
+ "clap",
+]
+
+[[package]]
 name = "clap_lex"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -131,7 +140,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -140,6 +149,7 @@ version = "0.1.2"
 dependencies = [
  "base64",
  "clap",
+ "clap_complete",
  "fuser",
  "libc",
  "regex",
@@ -348,7 +358,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
