@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 // use path_absolutize::*;
 
-use clap_complete::{generate, Shell};
+use clap_complete::{Shell, generate};
 use tracing::{debug, error, warn};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::EnvFilter, fmt};
@@ -125,12 +125,7 @@ impl Config {
         // TODO 2021-07-06 good candidate for a subcommand
         if let Some(generator) = args.get_one::<Shell>("SHELL").copied() {
             let mut cmd = cli::ffs();
-            generate(
-                generator,
-                &mut cmd,
-      "ffs",
-                &mut std::io::stdout(),
-            );
+            generate(generator, &mut cmd, "ffs", &mut std::io::stdout());
             std::process::exit(0);
         }
 
@@ -173,7 +168,8 @@ impl Config {
         };
 
         // perms
-        config.filemode = match u16::from_str_radix(args.get_one::<String>("FILEMODE").unwrap(), 8) {
+        config.filemode = match u16::from_str_radix(args.get_one::<String>("FILEMODE").unwrap(), 8)
+        {
             Ok(filemode) => filemode,
             Err(e) => {
                 error!(
@@ -196,16 +192,17 @@ impl Config {
                 config.dirmode |= 0o001;
             }
         } else {
-            config.dirmode = match u16::from_str_radix(args.get_one::<String>("DIRMODE").unwrap(), 8) {
-                Ok(filemode) => filemode,
-                Err(e) => {
-                    error!(
-                        "Couldn't parse `--dirmode {}`: {e}.",
-                        args.get_one::<String>("DIRMODE").unwrap()
-                    );
-                    std::process::exit(ERROR_STATUS_CLI)
-                }
-            };
+            config.dirmode =
+                match u16::from_str_radix(args.get_one::<String>("DIRMODE").unwrap(), 8) {
+                    Ok(filemode) => filemode,
+                    Err(e) => {
+                        error!(
+                            "Couldn't parse `--dirmode {}`: {e}.",
+                            args.get_one::<String>("DIRMODE").unwrap()
+                        );
+                        std::process::exit(ERROR_STATUS_CLI)
+                    }
+                };
         }
 
         // uid and gid
@@ -214,7 +211,7 @@ impl Config {
             None => config.uid = unsafe { libc::geteuid() },
         }
         match args.get_one::<u32>("GID").copied() {
-            Some(gid) =>  config.gid = gid,
+            Some(gid) => config.gid = gid,
             None => config.gid = unsafe { libc::getegid() },
         }
 
@@ -288,15 +285,19 @@ impl Config {
                         let mount_dir = PathBuf::from(stem);
                         // If that file already exists, give up and tell the user about --mount.
                         if mount_dir.exists() {
-                            error!("Inferred mountpoint '{mount}' for output file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
-                                    mount = mount_dir.display(), file = output.display());
+                            error!(
+                                "Inferred mountpoint '{mount}' for output file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
+                                mount = mount_dir.display(),
+                                file = output.display()
+                            );
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                         // If the mountpoint can't be created, give up and tell the user about --mount.
                         if let Err(e) = std::fs::create_dir(&mount_dir) {
-                            error!("Couldn't create mountpoint '{}': {e}. Use `--mount MOUNT` to specify a mountpoint.",
-                                   mount_dir.display(),
-                                  );
+                            error!(
+                                "Couldn't create mountpoint '{}': {e}. Use `--mount MOUNT` to specify a mountpoint.",
+                                mount_dir.display(),
+                            );
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                         // We did it!
@@ -337,8 +338,8 @@ impl Config {
                     match &config.input {
                         Input::Stdin => {
                             warn!(
-                            "In-place output `-i` with STDIN input makes no sense; outputting on STDOUT."
-                        );
+                                "In-place output `-i` with STDIN input makes no sense; outputting on STDOUT."
+                            );
                             Output::Stdout
                         }
                         Input::Empty => {
@@ -389,8 +390,11 @@ impl Config {
 
                                 // If that file already exists, give up and tell the user about --mount.
                                 if mount_dir.exists() {
-                                    error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
-                                    mount = mount_dir.display(), file = file.display());
+                                    error!(
+                                        "Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
+                                        mount = mount_dir.display(),
+                                        file = file.display()
+                                    );
                                     std::process::exit(ERROR_STATUS_FUSE);
                                 }
                                 // If the mountpoint can't be created, give up and tell the user about --mount.
@@ -604,7 +608,9 @@ impl Config {
                         std::process::exit(ERROR_STATUS_CLI);
                     }
                     Input::Empty => {
-                        error!("--new is not an option for `unpack`, so the input should never be Empty and this error should never be seen.");
+                        error!(
+                            "--new is not an option for `unpack`, so the input should never be Empty and this error should never be seen."
+                        );
                         std::process::exit(ERROR_STATUS_CLI);
                     }
                     Input::File(file) => {
@@ -618,8 +624,11 @@ impl Config {
 
                         // If that file already exists, give up and tell the user about --mount.
                         if mount_dir.exists() {
-                            error!("Inferred directory '{mount}' for input file '{file}', but '{mount}' already exists. Use `--into DIRECTORY` to specify a directory.",
-                            mount = mount_dir.display(), file = file.display());
+                            error!(
+                                "Inferred directory '{mount}' for input file '{file}', but '{mount}' already exists. Use `--into DIRECTORY` to specify a directory.",
+                                mount = mount_dir.display(),
+                                file = file.display()
+                            );
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                         // If the mountpoint can't be created, give up and tell the user about --mount.

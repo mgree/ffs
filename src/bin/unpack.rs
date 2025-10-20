@@ -124,9 +124,10 @@ where
         }
 
         if let Some(original_name) = original_name
-            && config.allow_xattr {
-                xattr::set(&path, "user.original_name", original_name.as_bytes())?;
-            }
+            && config.allow_xattr
+        {
+            xattr::set(&path, "user.original_name", original_name.as_bytes())?;
+        }
     }
 
     Ok(())
@@ -158,7 +159,10 @@ fn main() -> std::io::Result<()> {
             if value.kind() == FileType::Directory {
                 unpack(value, mount.clone(), &config)
             } else {
-                error!("The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.", mount.display());
+                error!(
+                    "The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.",
+                    mount.display()
+                );
                 std::process::exit(ERROR_STATUS_FUSE);
             }
         }
@@ -167,7 +171,10 @@ fn main() -> std::io::Result<()> {
             if value.kind() == FileType::Directory {
                 unpack(value, mount.clone(), &config)
             } else {
-                error!("The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.", mount.display());
+                error!(
+                    "The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.",
+                    mount.display()
+                );
                 std::process::exit(ERROR_STATUS_FUSE);
             }
         }
@@ -176,7 +183,10 @@ fn main() -> std::io::Result<()> {
             if value.kind() == FileType::Directory {
                 unpack(value, mount.clone(), &config)
             } else {
-                error!("The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.", mount.display());
+                error!(
+                    "The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.",
+                    mount.display()
+                );
                 std::process::exit(ERROR_STATUS_FUSE);
             }
         }

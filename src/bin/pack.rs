@@ -16,12 +16,12 @@ use ffs::config::Symlink;
 use ffs::config::{ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
 use ffs::format;
 use ffs::time_ns;
-use format::json::Value as JsonValue;
-use format::toml::Value as TomlValue;
-use format::yaml::Value as YamlValue;
 use format::Format;
 use format::Nodelike;
 use format::Typ;
+use format::json::Value as JsonValue;
+use format::toml::Value as TomlValue;
+use format::yaml::Value as YamlValue;
 
 use ::xattr;
 use regex::Regex;
@@ -157,15 +157,19 @@ impl Pack {
                     if path.starts_with(&canonicalized) {
                         error!(
                             "The symlink {} points to some ancestor directory: {}, causing an infinite loop.",
-                            path.display(), canonicalized.display(),
+                            path.display(),
+                            canonicalized.display(),
                         );
                         std::process::exit(ERROR_STATUS_FUSE);
                     }
                     if !config.allow_symlink_escape
                         && !canonicalized.starts_with(config.mount.as_ref().unwrap())
                     {
-                        warn!("The symlink {} points to some file outside of the directory being packed. \
-                              Specify --allow-symlink-escape to allow pack to follow this symlink.", path.display());
+                        warn!(
+                            "The symlink {} points to some file outside of the directory being packed. \
+                              Specify --allow-symlink-escape to allow pack to follow this symlink.",
+                            path.display()
+                        );
                         return Ok(None);
                     }
                 }

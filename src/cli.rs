@@ -1,4 +1,4 @@
-use clap::{value_parser, Arg, Command};
+use clap::{Arg, Command, value_parser};
 use clap_complete::Shell;
 
 /// The possible formats.
