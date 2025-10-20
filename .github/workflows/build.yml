@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-latest
+#          - macos-latest # disabled 2025-10-20 due to fuser not building w/o libfuse
           - ubuntu-latest
 
     runs-on: ${{ matrix.os }}
@@ -36,7 +36,7 @@ jobs:
         run: |
           cargo build --verbose --all --release
           cargo test
-        
+
       - name: Integration tests for ffs and pack/unpack (Linux)
         if: contains(matrix.os, 'ubuntu')
         run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
@@ -44,7 +44,7 @@ jobs:
       - name: Integration tests for pack/unpack only (macOS)
         if: contains(matrix.os, 'macos')
         run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh unpack
-         
+
       - name: Upload macOS release build
         uses: actions/upload-artifact@v4
         if: contains(matrix.os, 'macos')
@@ -81,13 +81,13 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Download binaries
         uses: actions/download-artifact@v4
 
       - name: Install R
         uses: r-lib/actions/setup-r@v2
-        
+
       - name: Benchmarks
         run: |
           Rscript -e "tries <- 0; while (!require('ggplot2') && tries < 3) { cat(sprintf('TRY %d\n', tries)); install.packages('ggplot2', repos = 'https://cloud.r-project.org/'); tries <- tries + 1; }"
@@ -107,13 +107,13 @@ jobs:
         if: contains(matrix.os, 'ubuntu')
         with:
           name: benchmarks.linux
-          path: data            
-      
+          path: data
+
   prerelease:
     needs: build
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
-      
+
     steps:
       - name: Download binaries
         uses: actions/download-artifact@v4
@@ -132,7 +132,7 @@ jobs:
           else
             echo "macOS is disabled 😢"
           fi
-  
+
       - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -145,5 +145,5 @@ jobs:
             ffs/pack.*
             ffs/unpack.*
 
-        
-        
+
+

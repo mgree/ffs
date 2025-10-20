@@ -229,11 +229,10 @@ pub mod json {
                 Value::Bool(b) => Node::String(Typ::Boolean, format!("{b}{nl}")),
                 Value::Number(n) => Node::String(Typ::Float, format!("{n}{nl}")),
                 Value::String(s) => {
-                    if config.try_decode_base64 {
-                        if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
+                    if config.try_decode_base64
+                        && let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
                             return Node::Bytes(bytes);
                         }
-                    }
 
                     Node::String(Typ::String, if s.ends_with('\n') { s } else { s + nl })
                 }
@@ -380,11 +379,10 @@ pub mod toml {
                 Toml::Float(n) => Node::String(Typ::Float, format!("{n}{nl}")),
                 Toml::Integer(n) => Node::String(Typ::Integer, format!("{n}{nl}")),
                 Toml::String(s) => {
-                    if config.try_decode_base64 {
-                        if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
+                    if config.try_decode_base64
+                        && let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
                             return Node::Bytes(bytes);
                         }
-                    }
 
                     Node::String(Typ::String, if s.ends_with('\n') { s } else { s + nl })
                 }
@@ -582,11 +580,10 @@ pub mod yaml {
                 Yaml::Real(s) => Node::String(Typ::Float, s + nl),
                 Yaml::Integer(n) => Node::String(Typ::Integer, format!("{n}{nl}")),
                 Yaml::String(s) => {
-                    if config.try_decode_base64 {
-                        if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
+                    if config.try_decode_base64
+                        && let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(&s) {
                             return Node::Bytes(bytes);
                         }
-                    }
 
                     Node::String(Typ::String, if s.ends_with('\n') { s } else { s + nl })
                 }

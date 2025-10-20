@@ -450,7 +450,7 @@ impl Config {
                     Err(e) => {
                         match e {
                             format::ParseFormatError::NoSuchFormat(s) => {
-                                warn!("Unrecognized format '{}', inferring from input.", s)
+                                warn!("Unrecognized format '{s}', inferring from input.")
                             }
                             format::ParseFormatError::NoFormatProvided => {
                                 debug!("Inferring format from input.")
