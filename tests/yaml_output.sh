@@ -13,10 +13,7 @@ fail() {
 }
 
 MNT=$(mktemp -d)
-YAML=$(mktemp)
-
-mv "$YAML" "$YAML".yaml
-YAML="$YAML".yaml
+YAML=$(mktemp).yaml
 
 cp ../yaml/invoice.yaml "$YAML"
 

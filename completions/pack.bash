@@ -1,4 +1,4 @@
-_ffs() {
+_pack() {
     local i cur prev opts cmd
     COMPREPLY=()
     if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
@@ -14,7 +14,7 @@ _ffs() {
     do
         case "${cmd},${i}" in
             ",$1")
-                cmd="ffs"
+                cmd="pack"
                 ;;
             *)
                 ;;
@@ -22,8 +22,8 @@ _ffs() {
     done
 
     case "${cmd}" in
-        ffs)
-            opts="-q -d -u -g -o -i -s -t -m -h -V --completions --quiet --time --debug --eager --uid --gid --mode --dirmode --exact --no-xattr --keep-macos-xattr --munge --unpadded --readonly --output --no-output --in-place --source --target --pretty --mount --new --help --version [INPUT]"
+        pack)
+            opts="-q -d -P -L -o -t -h -V --completions --quiet --time --debug --exact --max-depth --allow-symlink-escape --no-xattr --keep-macos-xattr --munge --output --no-output --target --pretty --help --version [INPUT]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -33,27 +33,7 @@ _ffs() {
                     COMPREPLY=($(compgen -W "bash elvish fish powershell zsh" -- "${cur}"))
                     return 0
                     ;;
-                --uid)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -u)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --gid)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -g)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --mode)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --dirmode)
+                --max-depth)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -69,32 +49,12 @@ _ffs() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --source)
-                    COMPREPLY=($(compgen -W "json toml yaml" -- "${cur}"))
-                    return 0
-                    ;;
-                -s)
-                    COMPREPLY=($(compgen -W "json toml yaml" -- "${cur}"))
-                    return 0
-                    ;;
                 --target)
                     COMPREPLY=($(compgen -W "json toml yaml" -- "${cur}"))
                     return 0
                     ;;
                 -t)
                     COMPREPLY=($(compgen -W "json toml yaml" -- "${cur}"))
-                    return 0
-                    ;;
-                --mount)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -m)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --new)
-                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 *)
@@ -108,7 +68,7 @@ _ffs() {
 }
 
 if [[ "${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -ge 4 || "${BASH_VERSINFO[0]}" -gt 4 ]]; then
-    complete -F _ffs -o nosort -o bashdefault -o default ffs
+    complete -F _pack -o nosort -o bashdefault -o default pack
 else
-    complete -F _ffs -o bashdefault -o default ffs
+    complete -F _pack -o bashdefault -o default pack
 fi

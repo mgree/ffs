@@ -4,6 +4,8 @@ use std::str::FromStr;
 
 // use path_absolutize::*;
 
+use clap::parser::ValueSource;
+use clap_complete::{Shell, generate};
 use tracing::{debug, error, warn};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{filter::EnvFilter, fmt};
@@ -116,34 +118,22 @@ pub enum Symlink {
 impl Config {
     /// Parses arguments from `std::env::Args`, via `cli::app().get_matches()`
     pub fn from_ffs_args() -> Self {
-        let args = cli::ffs().get_matches_safe().unwrap_or_else(|e| {
-            eprintln!("{}", e.message);
-            std::process::exit(ERROR_STATUS_CLI)
-        });
+        let args = cli::ffs().get_matches();
 
         let mut config = Config::default();
         // generate completions?
         //
         // TODO 2021-07-06 good candidate for a subcommand
-        if let Some(shell) = args.value_of("SHELL") {
-            let shell = if shell == "bash" {
-                clap::Shell::Bash
-            } else if shell == "fish" {
-                clap::Shell::Fish
-            } else if shell == "zsh" {
-                clap::Shell::Zsh
-            } else {
-                eprintln!("Can't generate completions for '{shell}'.");
-                std::process::exit(ERROR_STATUS_CLI);
-            };
-            cli::ffs().gen_completions_to("ffs", shell, &mut std::io::stdout());
+        if let Some(generator) = args.get_one::<Shell>("SHELL").copied() {
+            let mut cmd = cli::ffs();
+            generate(generator, &mut cmd, "ffs", &mut std::io::stdout());
             std::process::exit(0);
         }
 
         // logging
-        if !args.is_present("QUIET") {
+        if !args.get_flag("QUIET") {
             let filter_layer = EnvFilter::try_from_default_env().unwrap_or_else(|_e| {
-                if args.is_present("DEBUG") {
+                if args.get_flag("DEBUG") {
                     EnvFilter::new("ffs=debug")
                 } else {
                     EnvFilter::new("ffs=warn")
@@ -157,17 +147,17 @@ impl Config {
         }
 
         // simple flags
-        config.timing = args.is_present("TIMING");
-        config.eager = args.is_present("EAGER");
-        config.add_newlines = !args.is_present("EXACT");
-        config.pad_element_names = !args.is_present("UNPADDED");
-        config.read_only = args.is_present("READONLY");
-        config.allow_xattr = !args.is_present("NOXATTR");
-        config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
-        config.pretty = args.is_present("PRETTY");
+        config.timing = args.get_flag("TIMING");
+        config.eager = args.get_flag("EAGER");
+        config.add_newlines = !args.get_flag("EXACT");
+        config.pad_element_names = !args.get_flag("UNPADDED");
+        config.read_only = args.get_flag("READONLY");
+        config.allow_xattr = !args.get_flag("NOXATTR");
+        config.keep_macos_xattr_file = args.get_flag("KEEPMACOSDOT");
+        config.pretty = args.get_flag("PRETTY");
 
         // munging policy
-        config.munge = match args.value_of("MUNGE") {
+        config.munge = match args.get_one::<String>("MUNGE") {
             None => Munge::Filter,
             Some(s) => match str::parse(s) {
                 Ok(munge) => munge,
@@ -179,17 +169,20 @@ impl Config {
         };
 
         // perms
-        config.filemode = match u16::from_str_radix(args.value_of("FILEMODE").unwrap(), 8) {
+        config.filemode = match u16::from_str_radix(args.get_one::<String>("FILEMODE").unwrap(), 8)
+        {
             Ok(filemode) => filemode,
             Err(e) => {
                 error!(
                     "Couldn't parse `--mode {}`: {e}.",
-                    args.value_of("FILEMODE").unwrap()
+                    args.get_one::<String>("FILEMODE").unwrap()
                 );
                 std::process::exit(ERROR_STATUS_CLI)
             }
         };
-        if args.occurrences_of("FILEMODE") > 0 && args.occurrences_of("DIRMODE") == 0 {
+        if args.value_source("FILEMODE") == Some(ValueSource::CommandLine)
+            && args.value_source("DIRMODE") != Some(ValueSource::CommandLine)
+        {
             // wherever a read bit is set, the dirmode should have an execute bit, too
             config.dirmode = config.filemode;
             if config.dirmode & 0o400 != 0 {
@@ -202,54 +195,37 @@ impl Config {
                 config.dirmode |= 0o001;
             }
         } else {
-            config.dirmode = match u16::from_str_radix(args.value_of("DIRMODE").unwrap(), 8) {
-                Ok(filemode) => filemode,
-                Err(e) => {
-                    error!(
-                        "Couldn't parse `--dirmode {}`: {e}.",
-                        args.value_of("DIRMODE").unwrap()
-                    );
-                    std::process::exit(ERROR_STATUS_CLI)
-                }
-            };
+            config.dirmode =
+                match u16::from_str_radix(args.get_one::<String>("DIRMODE").unwrap(), 8) {
+                    Ok(filemode) => filemode,
+                    Err(e) => {
+                        error!(
+                            "Couldn't parse `--dirmode {}`: {e}.",
+                            args.get_one::<String>("DIRMODE").unwrap()
+                        );
+                        std::process::exit(ERROR_STATUS_CLI)
+                    }
+                };
         }
 
         // uid and gid
-        match args.value_of("UID") {
-            Some(uid_string) => match uid_string.parse() {
-                Ok(uid) => config.uid = uid,
-                Err(e) => {
-                    let euid = unsafe { libc::geteuid() };
-                    warn!(
-                        "Couldn't parse '{uid_string}' as a uid ({e}), defaulting to effective uid ({euid})"
-                    );
-                    config.uid = euid;
-                }
-            },
+        match args.get_one::<u32>("UID").copied() {
+            Some(uid) => config.uid = uid,
             None => config.uid = unsafe { libc::geteuid() },
         }
-        match args.value_of("GID") {
-            Some(gid_string) => match gid_string.parse() {
-                Ok(gid) => config.gid = gid,
-                Err(e) => {
-                    let egid = unsafe { libc::getegid() };
-                    warn!(
-                        "Couldn't parse '{gid_string}' as a gid ({e}), defaulting to effective gid ({egid})"
-                    );
-                    config.gid = egid;
-                }
-            },
+        match args.get_one::<u32>("GID").copied() {
+            Some(gid) => config.gid = gid,
             None => config.gid = unsafe { libc::getegid() },
         }
 
         // two modes: with `--new` flag (infer most stuff) or without (parse other args)
         //
         // TODO 2021-07-06 maybe this would all be better with subcommands. but all that is so _complex_ :(
-        match args.value_of("NEW") {
+        match args.get_one::<String>("NEW") {
             Some(target_file) => {
                 // `--new` flag, so we'll infer most stuff
 
-                if args.occurrences_of("INPUT") != 0 {
+                if args.value_source("INPUT") == Some(ValueSource::CommandLine) {
                     error!("It doesn't make sense to set `--new` with a specified input file.");
                     std::process::exit(ERROR_STATUS_CLI);
                 }
@@ -259,7 +235,7 @@ impl Config {
                     std::process::exit(ERROR_STATUS_FUSE);
                 }
                 let format = match args
-                    .value_of("TARGET_FORMAT")
+                    .get_one::<String>("TARGET_FORMAT")
                     .ok_or(format::ParseFormatError::NoFormatProvided)
                     .and_then(|s| s.parse::<Format>())
                 {
@@ -293,7 +269,7 @@ impl Config {
                         }
                     }
                 };
-                let mount = match args.value_of("MOUNT") {
+                let mount = match args.get_one::<String>("MOUNT") {
                     Some(mount_point) => {
                         let mount_point = PathBuf::from(mount_point);
                         if !mount_point.exists() {
@@ -312,15 +288,19 @@ impl Config {
                         let mount_dir = PathBuf::from(stem);
                         // If that file already exists, give up and tell the user about --mount.
                         if mount_dir.exists() {
-                            error!("Inferred mountpoint '{mount}' for output file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
-                                    mount = mount_dir.display(), file = output.display());
+                            error!(
+                                "Inferred mountpoint '{mount}' for output file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
+                                mount = mount_dir.display(),
+                                file = output.display()
+                            );
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                         // If the mountpoint can't be created, give up and tell the user about --mount.
                         if let Err(e) = std::fs::create_dir(&mount_dir) {
-                            error!("Couldn't create mountpoint '{}': {e}. Use `--mount MOUNT` to specify a mountpoint.",
-                                   mount_dir.display(),
-                                  );
+                            error!(
+                                "Couldn't create mountpoint '{}': {e}. Use `--mount MOUNT` to specify a mountpoint.",
+                                mount_dir.display(),
+                            );
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                         // We did it!
@@ -338,7 +318,7 @@ impl Config {
                 // no `--new` flag... so parse everything
 
                 // configure input
-                config.input = match args.value_of("INPUT") {
+                config.input = match args.get_one::<String>("INPUT") {
                     Some(input_source) => {
                         if input_source == "-" {
                             Input::Stdin
@@ -355,14 +335,14 @@ impl Config {
                 };
 
                 // configure output
-                config.output = if let Some(output) = args.value_of("OUTPUT") {
+                config.output = if let Some(output) = args.get_one::<String>("OUTPUT") {
                     Output::File(PathBuf::from(output))
-                } else if args.is_present("INPLACE") {
+                } else if args.get_flag("INPLACE") {
                     match &config.input {
                         Input::Stdin => {
                             warn!(
-                            "In-place output `-i` with STDIN input makes no sense; outputting on STDOUT."
-                        );
+                                "In-place output `-i` with STDIN input makes no sense; outputting on STDOUT."
+                            );
                             Output::Stdout
                         }
                         Input::Empty => {
@@ -373,14 +353,14 @@ impl Config {
                         }
                         Input::File(input_source) => Output::File(input_source.clone()),
                     }
-                } else if args.is_present("NOOUTPUT") || args.is_present("QUIET") {
+                } else if args.get_flag("NOOUTPUT") || args.get_flag("QUIET") {
                     Output::Quiet
                 } else {
                     Output::Stdout
                 };
 
                 // infer and create mountpoint from filename as possible
-                config.mount = match args.value_of("MOUNT") {
+                config.mount = match args.get_one::<String>("MOUNT") {
                     Some(mount_point) => {
                         let mount_point = PathBuf::from(mount_point);
                         if !mount_point.exists() {
@@ -413,8 +393,11 @@ impl Config {
 
                                 // If that file already exists, give up and tell the user about --mount.
                                 if mount_dir.exists() {
-                                    error!("Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
-                                    mount = mount_dir.display(), file = file.display());
+                                    error!(
+                                        "Inferred mountpoint '{mount}' for input file '{file}', but '{mount}' already exists. Use `--mount MOUNT` to specify a mountpoint.",
+                                        mount = mount_dir.display(),
+                                        file = file.display()
+                                    );
                                     std::process::exit(ERROR_STATUS_FUSE);
                                 }
                                 // If the mountpoint can't be created, give up and tell the user about --mount.
@@ -442,7 +425,7 @@ impl Config {
                 //
                 // then give up and use json
                 config.input_format = match args
-                    .value_of("SOURCE_FORMAT")
+                    .get_one::<String>("SOURCE_FORMAT")
                     .ok_or(format::ParseFormatError::NoFormatProvided)
                     .and_then(|s| s.parse::<Format>())
                 {
@@ -490,7 +473,7 @@ impl Config {
                 //
                 // then give up and use the input format
                 config.output_format = match args
-                    .value_of("TARGET_FORMAT")
+                    .get_one::<String>("TARGET_FORMAT")
                     .ok_or(format::ParseFormatError::NoFormatProvided)
                     .and_then(|s| s.parse::<Format>())
                 {
@@ -505,7 +488,7 @@ impl Config {
                             }
                         };
                         match args
-                            .value_of("OUTPUT")
+                            .get_one::<String>("OUTPUT")
                             .and_then(|s| Path::new(s).extension())
                             .and_then(|s| s.to_str())
                         {
@@ -537,35 +520,22 @@ impl Config {
     }
 
     pub fn from_unpack_args() -> Self {
-        let args = cli::unpack().get_matches_safe().unwrap_or_else(|e| {
-            eprintln!("{}", e.message);
-            std::process::exit(ERROR_STATUS_CLI)
-        });
+        let args = cli::unpack().get_matches();
 
         let mut config = Config::default();
-        // generate completions?
-        //
+
         // TODO 2021-07-06 good candidate for a subcommand
-        if let Some(shell) = args.value_of("SHELL") {
-            let shell = if shell == "bash" {
-                clap::Shell::Bash
-            } else if shell == "fish" {
-                clap::Shell::Fish
-            } else if shell == "zsh" {
-                clap::Shell::Zsh
-            } else {
-                eprintln!("Can't generate completions for '{shell}'.");
-                std::process::exit(ERROR_STATUS_CLI);
-            };
-            cli::unpack().gen_completions_to("unpack", shell, &mut std::io::stdout());
+        if let Some(generator) = args.get_one::<Shell>("SHELL").copied() {
+            let mut cmd = cli::unpack();
+            generate(generator, &mut cmd, "unpack", &mut std::io::stdout());
             std::process::exit(0);
         }
 
         // logging
-        if !args.is_present("QUIET") {
+        if !args.get_flag("QUIET") {
             let filter_layer = EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_e| {
-                    if args.is_present("DEBUG") {
+                    if args.get_flag("DEBUG") {
                         EnvFilter::new("unpack=debug")
                     } else {
                         EnvFilter::new("unpack=warn")
@@ -580,13 +550,13 @@ impl Config {
         }
 
         // simple flags
-        config.timing = args.is_present("TIMING");
-        config.add_newlines = !args.is_present("EXACT");
-        config.pad_element_names = !args.is_present("UNPADDED");
-        config.allow_xattr = !args.is_present("NOXATTR");
+        config.timing = args.get_flag("TIMING");
+        config.add_newlines = !args.get_flag("EXACT");
+        config.pad_element_names = !args.get_flag("UNPADDED");
+        config.allow_xattr = !args.get_flag("NOXATTR");
 
         // munging policy
-        config.munge = match args.value_of("MUNGE") {
+        config.munge = match args.get_one::<String>("MUNGE") {
             None => Munge::Filter,
             Some(s) => match str::parse(s) {
                 Ok(munge) => munge,
@@ -598,7 +568,7 @@ impl Config {
         };
 
         // configure input
-        config.input = match args.value_of("INPUT") {
+        config.input = match args.get_one::<String>("INPUT") {
             Some(input_source) => {
                 if input_source == "-" {
                     Input::Stdin
@@ -615,7 +585,7 @@ impl Config {
         };
 
         // infer and create mountpoint from filename as possible
-        config.mount = match args.value_of("INTO") {
+        config.mount = match args.get_one::<String>("INTO") {
             Some(mount_point) => {
                 match std::fs::create_dir(mount_point) {
                     Ok(_) => Some(PathBuf::from(mount_point)),
@@ -640,7 +610,9 @@ impl Config {
                         std::process::exit(ERROR_STATUS_CLI);
                     }
                     Input::Empty => {
-                        error!("--new is not an option for `unpack`, so the input should never be Empty and this error should never be seen.");
+                        error!(
+                            "--new is not an option for `unpack`, so the input should never be Empty and this error should never be seen."
+                        );
                         std::process::exit(ERROR_STATUS_CLI);
                     }
                     Input::File(file) => {
@@ -654,8 +626,11 @@ impl Config {
 
                         // If that file already exists, give up and tell the user about --mount.
                         if mount_dir.exists() {
-                            error!("Inferred directory '{mount}' for input file '{file}', but '{mount}' already exists. Use `--into DIRECTORY` to specify a directory.",
-                            mount = mount_dir.display(), file = file.display());
+                            error!(
+                                "Inferred directory '{mount}' for input file '{file}', but '{mount}' already exists. Use `--into DIRECTORY` to specify a directory.",
+                                mount = mount_dir.display(),
+                                file = file.display()
+                            );
                             std::process::exit(ERROR_STATUS_FUSE);
                         }
                         // If the mountpoint can't be created, give up and tell the user about --mount.
@@ -683,7 +658,7 @@ impl Config {
         //
         // then give up and use json
         config.input_format = match args
-            .value_of("TYPE")
+            .get_one::<String>("TYPE")
             .ok_or(format::ParseFormatError::NoFormatProvided)
             .and_then(|s| s.parse::<Format>())
         {
@@ -723,35 +698,22 @@ impl Config {
     }
 
     pub fn from_pack_args() -> Self {
-        let args = cli::pack().get_matches_safe().unwrap_or_else(|e| {
-            eprintln!("{}", e.message);
-            std::process::exit(ERROR_STATUS_CLI)
-        });
+        let args = cli::pack().get_matches();
 
         let mut config = Config::default();
-        // generate completions?
-        //
+
         // TODO 2021-07-06 good candidate for a subcommand
-        if let Some(shell) = args.value_of("SHELL") {
-            let shell = if shell == "bash" {
-                clap::Shell::Bash
-            } else if shell == "fish" {
-                clap::Shell::Fish
-            } else if shell == "zsh" {
-                clap::Shell::Zsh
-            } else {
-                eprintln!("Can't generate completions for '{shell}'.");
-                std::process::exit(ERROR_STATUS_CLI);
-            };
-            cli::pack().gen_completions_to("pack", shell, &mut std::io::stdout());
+        if let Some(generator) = args.get_one::<Shell>("SHELL").copied() {
+            let mut cmd = cli::pack();
+            generate(generator, &mut cmd, "pack", &mut std::io::stdout());
             std::process::exit(0);
         }
 
         // logging
-        if !args.is_present("QUIET") {
+        if !args.get_flag("QUIET") {
             let filter_layer = EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_e| {
-                    if args.is_present("DEBUG") {
+                    if args.get_flag("DEBUG") {
                         EnvFilter::new("pack=debug")
                     } else {
                         EnvFilter::new("pack=warn")
@@ -766,33 +728,23 @@ impl Config {
         }
 
         // simple flags
-        config.timing = args.is_present("TIMING");
-        config.add_newlines = !args.is_present("EXACT");
-        config.read_only = args.is_present("READONLY");
-        config.allow_xattr = !args.is_present("NOXATTR");
-        config.allow_symlink_escape = args.is_present("ALLOW_SYMLINK_ESCAPE");
-        config.keep_macos_xattr_file = args.is_present("KEEPMACOSDOT");
-        config.pretty = args.is_present("PRETTY");
+        config.timing = args.get_flag("TIMING");
+        config.add_newlines = !args.get_flag("EXACT");
+        config.allow_xattr = !args.get_flag("NOXATTR");
+        config.allow_symlink_escape = args.get_flag("ALLOW_SYMLINK_ESCAPE");
+        config.keep_macos_xattr_file = args.get_flag("KEEPMACOSDOT");
+        config.pretty = args.get_flag("PRETTY");
 
-        config.symlink = if args.is_present("FOLLOW_SYMLINKS") {
+        config.symlink = if args.get_flag("FOLLOW_SYMLINKS") {
             Symlink::Follow
         } else {
             Symlink::NoFollow
         };
 
-        config.max_depth = match args.value_of("MAXDEPTH") {
-            Some(s) => match str::parse(s) {
-                Ok(depth) => Some(depth),
-                Err(_) => {
-                    error!("Invalid `--max-depth` '{s}', must be a non-negative integer.");
-                    std::process::exit(ERROR_STATUS_CLI);
-                }
-            },
-            None => None,
-        };
+        config.max_depth = args.get_one::<u32>("MAXDEPTH").copied();
 
         // munging policy
-        config.munge = match args.value_of("MUNGE") {
+        config.munge = match args.get_one::<String>("MUNGE") {
             None => Munge::Filter,
             Some(s) => match str::parse(s) {
                 Ok(munge) => munge,
@@ -804,7 +756,7 @@ impl Config {
         };
 
         // configure input
-        config.input = match args.value_of("INPUT") {
+        config.input = match args.get_one::<String>("INPUT") {
             Some(input_source) => {
                 let input_source = PathBuf::from(input_source);
                 if !input_source.exists() {
@@ -829,9 +781,9 @@ impl Config {
         };
 
         // configure output
-        config.output = if let Some(output) = args.value_of("OUTPUT") {
+        config.output = if let Some(output) = args.get_one::<String>("OUTPUT") {
             Output::File(PathBuf::from(output))
-        } else if args.is_present("NOOUTPUT") || args.is_present("QUIET") {
+        } else if args.get_flag("NOOUTPUT") || args.get_flag("QUIET") {
             Output::Quiet
         } else {
             Output::Stdout
@@ -845,7 +797,7 @@ impl Config {
         //
         // then give up and use the input format
         config.output_format = match args
-            .value_of("TARGET_FORMAT")
+            .get_one::<String>("TARGET_FORMAT")
             .ok_or(format::ParseFormatError::NoFormatProvided)
             .and_then(|s| s.parse::<Format>())
         {
@@ -860,7 +812,7 @@ impl Config {
                     }
                 };
                 match args
-                    .value_of("OUTPUT")
+                    .get_one::<String>("OUTPUT")
                     .and_then(|s| Path::new(s).extension())
                     .and_then(|s| s.to_str())
                 {

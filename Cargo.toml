@@ -26,7 +26,8 @@ exclude = [
 
 [dependencies]
 base64 = "0.22"
-clap = "2.0"
+clap = "4.5"
+clap_complete = "4.5"
 fuser = "0.16"
 libc = "0.2"
 regex = "1.12"

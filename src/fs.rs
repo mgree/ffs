@@ -18,8 +18,8 @@ use fuser::ReplyXTimes;
 
 use tracing::{debug, error, info, instrument, trace, warn};
 
-use super::config::{Config, Munge, Output, ERROR_STATUS_FUSE};
-use super::format::{json, toml, yaml, Format, Node, Nodelike, Typ};
+use super::config::{Config, ERROR_STATUS_FUSE, Munge, Output};
+use super::format::{Format, Node, Nodelike, Typ, json, toml, yaml};
 use crate::time_ns;
 
 /// A filesystem `FS` is just a vector of nullable inodes, where the index is
@@ -351,7 +351,9 @@ where
 
         let v = time_ns!("reading", V::from_reader(reader), config.timing);
         if v.kind() != FileType::Directory {
-            error!("The root of the filesystem must be a directory, but '{v}' only generates a single file.");
+            error!(
+                "The root of the filesystem must be a directory, but '{v}' only generates a single file."
+            );
             std::process::exit(ERROR_STATUS_FUSE);
         }
 
@@ -972,10 +974,12 @@ where
 
             // non-root owner can only do noop uid changes
             if let Some(uid) = uid
-                && req.uid() != 0 && !(uid == inode.uid && req.uid() == inode.uid) {
-                    reply.error(libc::EPERM);
-                    return;
-                }
+                && req.uid() != 0
+                && !(uid == inode.uid && req.uid() == inode.uid)
+            {
+                reply.error(libc::EPERM);
+                return;
+            }
 
             // only owner may change the group
             if gid.is_some() && req.uid() != 0 && req.uid() != inode.uid {
@@ -1823,9 +1827,7 @@ where
         // set src's parent inode
         match self.get_mut(src_inum) {
             Ok(inode) => inode.parent = newparent,
-            Err(_) => panic!(
-                "missing inode {src_inum} moved from {parent} to {newparent}"
-            ),
+            Err(_) => panic!("missing inode {src_inum} moved from {parent} to {newparent}"),
         }
 
         self.dirty.set(true);
