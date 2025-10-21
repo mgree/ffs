@@ -523,8 +523,7 @@ impl Config {
         let args = cli::unpack().get_matches();
 
         let mut config = Config::default();
-        // generate completions?
-        //
+
         // TODO 2021-07-06 good candidate for a subcommand
         if let Some(generator) = args.get_one::<Shell>("SHELL").copied() {
             let mut cmd = cli::unpack();
@@ -702,8 +701,7 @@ impl Config {
         let args = cli::pack().get_matches();
 
         let mut config = Config::default();
-        // generate completions?
-        //
+
         // TODO 2021-07-06 good candidate for a subcommand
         if let Some(generator) = args.get_one::<Shell>("SHELL").copied() {
             let mut cmd = cli::pack();
