@@ -5,26 +5,211 @@ use std::collections::HashMap;
 use std::io::BufReader;
 use std::io::Error;
 use std::io::Read;
+use std::path::Path;
 use std::path::PathBuf;
 use std::str;
 use std::str::FromStr;
 
-use tracing::{error, info, warn};
+use clap::Arg;
+use clap::ArgAction;
+use clap::Command;
+use clap::value_parser;
+use nodelike::ParseFormatError;
+use nodelike::config::Input;
+use nodelike::config::Output;
+use nodelike::config::POSSIBLE_FORMATS;
+use tracing::debug;
+use tracing::{error, warn};
 
-use ffs::config::Config;
-use ffs::config::Symlink;
-use ffs::config::{ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
-use ffs::format;
-use ffs::time_ns;
-use format::Format;
-use format::Nodelike;
-use format::Typ;
-use format::json::Value as JsonValue;
-use format::toml::Value as TomlValue;
-use format::yaml::Value as YamlValue;
+use nodelike::Format;
+use nodelike::Nodelike;
+use nodelike::Typ;
+use nodelike::config::Config;
+use nodelike::config::Symlink;
+use nodelike::config::{ERROR_STATUS_CLI, ERROR_STATUS_FUSE};
+use nodelike::json::Value as JsonValue;
+use nodelike::time_ns;
+use nodelike::toml::Value as TomlValue;
+use nodelike::yaml::Value as YamlValue;
 
-use ::xattr;
 use regex::Regex;
+
+pub fn pack_cli() -> Command {
+    nodelike::config::cli_base("pack")
+        .version(env!("CARGO_PKG_VERSION"))
+        .author(env!("CARGO_PKG_AUTHORS"))
+        .about("pack directory")
+        .arg(
+            Arg::new("NOFOLLOW_SYMLINKS")
+                .help("Never follow symbolic links. This is the default behaviour. `pack` will ignore all symbolic links.")
+                .short('P')
+                .overrides_with("FOLLOW_SYMLINKS")
+                .action(ArgAction::SetTrue)
+        )
+        .arg(
+            Arg::new("FOLLOW_SYMLINKS")
+                .help("Follow all symlinks. For safety, you can also specify a --max-depth value.")
+                .short('L')
+                .overrides_with("NOFOLLOW_SYMLINKS")
+                .action(ArgAction::SetTrue)
+        )
+        .arg(
+            Arg::new("MAXDEPTH")
+                .help("Maximum depth of filesystem traversal allowed for `pack`")
+                .long("max-depth")
+                .value_name("MAXDEPTH")
+                .value_parser(value_parser!(u32))
+        )
+        .arg(
+            Arg::new("ALLOW_SYMLINK_ESCAPE")
+                .help("Allows pack to follow symlinks outside of the directory being packed.")
+                .long("allow-symlink-escape")
+                .action(ArgAction::SetTrue)
+        )
+        .arg(
+            Arg::new("KEEPMACOSDOT")
+                .help("Include ._* extended attribute/resource fork files on macOS")
+                .long("keep-macos-xattr")
+                .action(ArgAction::SetTrue)
+        )
+        .arg(
+            Arg::new("OUTPUT")
+                .help("Sets the output file for saving changes (defaults to stdout)")
+                .long("output")
+                .short('o')
+                .value_name("OUTPUT")
+        )
+        .arg(
+            Arg::new("NOOUTPUT")
+                .help("Disables output of filesystem (normally on stdout)")
+                .long("no-output")
+                .overrides_with("OUTPUT")
+                .action(ArgAction::SetTrue)
+        )
+        .arg(
+            Arg::new("TARGET_FORMAT")
+                .help("Specify the target format explicitly (by default, automatically inferred from filename extension)")
+                .long("target")
+                .short('t')
+                .value_name("TARGET_FORMAT")
+                .value_parser(POSSIBLE_FORMATS)
+        )
+        .arg(
+            Arg::new("PRETTY")
+                .help("Pretty-print output (may increase size)")
+                .long("pretty")
+                .overrides_with("NOOUTPUT")
+                .overrides_with("QUIET")
+                .action(ArgAction::SetTrue)
+        )
+        .arg(
+            Arg::new("INPUT")
+                .help("The directory to be packed")
+                .index(1),
+        )
+}
+
+pub fn config_from_pack_args() -> Config {
+    let (mut config, args) = Config::from_cli(pack_cli);
+
+    // simple flags
+    config.allow_symlink_escape = args.get_flag("ALLOW_SYMLINK_ESCAPE");
+    config.keep_macos_xattr_file = args.get_flag("KEEPMACOSDOT");
+    config.pretty = args.get_flag("PRETTY");
+
+    config.symlink = if args.get_flag("FOLLOW_SYMLINKS") {
+        Symlink::Follow
+    } else {
+        Symlink::NoFollow
+    };
+
+    config.max_depth = args.get_one::<u32>("MAXDEPTH").copied();
+
+    // configure input
+    config.input = match args.get_one::<String>("INPUT") {
+        Some(input_source) => {
+            let input_source = PathBuf::from(input_source);
+            if !input_source.exists() {
+                error!("Input file {} does not exist.", input_source.display());
+                std::process::exit(ERROR_STATUS_FUSE);
+            }
+            Input::File(input_source)
+        }
+        None => {
+            error!("The directory to pack must be specified.");
+            std::process::exit(ERROR_STATUS_CLI);
+        }
+    };
+
+    // set the mount from the input directory
+    config.mount = match &config.input {
+        Input::File(file) => Some(file.clone().canonicalize().unwrap()),
+        _ => {
+            error!("Input must be a file or directory.");
+            std::process::exit(ERROR_STATUS_CLI);
+        }
+    };
+
+    // configure output
+    config.output = if let Some(output) = args.get_one::<String>("OUTPUT") {
+        Output::File(PathBuf::from(output))
+    } else if args.get_flag("NOOUTPUT") || args.get_flag("QUIET") {
+        Output::Quiet
+    } else {
+        Output::Stdout
+    };
+
+    // try to autodetect the output format.
+    //
+    // first see if it's specified and parses okay.
+    //
+    // then see if we can pull it out of the extension (if specified)
+    //
+    // then give up and use the input format
+    config.output_format = match args
+        .get_one::<String>("TARGET_FORMAT")
+        .ok_or(ParseFormatError::NoFormatProvided)
+        .and_then(|s| s.parse::<Format>())
+    {
+        Ok(target_format) => target_format,
+        Err(e) => {
+            match e {
+                ParseFormatError::NoSuchFormat(s) => {
+                    warn!("Unrecognized format '{s}', inferring from input and output.")
+                }
+                ParseFormatError::NoFormatProvided => {
+                    debug!("Inferring output format from input.")
+                }
+            };
+            match args
+                .get_one::<String>("OUTPUT")
+                .and_then(|s| Path::new(s).extension())
+                .and_then(|s| s.to_str())
+            {
+                Some(s) => match s.parse::<Format>() {
+                    Ok(format) => format,
+                    Err(_) => {
+                        warn!(
+                            "Unrecognized format {s}, defaulting to input format '{}'.",
+                            config.input_format
+                        );
+                        config.input_format
+                    }
+                },
+                None => config.input_format,
+            }
+        }
+    };
+
+    if config.pretty && !config.output_format.can_be_pretty() {
+        warn!(
+            "There is no pretty printing routine for {}.",
+            config.output_format
+        )
+    }
+
+    config
+}
 
 pub struct SymlinkMapData {
     link: PathBuf,
@@ -347,7 +532,7 @@ impl Pack {
 }
 
 fn main() -> std::io::Result<()> {
-    let config = Config::from_pack_args();
+    let config = config_from_pack_args();
 
     let mount = match &config.mount {
         Some(mount) => mount,
