@@ -18,9 +18,9 @@ use fuser::ReplyXTimes;
 
 use tracing::{debug, error, info, instrument, trace, warn};
 
-use super::config::{Config, ERROR_STATUS_FUSE, Munge, Output};
-use super::format::{Format, Node, Nodelike, Typ, json, toml, yaml};
-use crate::time_ns;
+use nodelike::config::{Config, ERROR_STATUS_FUSE, Munge, Output};
+use nodelike::time_ns;
+use nodelike::{Format, Node, Nodelike, Typ, json, toml, yaml};
 
 /// A filesystem `FS` is just a vector of nullable inodes, where the index is
 /// the inode number.
@@ -109,7 +109,8 @@ pub enum DirType {
 }
 
 #[derive(Debug)]
-pub enum FSError {
+#[allow(dead_code)] // better to have it saved for debugging!
+enum FSError {
     NoSuchInode(u64),
     InvalidInode(u64),
 }
@@ -172,13 +173,13 @@ where
                         format!("{i}")
                     };
 
-                    let kind = child.kind();
+                    let kind = filetype_for(&child);
                     let child_id = self.fresh_inode(
                         inum,
                         Entry::Lazy(child),
                         uid,
                         gid,
-                        self.config.mode(kind) as u32,
+                        mode(&self.config, kind) as u32,
                     );
 
                     children.insert(
@@ -224,13 +225,13 @@ where
                         field
                     };
 
-                    let kind = child.kind();
+                    let kind = filetype_for(&child);
                     let child_id = self.fresh_inode(
                         inum,
                         Entry::Lazy(child),
                         uid,
                         gid,
-                        self.config.mode(kind) as u32,
+                        mode(&self.config, kind) as u32,
                     );
                     let original_name = if original != nfield {
                         info!(
@@ -293,7 +294,7 @@ where
         req.uid() == 0 || req.uid() == self.config.uid
     }
 
-    pub fn get(&mut self, inum: u64) -> Result<&Inode<V>, FSError> {
+    fn get(&mut self, inum: u64) -> Result<&Inode<V>, FSError> {
         let _new_nodes = self.resolve_node(inum)?;
 
         let idx = inum as usize;
@@ -350,7 +351,7 @@ where
         };
 
         let v = time_ns!("reading", V::from_reader(reader), config.timing);
-        if v.kind() != FileType::Directory {
+        if !v.is_dir() {
             error!(
                 "The root of the filesystem must be a directory, but '{v}' only generates a single file."
             );
@@ -612,7 +613,7 @@ where
     V: Nodelike,
 {
     pub fn new(parent: u64, inum: u64, entry: Entry<V>, config: &Config) -> Self {
-        let mode = config.mode(entry.kind());
+        let mode = mode(config, entry.kind());
         let uid = config.uid;
         let gid = config.gid;
         Inode::with_mode(parent, inum, entry, uid, gid, mode)
@@ -709,7 +710,7 @@ where
         match self {
             Entry::File(..) => FileType::RegularFile,
             Entry::Directory(..) => FileType::Directory,
-            Entry::Lazy(v) => v.kind(),
+            Entry::Lazy(v) => filetype_for(v),
         }
     }
 
@@ -754,6 +755,23 @@ impl std::fmt::Display for DirType {
                 DirType::Named => "named",
             }
         )
+    }
+}
+
+fn filetype_for<V: Nodelike>(node: &V) -> FileType {
+    if node.is_dir() {
+        FileType::Directory
+    } else {
+        FileType::RegularFile
+    }
+}
+
+/// Determines the default mode of a file
+fn mode(config: &Config, kind: FileType) -> u16 {
+    if kind == FileType::Directory {
+        config.dirmode
+    } else {
+        config.filemode
     }
 }
 

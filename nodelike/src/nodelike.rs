@@ -3,8 +3,6 @@ use std::str::FromStr;
 
 use tracing::debug;
 
-use fuser::FileType;
-
 use super::config::Config;
 
 use ::toml as serde_toml;
@@ -20,7 +18,7 @@ macro_rules! time_ns {
         if $timing {
             eprintln!("{msg},{elapsed}");
         } else {
-            info!("{msg} ({elapsed}ns)");
+            tracing::info!("{msg} ({elapsed}ns)");
         }
         v
     }};
@@ -172,8 +170,8 @@ where
     ///
     /// Since FUSE filesystems need to have directories at the root, it's
     /// important that only compound values be converted to fileysstems, i.e.,
-    /// values which yield `FileType::Directory`.
-    fn kind(&self) -> FileType;
+    /// values which yield `true`.
+    fn is_dir(&self) -> bool;
 
     /// Characterizes the outermost value. Drives the worklist algorithm.
     fn node(self, config: &Config) -> Node<Self>;
@@ -206,10 +204,10 @@ pub mod json {
     impl Nodelike for Value {
         /// `Value::Object` and `Value::Array` map to directories; everything else is a
         /// regular file.
-        fn kind(&self) -> FileType {
+        fn is_dir(&self) -> bool {
             match self {
-                Value::Object(_) | Value::Array(_) => FileType::Directory,
-                _ => FileType::RegularFile,
+                Value::Object(_) | Value::Array(_) => true,
+                Value::Null | Value::Bool(_) | Value::Number(_) | Value::String(_) => false,
             }
         }
 
@@ -360,10 +358,14 @@ pub mod toml {
     }
 
     impl Nodelike for Value {
-        fn kind(&self) -> FileType {
+        fn is_dir(&self) -> bool {
             match self.0 {
-                Toml::Table(_) | Toml::Array(_) => FileType::Directory,
-                _ => FileType::RegularFile,
+                Toml::Table(_) | Toml::Array(_) => true,
+                Toml::String(_)
+                | Toml::Integer(_)
+                | Toml::Float(_)
+                | Toml::Boolean(_)
+                | Toml::Datetime(_) => false,
             }
         }
 
@@ -562,10 +564,16 @@ pub mod yaml {
     }
 
     impl Nodelike for Value {
-        fn kind(&self) -> FileType {
+        fn is_dir(&self) -> bool {
             match &self.0 {
-                Yaml::Array(_) | Yaml::Hash(_) => FileType::Directory,
-                _ => FileType::RegularFile,
+                Yaml::Array(_) | Yaml::Hash(_) => true,
+                Yaml::Real(_)
+                | Yaml::Integer(_)
+                | Yaml::String(_)
+                | Yaml::Boolean(_)
+                | Yaml::Alias(_)
+                | Yaml::Null
+                | Yaml::BadValue => false,
             }
         }
 
