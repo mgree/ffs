@@ -67,7 +67,7 @@ jobs:
           cargo build --verbose --release --bin unpack
           cargo test -p pack -p unpack -p nodelike
 
-      - name: Integration tests for pack/unpack (Linux)
+      - name: Integration tests for pack/unpack
         run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
 
       - name: Upload macOS release build

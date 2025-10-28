@@ -17,6 +17,7 @@ then
     DEBUG="$(pwd)/target/debug"
     [ -x "$DEBUG/pack" ] && PATH="$DEBUG:$PATH"
 fi
+which pack unpack >/dev/null 2>&1 && HAVE_PACKUNPACK=1
 
 TOTAL=0
 FAILED=0
