@@ -17,7 +17,7 @@ Run `ffs [file.blah]` to mount `file.blah` at the mountpoint `file`. The
 final, updated version of the file will be outputted on stdout.
 
 ```shell-session
-$ cat object.json 
+$ cat object.json
 { "name": "Michael Greenberg", "eyes": 2, "fingernails": 10, "human": true }
 $ ffs -o object_edited.json object.json &
 [1] 60182
@@ -38,9 +38,9 @@ $ echo pen >shirt
 $ cd ..
 $ cd ..
 $ umount object
-$ 
+$
 [1]+  Done                    ffs -o object_edited.json object.json
-$ cat object_edited.json 
+$ cat object_edited.json
 {"eyes":2,"fingernails":10,"human":true,"name":"Mikey Indiana","nose":1,"pockets":{"pants":"keys","shirt":"pen"}}
 ```
 
@@ -53,7 +53,7 @@ You can control whether directories are rendered as objects or arrays
 lists using extended file attributes (xattrs): the `user.type` xattr
 specifies `named` for objects and `list` for arrays. Here, we create a
 new JSON file and use Linux's `setfattr` to mark a directory as being
-a list (macOS alternatives are in comments):
+a list:
 
 ```ShellSession
 ~$ ffs --new l.json &
@@ -65,7 +65,7 @@ a list (macOS alternatives are in comments):
 ~/l $ ls
 a  a1  b
 ~/l $ cd ..
-~$ setfattr -n user.type -v list l   # macOS: xattr -w user.type list l
+~$ setfattr -n user.type -v list l
 ~$ umount l
 [1]+  Done                    ffs --new l.json
 ~$ cat l.json
@@ -74,10 +74,18 @@ a  a1  b
 
 # External dependencies
 
-You need an appropriate [FUSE](https://github.com/libfuse/libfuse) or
-[macFUSE](https://osxfuse.github.io/) along with
+You need an appropriate [FUSE](https://github.com/libfuse/libfuse) along with
 [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/).
 
 See [the GitHub build
 workflow](https://github.com/mgree/ffs/blob/main/.github/workflows/build.yml)
 for examples of external dependency installation.
+
+# pack/unpack
+
+`ffs` only works on Linux, using FUSE to make a synthetic filesystem.
+
+The `pack`/`unpack` tools in this repository work differently: they turn
+filesystems into semi-structured data (`pack`) and semi-structured data into
+files (`unpack`). These tools should work on any POSIX platform, and are
+currently in a prerelease/beta state.

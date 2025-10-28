@@ -7,20 +7,18 @@ use std::path::Path;
 use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 
+#[cfg(target_os = "linux")]
 use fuser::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyBmap, ReplyCreate, ReplyData, ReplyDirectory,
     ReplyDirectoryPlus, ReplyEmpty, ReplyEntry, ReplyIoctl, ReplyLock, ReplyLseek, ReplyOpen,
     ReplyStatfs, ReplyWrite, ReplyXattr, Request, TimeOrNow,
 };
 
-#[cfg(target_os = "macos")]
-use fuser::ReplyXTimes;
-
 use tracing::{debug, error, info, instrument, trace, warn};
 
-use super::config::{Config, ERROR_STATUS_FUSE, Munge, Output};
-use super::format::{Format, Node, Nodelike, Typ, json, toml, yaml};
-use crate::time_ns;
+use nodelike::config::{Config, ERROR_STATUS_FUSE, Munge, Output};
+use nodelike::time_ns;
+use nodelike::{Format, Node, Nodelike, Typ, json, toml, yaml};
 
 /// A filesystem `FS` is just a vector of nullable inodes, where the index is
 /// the inode number.
@@ -109,7 +107,8 @@ pub enum DirType {
 }
 
 #[derive(Debug)]
-pub enum FSError {
+#[allow(dead_code)] // better to have it saved for debugging!
+enum FSError {
     NoSuchInode(u64),
     InvalidInode(u64),
 }
@@ -172,13 +171,13 @@ where
                         format!("{i}")
                     };
 
-                    let kind = child.kind();
+                    let kind = filetype_for(&child);
                     let child_id = self.fresh_inode(
                         inum,
                         Entry::Lazy(child),
                         uid,
                         gid,
-                        self.config.mode(kind) as u32,
+                        mode(&self.config, kind) as u32,
                     );
 
                     children.insert(
@@ -224,13 +223,13 @@ where
                         field
                     };
 
-                    let kind = child.kind();
+                    let kind = filetype_for(&child);
                     let child_id = self.fresh_inode(
                         inum,
                         Entry::Lazy(child),
                         uid,
                         gid,
-                        self.config.mode(kind) as u32,
+                        mode(&self.config, kind) as u32,
                     );
                     let original_name = if original != nfield {
                         info!(
@@ -293,7 +292,7 @@ where
         req.uid() == 0 || req.uid() == self.config.uid
     }
 
-    pub fn get(&mut self, inum: u64) -> Result<&Inode<V>, FSError> {
+    fn get(&mut self, inum: u64) -> Result<&Inode<V>, FSError> {
         let _new_nodes = self.resolve_node(inum)?;
 
         let idx = inum as usize;
@@ -350,7 +349,7 @@ where
         };
 
         let v = time_ns!("reading", V::from_reader(reader), config.timing);
-        if v.kind() != FileType::Directory {
+        if !v.is_dir() {
             error!(
                 "The root of the filesystem must be a directory, but '{v}' only generates a single file."
             );
@@ -612,7 +611,7 @@ where
     V: Nodelike,
 {
     pub fn new(parent: u64, inum: u64, entry: Entry<V>, config: &Config) -> Self {
-        let mode = config.mode(entry.kind());
+        let mode = mode(config, entry.kind());
         let uid = config.uid;
         let gid = config.gid;
         Inode::with_mode(parent, inum, entry, uid, gid, mode)
@@ -709,7 +708,7 @@ where
         match self {
             Entry::File(..) => FileType::RegularFile,
             Entry::Directory(..) => FileType::Directory,
-            Entry::Lazy(v) => v.kind(),
+            Entry::Lazy(v) => filetype_for(v),
         }
     }
 
@@ -757,6 +756,23 @@ impl std::fmt::Display for DirType {
     }
 }
 
+fn filetype_for<V: Nodelike>(node: &V) -> FileType {
+    if node.is_dir() {
+        FileType::Directory
+    } else {
+        FileType::RegularFile
+    }
+}
+
+/// Determines the default mode of a file
+fn mode(config: &Config, kind: FileType) -> u16 {
+    if kind == FileType::Directory {
+        config.dirmode
+    } else {
+        config.filemode
+    }
+}
+
 impl FromStr for DirType {
     type Err = ();
 
@@ -782,8 +798,6 @@ impl FromStr for DirType {
 // ENOATTR is deprecated on Linux, so we should use ENODATA
 #[cfg(target_os = "linux")]
 const ENOATTR: i32 = libc::ENODATA;
-#[cfg(target_os = "macos")]
-const ENOATTR: i32 = libc::ENOATTR;
 
 impl<V> Filesystem for FS<V>
 where
@@ -2137,77 +2151,6 @@ where
         info!("called");
 
         reply.error(libc::ENOSYS);
-    }
-
-    #[cfg(target_os = "macos")]
-    #[instrument(level = "debug", skip(self, _req, reply))]
-    fn setvolname(&mut self, _req: &Request<'_>, _name: &OsStr, reply: ReplyEmpty) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
-
-    #[cfg(target_os = "macos")]
-    #[instrument(level = "debug", skip(self, _req, reply))]
-    fn exchange(
-        &mut self,
-        _req: &Request<'_>,
-        _parent: u64,
-        _name: &OsStr,
-        _newparent: u64,
-        _newname: &OsStr,
-        _options: u64,
-        reply: ReplyEmpty,
-    ) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
-
-    #[cfg(target_os = "macos")]
-    #[instrument(level = "debug", skip(self, _req, reply))]
-    fn getxtimes(&mut self, _req: &Request<'_>, _ino: u64, reply: ReplyXTimes) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
-}
-
-/// Returns the group IDs a user is in
-#[cfg(target_os = "macos")]
-fn groups_for(uid: u32) -> Vec<u32> {
-    unsafe {
-        let passwd = libc::getpwuid(uid);
-        let name = (*passwd).pw_name;
-        let basegid = (*passwd).pw_gid as i32;
-
-        // get the number of groups
-        let mut ngroups = 0;
-        libc::getgrouplist(name, basegid, std::ptr::null_mut(), &mut ngroups);
-
-        if ngroups == 0 {
-            // BUG 2021-06-23 weird behavior on macos... :/
-            ngroups = 50;
-        }
-
-        let mut groups = vec![-1; ngroups as usize];
-        loop {
-            libc::getgrouplist(name, basegid, groups.as_mut_ptr(), &mut ngroups);
-
-            // if the last entry wasn't set, we're good
-            if groups[groups.len() - 1] == -1 {
-                break;
-            }
-
-            // otherwise, there are more groups. oof, keep going.
-            ngroups *= 2;
-            groups.resize(ngroups as usize, 0);
-        }
-        groups
-            .into_iter()
-            .filter(|gid| gid != &-1)
-            .map(|gid| gid as u32)
-            .collect()
     }
 }
 

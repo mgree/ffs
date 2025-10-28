@@ -3,33 +3,21 @@
 if ! which ffs >/dev/null 2>&1
 then
     DEBUG="$(pwd)/target/debug"
-    [ -x "$DEBUG/ffs" ] || {
-        echo Couldn\'t find ffs on "$PATH" or in "$DEBUG". >&2
-        echo Are you in the root directory of the repo? >&2
-        exit 1
-    }
-    PATH="$DEBUG:$PATH"
+    [ -x "$DEBUG/ffs" ] && PATH="$DEBUG:$PATH"
 fi
+which ffs >/dev/null 2>&1 && HAVE_FFS=1
+
 if ! which unpack >/dev/null 2>&1
 then
     DEBUG="$(pwd)/target/debug"
-    [ -x "$DEBUG/unpack" ] || {
-        echo Couldn\'t find unpack on "$PATH" or in "$DEBUG". >&2
-        echo Are you in the root directory of the repo? >&2
-        exit 1
-    }
-    PATH="$DEBUG:$PATH"
+    [ -x "$DEBUG/unpack" ] && PATH="$DEBUG:$PATH"
 fi
 if ! which pack >/dev/null 2>&1
 then
     DEBUG="$(pwd)/target/debug"
-    [ -x "$DEBUG/pack" ] || {
-        echo Couldn\'t find pack on "$PATH" or in "$DEBUG". >&2
-        echo Are you in the root directory of the repo? >&2
-        exit 1
-    }
-    PATH="$DEBUG:$PATH"
+    [ -x "$DEBUG/pack" ] && PATH="$DEBUG:$PATH"
 fi
+which pack unpack >/dev/null 2>&1 && HAVE_PACKUNPACK=1
 
 TOTAL=0
 FAILED=0
@@ -42,7 +30,15 @@ TESTS="$(find . -name "$1*.sh")"
 # spawn 'em all in parallel
 for test in $TESTS
 do
-    tname="$(basename ${test%*.sh})"
+    script="${test##*/}"
+    tname="${script%.sh}"
+    tool="${tname%.*}"
+
+    case "$tool" in
+        (ffs) [ "$HAVE_FFS" ] || continue;;
+        (packunpack) [ "$HAVE_PACKUNPACK" ] || continue;;
+    esac
+
     printf "========== STARTING TEST: $tname\n"
     (RUST_LOG="ffs=debug,unpack=debug,pack=debug,fuser=debug"; export RUST_LOG; ./${test} >$LOG/$tname.out 2>$LOG/$tname.err; echo $?>$LOG/$tname.ec) &
     : $((TOTAL += 1))
@@ -58,7 +54,15 @@ wait
 
 for test in $TESTS
 do
-    tname="$(basename ${test%*.sh})"
+    script="${test##*/}"
+    tname="${script%.sh}"
+    tool="${tname%.*}"
+
+    case "$tool" in
+        (ffs) [ "$HAVE_FFS" ] || continue;;
+        (packunpack) [ "$HAVE_PACKUNPACK" ] || continue;;
+    esac
+
     if [ "$(cat $LOG/$tname.ec)" -eq 0 ]
     then
         printf "========== PASSED: $tname\n"
