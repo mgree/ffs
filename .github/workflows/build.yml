@@ -132,7 +132,7 @@ jobs:
   prerelease:
     needs:
       - build-ffs
-      - build-packunpack
+      - build-pack-unpack
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
 
