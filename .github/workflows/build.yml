@@ -111,8 +111,8 @@ jobs:
       - name: Benchmarks
         run: |
           Rscript -e "tries <- 0; while (!require('ggplot2') && tries < 3) { cat(sprintf('TRY %d\n', tries)); install.packages('ggplot2', repos = 'https://cloud.r-project.org/'); tries <- tries + 1; }"
-          chmod +x $(pwd)/ffs.linux/ffs
-          PATH="$(pwd)/ffs.linux:$PATH" FFS="$(pwd)/ffs.linux/ffs" ./run_bench.sh -n 3
+          chmod +x $(pwd)/ffs/ffs
+          PATH="$(pwd)/ffs:$PATH" FFS="$(pwd)/ffs/ffs" ./run_bench.sh -n 3
           # grab latest directory (output of run_bench)
           DATADIR=bench/$(ls -ct bench/ | head -n 1)
           [ -d $DATADIR ] && ls $DATADIR | grep log >/dev/null || { echo "No log files found in $DATADIR. What's going on?"; tree bench; exit 1; }
