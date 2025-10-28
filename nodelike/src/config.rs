@@ -230,6 +230,11 @@ impl Config {
         }
     }
 
+    #[cfg(target_os = "macos")]
+    fn platform_ignored_file(&self, s: &str) -> bool {
+        !self.keep_macos_xattr_file && s.starts_with("._")
+    }
+
     #[cfg(target_os = "linux")]
     fn platform_ignored_file(&self, _s: &str) -> bool {
         false
