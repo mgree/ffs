@@ -145,8 +145,6 @@ jobs:
 
       - name: Rename binaries
         run: |
-          mkdir ffs
-          mv linux/ffs    ffs/ffs
           mkdir packunpack
           mv packunpack.linux/pack   packunpack/pack.linux
           mv packunpack.linux/unpack packunpack/unpack.linux
