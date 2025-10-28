@@ -7,66 +7,86 @@ on:
     - cron: '5 11 * * *'
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-#          - macos-latest # disabled 2025-10-20 due to fuser not building w/o libfuse
-          - ubuntu-latest
-
-    runs-on: ${{ matrix.os }}
+  build-ffs:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Install dependencies (FUSE, attr)
         run: |
-          if [ "$RUNNER_OS" = "Linux" ]; then
-            sudo apt-get install fuse libfuse-dev pkg-config attr
-          elif [ "$RUNNER_OS" = "macOS" ]; then
-            brew install macfuse pkg-config
-          else
-            echo Unsupported RUNNER_OS=$RUNNER_OS
-            exit 1
-          fi
+          sudo apt-get install fuse libfuse-dev pkg-config attr
 
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Build ffs/pack/unpack and run unit tests
         run: |
-          cargo build --verbose --all --release
+          cargo build --verbose --release --bin ffs
           cargo test
 
-      - name: Integration tests for ffs and pack/unpack (Linux)
-        if: contains(matrix.os, 'ubuntu')
+      - name: Integration tests for ffs
         run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
 
-      - name: Integration tests for pack/unpack only (macOS)
-        if: contains(matrix.os, 'macos')
-        run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh unpack
+      - name: Upload Linux release build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffs
+          path: |
+              target/release/ffs
+
+  build-pack-unpack:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+
+    runs-on: ${matrix.os}
+
+    steps:
+      - name: Install dependencies (FUSE, attr)
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get install attr
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            :
+          else
+            echo Unsupported RUNNER_OS=$RUNNER_OS
+            exit 1
+          fi
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build ffs/pack/unpack and run unit tests
+        run: |
+          cargo build --verbose --release --bin pack
+          cargo build --verbose --release --bin unpack
+          cargo test
+
+      - name: Integration tests for pack/unpack (Linux)
+        run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
 
       - name: Upload macOS release build
         uses: actions/upload-artifact@v4
         if: contains(matrix.os, 'macos')
         with:
-          name: ffs.macos
+          name: packunpack.macos
           path: |
-              target/release/ffs
               target/release/pack
               target/release/unpack
 
       - name: Upload Linux release build
         uses: actions/upload-artifact@v4
-        if: contains(matrix.os, 'ubuntu')
+        if: contains(matrix.os, 'linux')
         with:
-          name: ffs.linux
+          name: packunpack.linux
           path: |
-              target/release/ffs
               target/release/pack
               target/release/unpack
 
+
   benchmarks:
-    needs: build
+    needs: build-ffs
     runs-on: ubuntu-latest
 
     steps:
@@ -110,7 +130,9 @@ jobs:
           path: data
 
   prerelease:
-    needs: build
+    needs:
+      - build-ffs
+      - build-packunpack
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
 
@@ -121,18 +143,12 @@ jobs:
       - name: Rename binaries
         run: |
           mkdir ffs
-          mv ffs.linux/ffs    ffs/ffs.linux
-          mv ffs.linux/pack   ffs/pack.linux
-          mv ffs.linux/unpack ffs/unpack.linux
-          if [ -d ffs.macos ]
-          then
-            mv ffs.macos/ffs    ffs/ffs.macos
-            mv ffs.macos/pack   ffs/pack.macos
-            mv ffs.macos/unpack ffs/unpack.macos
-          else
-            echo "macOS is disabled 😢"
-          fi
-
+          mv linux/ffs    ffs/ffs
+          mkdir packunpack
+          mv packunpack.linux/pack   packunpack/pack.linux
+          mv packunpack.linux/unpack packunpack/unpack.linux
+          mv packunpack.macos/pack   packunpack/pack.macos
+          mv packunpack.macos/unpack packunpack/unpack.macos
       - name: Deploy 'latest' release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -141,9 +157,9 @@ jobs:
           prerelease: true
           title: "Latest development build"
           files: |
-            ffs/ffs.*
-            ffs/pack.*
-            ffs/unpack.*
+            ffs/ffs
+            packunpack/pack.*
+            packunpack/unpack.*
 
 
 
