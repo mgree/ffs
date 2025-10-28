@@ -45,7 +45,7 @@ jobs:
           - ubuntu-latest
           - macos-latest
 
-    runs-on: ${matrix.os}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Install dependencies (FUSE, attr)
@@ -128,7 +128,6 @@ jobs:
 
       - name: Upload Linux benchmark data
         uses: actions/upload-artifact@v4
-        if: contains(matrix.os, 'ubuntu')
         with:
           name: benchmarks.linux
           path: data
