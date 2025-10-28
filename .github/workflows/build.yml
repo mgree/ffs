@@ -25,7 +25,7 @@ jobs:
       - name: Build ffs/pack/unpack and run unit tests
         run: |
           cargo build --verbose --release --bin ffs
-          cargo test
+          cargo test -p ffs
 
       - name: Integration tests for ffs
         run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
@@ -65,7 +65,7 @@ jobs:
         run: |
           cargo build --verbose --release --bin pack
           cargo build --verbose --release --bin unpack
-          cargo test
+          cargo test -p pack -p unpack -p nodelike
 
       - name: Integration tests for pack/unpack (Linux)
         run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
