@@ -28,7 +28,6 @@ exclude = [
 base64 = "0.22"
 clap = "4.5"
 clap_complete = "4.5"
-fuser = "0.16"
 libc = "0.2"
 nodelike = { path = "../nodelike" }
 regex = "1.12"
@@ -38,3 +37,6 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 xattr = "1.6"
 yaml-rust = "0.4.5"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+fuser = "0.16"

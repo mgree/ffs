@@ -7,14 +7,12 @@ use std::path::Path;
 use std::str::FromStr;
 use std::time::{Duration, SystemTime};
 
+#[cfg(target_os = "linux")]
 use fuser::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyBmap, ReplyCreate, ReplyData, ReplyDirectory,
     ReplyDirectoryPlus, ReplyEmpty, ReplyEntry, ReplyIoctl, ReplyLock, ReplyLseek, ReplyOpen,
     ReplyStatfs, ReplyWrite, ReplyXattr, Request, TimeOrNow,
 };
-
-#[cfg(target_os = "macos")]
-use fuser::ReplyXTimes;
 
 use tracing::{debug, error, info, instrument, trace, warn};
 
@@ -800,8 +798,6 @@ impl FromStr for DirType {
 // ENOATTR is deprecated on Linux, so we should use ENODATA
 #[cfg(target_os = "linux")]
 const ENOATTR: i32 = libc::ENODATA;
-#[cfg(target_os = "macos")]
-const ENOATTR: i32 = libc::ENOATTR;
 
 impl<V> Filesystem for FS<V>
 where
@@ -2155,77 +2151,6 @@ where
         info!("called");
 
         reply.error(libc::ENOSYS);
-    }
-
-    #[cfg(target_os = "macos")]
-    #[instrument(level = "debug", skip(self, _req, reply))]
-    fn setvolname(&mut self, _req: &Request<'_>, _name: &OsStr, reply: ReplyEmpty) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
-
-    #[cfg(target_os = "macos")]
-    #[instrument(level = "debug", skip(self, _req, reply))]
-    fn exchange(
-        &mut self,
-        _req: &Request<'_>,
-        _parent: u64,
-        _name: &OsStr,
-        _newparent: u64,
-        _newname: &OsStr,
-        _options: u64,
-        reply: ReplyEmpty,
-    ) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
-
-    #[cfg(target_os = "macos")]
-    #[instrument(level = "debug", skip(self, _req, reply))]
-    fn getxtimes(&mut self, _req: &Request<'_>, _ino: u64, reply: ReplyXTimes) {
-        info!("called");
-
-        reply.error(libc::ENOSYS);
-    }
-}
-
-/// Returns the group IDs a user is in
-#[cfg(target_os = "macos")]
-fn groups_for(uid: u32) -> Vec<u32> {
-    unsafe {
-        let passwd = libc::getpwuid(uid);
-        let name = (*passwd).pw_name;
-        let basegid = (*passwd).pw_gid as i32;
-
-        // get the number of groups
-        let mut ngroups = 0;
-        libc::getgrouplist(name, basegid, std::ptr::null_mut(), &mut ngroups);
-
-        if ngroups == 0 {
-            // BUG 2021-06-23 weird behavior on macos... :/
-            ngroups = 50;
-        }
-
-        let mut groups = vec![-1; ngroups as usize];
-        loop {
-            libc::getgrouplist(name, basegid, groups.as_mut_ptr(), &mut ngroups);
-
-            // if the last entry wasn't set, we're good
-            if groups[groups.len() - 1] == -1 {
-                break;
-            }
-
-            // otherwise, there are more groups. oof, keep going.
-            ngroups *= 2;
-            groups.resize(ngroups as usize, 0);
-        }
-        groups
-            .into_iter()
-            .filter(|gid| gid != &-1)
-            .map(|gid| gid as u32)
-            .collect()
     }
 }
 

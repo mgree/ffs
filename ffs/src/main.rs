@@ -58,13 +58,6 @@ pub fn ffs_cli() -> Command {
                 .default_value("755")
         )
         .arg(
-            Arg::new("KEEPMACOSDOT")
-                .help("Include ._* extended attribute/resource fork files on macOS")
-                .long("keep-macos-xattr")
-                .action(ArgAction::SetTrue)
-
-        )
-        .arg(
             Arg::new("UNPADDED")
                 .help("Don't pad the numeric names of list elements with zeroes; will not sort properly")
                 .long("unpadded")
@@ -158,7 +151,6 @@ pub fn config_from_ffs_args() -> Config {
     config.eager = args.get_flag("EAGER");
     config.pad_element_names = !args.get_flag("UNPADDED");
     config.read_only = args.get_flag("READONLY");
-    config.keep_macos_xattr_file = args.get_flag("KEEPMACOSDOT");
     config.pretty = args.get_flag("PRETTY");
 
     // perms
