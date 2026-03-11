@@ -39,4 +39,4 @@ xattr = "1.6"
 yaml-rust = "0.4.5"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-fuser = "0.16"
+fuser = "0.17"
