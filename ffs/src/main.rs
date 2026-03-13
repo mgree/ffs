@@ -502,9 +502,9 @@ pub fn config_from_ffs_args() -> Config {
 
 fn main() {
     let config = config_from_ffs_args();
-    let mut options = vec![MountOption::FSName(format!("{}", config.input))];
+    let mut mount_options = vec![MountOption::FSName(format!("{}", config.input))];
     if config.read_only {
-        options.push(MountOption::RO);
+        mount_options.push(MountOption::RO);
     }
 
     assert!(config.mount.is_some());
@@ -520,12 +520,15 @@ fn main() {
     let cleanup_mount = config.cleanup_mount;
     let input_format = config.input_format;
 
+    info!("mounting on {} with options {mount_options:?}", mount.display());
+    let mut fuser_config = fuser::Config::default();
+    fuser_config.mount_options = mount_options;
+
     let status = match input_format {
         Format::Json => {
             let fs: FS<nodelike::json::Value> = FS::new(config);
 
-            info!("mounting on {} with options {options:?}", mount.display());
-            match fuser::mount2(fs, &mount, &options) {
+            match fuser::mount2(fs, &mount, &fuser_config) {
                 Ok(()) => {
                     info!("unmounted");
                     0
@@ -539,8 +542,7 @@ fn main() {
         Format::Toml => {
             let fs: FS<nodelike::toml::Value> = FS::new(config);
 
-            info!("mounting on {} with options {options:?}", mount.display());
-            match fuser::mount2(fs, &mount, &options) {
+            match fuser::mount2(fs, &mount, &fuser_config) {
                 Ok(()) => {
                     info!("unmounted");
                     0
@@ -554,8 +556,7 @@ fn main() {
         Format::Yaml => {
             let fs: FS<nodelike::yaml::Value> = FS::new(config);
 
-            info!("mounting on {} with options {options:?}", mount.display());
-            match fuser::mount2(fs, &mount, &options) {
+            match fuser::mount2(fs, &mount, &fuser_config) {
                 Ok(()) => {
                     info!("unmounted");
                     0

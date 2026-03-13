@@ -160,7 +160,7 @@ pub enum Node<V> {
 /// the worklist algorithm
 pub trait Nodelike
 where
-    Self: Clone + std::fmt::Debug + Default + std::fmt::Display + Sized,
+    Self: Clone + std::fmt::Debug + Default + std::fmt::Display + Sized + Sync + Send,
 {
     /// Number of "nodes" in the given value. This should correspond to the
     /// number of inodes needed to accommodate the value.
