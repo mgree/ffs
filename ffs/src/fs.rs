@@ -1,12 +1,13 @@
-use std::cell::Cell;
 use std::collections::BTreeMap;
 use std::ffi::OsStr;
 use std::fmt::{Debug, Display};
 use std::mem;
 use std::path::Path;
 use std::str::FromStr;
+use std::sync::Mutex;
 use std::time::{Duration, SystemTime};
 
+use fuser::{Errno, INodeNo};
 #[cfg(target_os = "linux")]
 use fuser::{
     FileAttr, FileType, Filesystem, ReplyAttr, ReplyBmap, ReplyCreate, ReplyData, ReplyDirectory,
@@ -14,7 +15,7 @@ use fuser::{
     ReplyStatfs, ReplyWrite, ReplyXattr, Request, TimeOrNow,
 };
 
-use tracing::{debug, error, info, instrument, trace, warn};
+use tracing::{debug, error, info, instrument, warn};
 
 use nodelike::config::{Config, ERROR_STATUS_FUSE, Munge, Output};
 use nodelike::time_ns;
@@ -29,14 +30,22 @@ pub struct FS<V>
 where
     V: Nodelike + Clone + Debug + std::fmt::Display,
 {
+    pub state: Mutex<FSState<V>>,
+}
+
+#[derive(Debug)]
+pub struct FSState<V>
+where
+    V: Nodelike + Clone + Debug + std::fmt::Display,
+{
     /// Vector of nullable inodes; the index is the inode number.
-    pub inodes: Vec<Option<Inode<V>>>,
+    inodes: Vec<Option<INode<V>>>,
     /// Configuration, which determines various file attributes.
-    pub config: Config,
+    config: Config,
     /// Dirty bit: set to `true` when there are outstanding writes
-    dirty: Cell<bool>,
+    dirty: bool,
     /// Synced bit: set to `true` if syncing has _ever_ happened
-    synced: Cell<bool>,
+    synced: bool,
 }
 
 /// Default TTL on information passed to the OS, which caches responses.
@@ -44,13 +53,13 @@ const TTL: Duration = Duration::from_secs(300);
 
 /// An inode, the core structure in the filesystem.
 #[derive(Debug)]
-pub struct Inode<V> {
+pub struct INode<V> {
     /// Inode number of the parent of the current inode.
     ///
     /// For the root, it will be `FUSE_ROOT_ID`, i.e., itself.
-    pub parent: u64,
+    pub parent: INodeNo,
     /// Inode number of this node. Will not be 0.
-    pub inum: u64,
+    pub inum: INodeNo,
     /// User ID of the owner
     pub uid: u32,
     /// Group ID of the owner,
@@ -97,7 +106,7 @@ pub struct DirEntry {
     ///
     /// If the file is renamed, we'll drop the original name.
     pub original_name: Option<String>,
-    pub inum: u64,
+    pub inum: INodeNo,
 }
 
 #[derive(Debug)]
@@ -109,34 +118,129 @@ pub enum DirType {
 #[derive(Debug)]
 #[allow(dead_code)] // better to have it saved for debugging!
 enum FSError {
-    NoSuchInode(u64),
-    InvalidInode(u64),
+    NoSuchInode(INodeNo),
+    InvalidInode(INodeNo),
 }
 
 impl<V> FS<V>
 where
     V: Nodelike + Clone + Debug + Display + Default,
 {
-    fn fresh_inode(&mut self, parent: u64, entry: Entry<V>, uid: u32, gid: u32, mode: u32) -> u64 {
-        self.dirty.set(true);
+    pub fn new(config: Config) -> Self {
+        info!("loading");
 
-        let inum = self.inodes.len() as u64;
+        let reader = match config.input_reader() {
+            Some(reader) => reader,
+            None => {
+                // create an empty directory
+                let state = Mutex::new(FSState::empty(config));
+                return Self { state };
+            }
+        };
+
+        let v = time_ns!("reading", V::from_reader(reader), config.timing);
+        if !v.is_dir() {
+            error!(
+                "The root of the filesystem must be a directory, but '{v}' only generates a single file."
+            );
+            std::process::exit(ERROR_STATUS_FUSE);
+        }
+
+        // don't bother with any locks until we've kicked things off
+        let mut state = FSState::rooted(v, config);
+        time_ns!(
+            "loading",
+            {
+                if state.config.eager {
+                    state
+                        .resolve_nodes_transitively(fuser::INodeNo::ROOT)
+                        .expect("resolve_nodes_transitively");
+                } else {
+                    // kick start the root directory
+                    state
+                        .resolve_node(fuser::INodeNo::ROOT)
+                        .expect("resolve_node");
+                }
+            },
+            state.config.timing
+        );
+
+        let state = Mutex::new(state);
+        Self { state }
+    }
+}
+
+impl<V> FSState<V>
+where
+    V: Nodelike + Clone + Debug + Display + Default,
+{
+    fn from_root(root: INode<V>, config: Config) -> Self {
+        let mut inodes: Vec<Option<INode<V>>> = Vec::with_capacity(1024);
+
+        inodes.push(None);
+        inodes.push(Some(root));
+
+        let dirty = false;
+        let synced = false;
+        Self {
+            inodes,
+            config,
+            dirty,
+            synced,
+        }
+    }
+
+    pub fn rooted(v: V, config: Config) -> Self {
+        Self::from_root(
+            INode::new(
+                fuser::INodeNo::ROOT,
+                fuser::INodeNo::ROOT,
+                Entry::Lazy(v),
+                &config,
+            ),
+            config,
+        )
+    }
+
+    pub fn empty(config: Config) -> Self {
+        Self::from_root(
+            INode::new(
+                fuser::INodeNo::ROOT,
+                fuser::INodeNo::ROOT,
+                Entry::Directory(DirType::Named, BTreeMap::new()),
+                &config,
+            ),
+            config,
+        )
+    }
+
+    fn fresh_inode(
+        &mut self,
+        parent: INodeNo,
+        entry: Entry<V>,
+        uid: u32,
+        gid: u32,
+        mode: u32,
+    ) -> INodeNo {
+        self.dirty = true;
+
+        let inum = INodeNo(self.inodes.len() as u64);
         let mode = (mode & 0o777) as u16;
 
         self.inodes
-            .push(Some(Inode::with_mode(parent, inum, entry, uid, gid, mode)));
+            .push(Some(INode::with_mode(parent, inum, entry, uid, gid, mode)));
 
         inum
     }
 
     #[instrument(level = "debug", skip(self))]
-    fn resolve_node(&mut self, inum: u64) -> Result<Option<Vec<u64>>, FSError>
+    fn resolve_node(&mut self, inum: INodeNo) -> Result<Option<Vec<INodeNo>>, FSError>
     where
         V: Nodelike + std::fmt::Display + Default,
     {
         debug!("called");
 
-        let idx = inum as usize;
+        let idx = inum.0 as usize;
 
         if idx >= self.inodes.len() || idx == 0 {
             return Err(FSError::NoSuchInode(inum));
@@ -260,11 +364,11 @@ where
             }
         };
 
-        let inode = match &mut self.inodes[idx] {
-            Some(inode) => inode,
-            _ => return Err(FSError::InvalidInode(inum)),
-        };
-        inode.entry = entry;
+        if let Some(inode) = &mut self.inodes[idx] {
+            inode.entry = entry;
+        } else {
+            return Err(FSError::InvalidInode(inum));
+        }
 
         if let Some(nodes) = &new_nodes {
             debug!("new_nodes = {nodes:?}");
@@ -273,7 +377,7 @@ where
         Ok(new_nodes)
     }
 
-    fn resolve_nodes_transitively(&mut self, inum: u64) -> Result<(), FSError> {
+    fn resolve_nodes_transitively(&mut self, inum: INodeNo) -> Result<(), FSError> {
         let mut worklist = match self.resolve_node(inum)? {
             Some(nodes) => nodes,
             None => return Ok(()),
@@ -288,14 +392,10 @@ where
         Ok(())
     }
 
-    fn check_access(&self, req: &Request) -> bool {
-        req.uid() == 0 || req.uid() == self.config.uid
-    }
-
-    fn get(&mut self, inum: u64) -> Result<&Inode<V>, FSError> {
+    fn get(&mut self, inum: INodeNo) -> Result<&INode<V>, FSError> {
         let _new_nodes = self.resolve_node(inum)?;
 
-        let idx = inum as usize;
+        let idx = inum.0 as usize;
 
         if idx >= self.inodes.len() || idx == 0 {
             return Err(FSError::NoSuchInode(inum));
@@ -307,10 +407,10 @@ where
         }
     }
 
-    fn get_mut(&mut self, inum: u64) -> Result<&mut Inode<V>, FSError> {
+    fn get_mut(&mut self, inum: INodeNo) -> Result<&mut INode<V>, FSError> {
         let _new_nodes = self.resolve_node(inum)?;
 
-        let idx = inum as usize;
+        let idx = inum.0 as usize;
 
         if idx >= self.inodes.len() {
             return Err(FSError::NoSuchInode(inum));
@@ -322,176 +422,10 @@ where
         }
     }
 
-    pub fn new(config: Config) -> Self {
-        info!("loading");
-        let mut inodes: Vec<Option<Inode<V>>> = Vec::with_capacity(1024);
-        // allocate space for dummy inode 0, root node
-        inodes.resize_with(2, || None);
-
-        let reader = match config.input_reader() {
-            Some(reader) => reader,
-            None => {
-                // create an empty directory
-                let contents = BTreeMap::new();
-                inodes[1] = Some(Inode::new(
-                    fuser::FUSE_ROOT_ID,
-                    fuser::FUSE_ROOT_ID,
-                    Entry::Directory(DirType::Named, contents),
-                    &config,
-                ));
-                return FS {
-                    inodes,
-                    config,
-                    dirty: Cell::new(false),
-                    synced: Cell::new(false),
-                };
-            }
-        };
-
-        let v = time_ns!("reading", V::from_reader(reader), config.timing);
-        if !v.is_dir() {
-            error!(
-                "The root of the filesystem must be a directory, but '{v}' only generates a single file."
-            );
-            std::process::exit(ERROR_STATUS_FUSE);
-        }
-
-        let mut fs = FS {
-            inodes,
-            config,
-            dirty: Cell::new(false),
-            synced: Cell::new(false),
-        };
-
-        time_ns!(
-            "loading",
-            {
-                fs.inodes[fuser::FUSE_ROOT_ID as usize] = Option::Some(Inode::new(
-                    fuser::FUSE_ROOT_ID,
-                    fuser::FUSE_ROOT_ID,
-                    Entry::Lazy(v),
-                    &fs.config,
-                ));
-
-                if fs.config.eager {
-                    fs.resolve_nodes_transitively(fuser::FUSE_ROOT_ID)
-                        .expect("resolve_nodes_transitively");
-                } else {
-                    // kick start the root directory
-                    fs.resolve_node(fuser::FUSE_ROOT_ID).expect("resolve_node");
-                }
-            },
-            fs.config.timing
-        );
-
-        fs
-    }
-
-    /// Tries to synchronize the in-memory `FS` with its on-disk representation.
-    ///
-    /// Depending on output conventions and the state of the `FS`, nothing may
-    /// happen. In particular:
-    ///
-    ///   - if a sync has happened before and the `FS` isn't dirty, nothing will
-    ///     happen (to prevent pointless writes)
-    ///
-    ///   - if `self.config.output == Output::Stdout` and `last_sync == false`,
-    ///     nothing will happen (to prevent redundant writes to STDOUT)
-    #[instrument(level = "debug", skip(self), fields(synced = self.synced.get(), dirty = self.dirty.get()))]
-    pub fn sync(&mut self, last_sync: bool) {
-        info!("called");
-        trace!("{:?}", self.inodes);
-
-        if self.synced.get() && !self.dirty.get() {
-            info!("skipping sync; already synced and not dirty");
-            return;
-        }
-
-        match self.config.output {
-            Output::Stdout if !last_sync => {
-                info!("skipping sync; not last sync, using stdout");
-                return;
-            }
-            _ => (),
-        };
-
-        self.save();
-        self.dirty.set(false);
-        self.synced.set(true);
-    }
-
-    /// Actually output results, using `self.config.output`.
-    ///
-    /// When `self.config.input == self.config.output`, then resolved lazy nodes
-    /// can be directly returned. If the input and output formats are different,
-    /// we eager resolve everything and then save.
-    fn save(&mut self) {
-        let writer = match self.config.output_writer() {
-            Some(writer) => writer,
-            None => return,
-        };
-
-        if self.config.input_format == self.config.output_format {
-            let v = time_ns!(
-                "saving",
-                self.as_value(fuser::FUSE_ROOT_ID),
-                self.config.timing
-            );
-
-            time_ns!(
-                "writing",
-                v.to_writer(writer, self.config.pretty),
-                self.config.timing
-            );
-        } else {
-            match self.config.output_format {
-                Format::Json => {
-                    let v: json::Value = time_ns!(
-                        "saving",
-                        self.as_other_value(fuser::FUSE_ROOT_ID),
-                        self.config.timing
-                    );
-
-                    time_ns!(
-                        "writing",
-                        v.to_writer(writer, self.config.pretty),
-                        self.config.timing
-                    );
-                }
-                Format::Toml => {
-                    let v: toml::Value = time_ns!(
-                        "saving",
-                        self.as_other_value(fuser::FUSE_ROOT_ID),
-                        self.config.timing
-                    );
-
-                    time_ns!(
-                        "writing",
-                        v.to_writer(writer, self.config.pretty),
-                        self.config.timing
-                    );
-                }
-                Format::Yaml => {
-                    let v: yaml::Value = time_ns!(
-                        "saving",
-                        self.as_other_value(fuser::FUSE_ROOT_ID),
-                        self.config.timing
-                    );
-
-                    time_ns!(
-                        "writing",
-                        v.to_writer(writer, self.config.pretty),
-                        self.config.timing
-                    );
-                }
-            }
-        }
-    }
-
     // save as a value of the same type as the input
     // we need this special case to avoid type-level shenanigans
-    fn as_value(&self, inum: u64) -> V {
-        match &self.inodes[inum as usize].as_ref().unwrap().entry {
+    fn as_value(&self, inum: INodeNo) -> V {
+        match &self.inodes[inum.0 as usize].as_ref().unwrap().entry {
             Entry::Lazy(v) => v.clone(),
             Entry::File(typ, contents) => {
                 // TODO 2021-07-01 use _t to try to force the type
@@ -545,11 +479,11 @@ where
     }
 
     #[instrument(level = "trace", skip(self))]
-    fn as_other_value<U>(&mut self, inum: u64) -> U
+    fn as_other_value<U>(&mut self, inum: INodeNo) -> U
     where
         U: Nodelike,
     {
-        match &self.inodes[inum as usize].as_ref().unwrap().entry {
+        match &self.inodes[inum.0 as usize].as_ref().unwrap().entry {
             Entry::Lazy(_) => {
                 self.resolve_nodes_transitively(inum).unwrap();
                 self.as_other_value(inum)
@@ -604,22 +538,126 @@ where
             }
         }
     }
+
+    fn check_access(&self, req: &Request) -> bool {
+        req.uid() == 0 || req.uid() == self.config.uid
+    }
+
+    /// Tries to synchronize the in-memory `FS` with its on-disk representation.
+    ///
+    /// Depending on output conventions and the state of the `FS`, nothing may
+    /// happen. In particular:
+    ///
+    ///   - if a sync has happened before and the `FS` isn't dirty, nothing will
+    ///     happen (to prevent pointless writes)
+    ///
+    ///   - if `self.config.output == Output::Stdout` and `last_sync == false`,
+    ///     nothing will happen (to prevent redundant writes to STDOUT)
+    #[instrument(level = "debug", skip(self), fields(synced = self.synced, dirty = self.dirty))]
+    pub fn sync(&mut self, last_sync: bool) {
+        info!("called");
+
+        if self.synced && !self.dirty {
+            info!("skipping sync; already synced and not dirty");
+            return;
+        }
+
+        match self.config.output {
+            Output::Stdout if !last_sync => {
+                info!("skipping sync; not last sync, using stdout");
+                return;
+            }
+            _ => (),
+        };
+
+        self.save();
+        self.dirty = false;
+        self.synced = true;
+    }
+
+    /// Actually output results, using `self.config.output`.
+    ///
+    /// When `self.config.input == self.config.output`, then resolved lazy nodes
+    /// can be directly returned. If the input and output formats are different,
+    /// we eager resolve everything and then save.
+    fn save(&mut self) {
+        let writer = match self.config.output_writer() {
+            Some(writer) => writer,
+            None => return,
+        };
+
+        if self.config.input_format == self.config.output_format {
+            let v = time_ns!(
+                "saving",
+                self.as_value(fuser::INodeNo::ROOT),
+                self.config.timing
+            );
+
+            time_ns!(
+                "writing",
+                v.to_writer(writer, self.config.pretty),
+                self.config.timing
+            );
+        } else {
+            match self.config.output_format {
+                Format::Json => {
+                    let v: json::Value = time_ns!(
+                        "saving",
+                        self.as_other_value(fuser::INodeNo::ROOT),
+                        self.config.timing
+                    );
+
+                    time_ns!(
+                        "writing",
+                        v.to_writer(writer, self.config.pretty),
+                        self.config.timing
+                    );
+                }
+                Format::Toml => {
+                    let v: toml::Value = time_ns!(
+                        "saving",
+                        self.as_other_value(fuser::INodeNo::ROOT),
+                        self.config.timing
+                    );
+
+                    time_ns!(
+                        "writing",
+                        v.to_writer(writer, self.config.pretty),
+                        self.config.timing
+                    );
+                }
+                Format::Yaml => {
+                    let v: yaml::Value = time_ns!(
+                        "saving",
+                        self.as_other_value(fuser::INodeNo::ROOT),
+                        self.config.timing
+                    );
+
+                    time_ns!(
+                        "writing",
+                        v.to_writer(writer, self.config.pretty),
+                        self.config.timing
+                    );
+                }
+            }
+        }
+    }
 }
 
-impl<V> Inode<V>
+impl<V> INode<V>
 where
     V: Nodelike,
 {
-    pub fn new(parent: u64, inum: u64, entry: Entry<V>, config: &Config) -> Self {
+    pub fn new(parent: INodeNo, inum: INodeNo, entry: Entry<V>, config: &Config) -> Self {
         let mode = mode(config, entry.kind());
         let uid = config.uid;
         let gid = config.gid;
-        Inode::with_mode(parent, inum, entry, uid, gid, mode)
+        INode::with_mode(parent, inum, entry, uid, gid, mode)
     }
 
     pub fn with_mode(
-        parent: u64,
-        inum: u64,
+        parent: INodeNo,
+        inum: INodeNo,
         entry: Entry<V>,
         uid: u32,
         gid: u32,
@@ -627,7 +665,7 @@ where
     ) -> Self {
         let now = SystemTime::now();
 
-        Inode {
+        INode {
             parent,
             inum,
             uid,
@@ -797,48 +835,51 @@ impl FromStr for DirType {
 
 // ENOATTR is deprecated on Linux, so we should use ENODATA
 #[cfg(target_os = "linux")]
-const ENOATTR: i32 = libc::ENODATA;
+const ENOATTR: fuser::Errno = Errno::ENODATA;
 
 impl<V> Filesystem for FS<V>
 where
-    V: Nodelike,
+    V: Nodelike + 'static,
 {
     /// Synchronizes the `FS`, calling `FS::sync` with `last_sync == true`.
-    #[instrument(level = "debug", skip(self), fields(dirty = self.dirty.get()))]
+    #[instrument(level = "debug", skip(self))]
     fn destroy(&mut self) {
         info!("called");
-        self.sync(true);
+        self.state.lock().unwrap().sync(true);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn statfs(&mut self, _req: &Request<'_>, _ino: u64, reply: ReplyStatfs) {
+    fn statfs(&self, _req: &Request, _inode: INodeNo, reply: ReplyStatfs) {
         info!("called");
         reply.statfs(0, 0, 0, 0, 0, 1, 255, 0);
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
-    fn access(&mut self, req: &Request, inode: u64, mut mask: i32, reply: ReplyEmpty) {
+    fn access(&self, req: &Request, inum: INodeNo, mask: fuser::AccessFlags, reply: ReplyEmpty) {
         info!("called");
-        if mask == libc::F_OK {
+        if mask == fuser::AccessFlags::F_OK {
             reply.ok();
             return;
         }
 
-        match self.get(inode) {
+        let mut state = self.state.lock().unwrap();
+        match state.get(inum) {
             Ok(inode) => {
                 // cribbed from https://github.com/cberner/fuser/blob/4639a490f4aa7dfe8a342069a761d4cf2bd8f821/examples/simple.rs#L1703-L1736
                 let attr = inode.attr();
                 let mode = attr.perm as i32;
 
+                // TODO actually use the bitflags
+                let mut mask = mask.bits();
                 if req.uid() == 0 {
                     // root only allowed to exec if one of the X bits is set
                     mask &= libc::X_OK;
                     mask -= mask & (mode >> 6);
                     mask -= mask & (mode >> 3);
                     mask -= mask & mode;
-                } else if req.uid() == self.config.uid {
+                } else if req.uid() == state.config.uid {
                     mask -= mask & (mode >> 6);
-                } else if req.gid() == self.config.gid {
+                } else if req.gid() == state.config.gid {
                     mask -= mask & (mode >> 3);
                 } else {
                     mask -= mask & mode;
@@ -847,19 +888,21 @@ where
                 if mask == 0 {
                     reply.ok();
                 } else {
-                    reply.error(libc::EACCES);
+                    reply.error(Errno::EACCES);
                 }
             }
-            Err(_) => reply.error(libc::ENOENT),
+            Err(_) => reply.error(Errno::ENOENT),
         }
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn lookup(&mut self, _req: &Request, parent: u64, name: &OsStr, reply: ReplyEntry) {
+    fn lookup(&self, _req: &Request, parent: INodeNo, name: &OsStr, reply: ReplyEntry) {
         info!("called");
-        let dir = match self.get(parent) {
+
+        let mut state = self.state.lock().unwrap();
+        let dir = match state.get(parent) {
             Err(_e) => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Ok(inode) => inode,
@@ -867,7 +910,7 @@ where
 
         let filename = match name.to_str() {
             None => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Some(name) => name,
@@ -876,34 +919,42 @@ where
         let inum = match &dir.entry {
             Entry::Directory(_kind, files) => match files.get(filename) {
                 None => {
-                    reply.error(libc::ENOENT);
+                    reply.error(Errno::ENOENT);
                     return;
                 }
                 Some(DirEntry { inum, .. }) => *inum,
             },
             _ => {
-                reply.error(libc::ENOTDIR);
+                reply.error(Errno::ENOTDIR);
                 return;
             }
         };
 
-        let file = match self.get(inum) {
+        let file = match state.get(inum) {
             Err(_e) => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Ok(inode) => inode,
         };
 
-        reply.entry(&TTL, &file.attr(), 0);
+        reply.entry(&TTL, &file.attr(), fuser::Generation(0));
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn getattr(&mut self, _req: &Request, ino: u64, _fh: Option<u64>, reply: ReplyAttr) {
+    fn getattr(
+        &self,
+        _req: &Request,
+        ino: INodeNo,
+        _fh: Option<fuser::FileHandle>,
+        reply: ReplyAttr,
+    ) {
         info!("called");
-        let file = match self.get(ino) {
+
+        let mut state = self.state.lock().unwrap();
+        let file = match state.get(ino) {
             Err(_e) => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Ok(inode) => inode,
@@ -920,9 +971,9 @@ where
         )
     )]
     fn setattr(
-        &mut self,
-        req: &Request<'_>,
-        ino: u64,
+        &self,
+        req: &Request,
+        ino: INodeNo,
         mode: Option<u32>,
         uid: Option<u32>,
         gid: Option<u32>,
@@ -930,17 +981,18 @@ where
         atime: Option<TimeOrNow>,
         mtime: Option<TimeOrNow>,
         _ctime: Option<SystemTime>,
-        _fh: Option<u64>,
+        _fh: Option<fuser::FileHandle>,
         _crtime: Option<SystemTime>,
         _chgtime: Option<SystemTime>,
         _bkuptime: Option<SystemTime>,
-        _flags: Option<u32>,
+        _flags: Option<fuser::BsdFileFlags>,
         reply: ReplyAttr,
     ) {
         info!("called");
 
-        if !self.check_access(req) {
-            reply.error(libc::EPERM);
+        let mut state = self.state.lock().unwrap();
+        if !state.check_access(req) {
+            reply.error(Errno::EPERM);
             return;
         }
 
@@ -952,14 +1004,14 @@ where
             }
             let mode = (mode as u16) & 0o777;
 
-            match self.get_mut(ino) {
+            match state.get_mut(ino) {
                 Ok(inode) => {
                     inode.mode = mode;
                     reply.attr(&TTL, &inode.attr());
                     return;
                 }
                 Err(_) => {
-                    reply.error(libc::ENOENT);
+                    reply.error(Errno::ENOENT);
                     return;
                 }
             };
@@ -973,15 +1025,15 @@ where
             if let Some(gid) = gid {
                 let groups = groups_for(req.uid());
                 if req.uid() != 0 && !groups.contains(&gid) {
-                    reply.error(libc::EPERM);
+                    reply.error(Errno::EPERM);
                     return;
                 }
             }
 
-            let inode = match self.get_mut(ino) {
+            let inode = match state.get_mut(ino) {
                 Ok(inode) => inode,
                 Err(_) => {
-                    reply.error(libc::ENOENT);
+                    reply.error(Errno::ENOENT);
                     return;
                 }
             };
@@ -991,13 +1043,13 @@ where
                 && req.uid() != 0
                 && !(uid == inode.uid && req.uid() == inode.uid)
             {
-                reply.error(libc::EPERM);
+                reply.error(Errno::EPERM);
                 return;
             }
 
             // only owner may change the group
             if gid.is_some() && req.uid() != 0 && req.uid() != inode.uid {
-                reply.error(libc::EPERM);
+                reply.error(Errno::EPERM);
                 return;
             }
 
@@ -1018,37 +1070,39 @@ where
         if let Some(size) = size {
             info!("truncate() to {size}");
 
-            match self.get_mut(ino) {
+            match state.get_mut(ino) {
                 Ok(inode) => match &mut inode.entry {
                     Entry::File(_t, contents) => {
                         contents.resize(size as usize, 0);
                         reply.attr(&TTL, &inode.attr());
                     }
                     Entry::Directory(..) => {
-                        reply.error(libc::EISDIR);
+                        reply.error(Errno::EISDIR);
                         return;
                     }
                     Entry::Lazy(..) => panic!("unresolved lazy value found in setattr"),
                 },
                 Err(_) => {
-                    reply.error(libc::ENOENT);
+                    reply.error(Errno::ENOENT);
                     return;
                 }
             };
 
-            self.dirty.set(true);
+            state.dirty = true;
             return;
         }
 
         let now = SystemTime::now();
         let mut set_time = false;
+
         if let Some(atime) = atime {
             info!("setting atime");
-            if !self.check_access(req) {
-                reply.error(libc::EPERM);
+            if !state.check_access(req) {
+                reply.error(Errno::EPERM);
                 return;
             }
-            match self.get_mut(ino) {
+
+            match state.get_mut(ino) {
                 Ok(inode) => {
                     inode.atime = match atime {
                         TimeOrNow::Now => now,
@@ -1056,7 +1110,7 @@ where
                     }
                 }
                 Err(_) => {
-                    reply.error(libc::ENOENT);
+                    reply.error(Errno::ENOENT);
                     return;
                 }
             }
@@ -1067,11 +1121,11 @@ where
         if let Some(mtime) = mtime {
             info!("setting mtime");
 
-            if !self.check_access(req) {
-                reply.error(libc::EPERM);
+            if !state.check_access(req) {
+                reply.error(Errno::EPERM);
                 return;
             }
-            match self.get_mut(ino) {
+            match state.get_mut(ino) {
                 Ok(inode) => {
                     inode.mtime = match mtime {
                         TimeOrNow::Now => now,
@@ -1079,7 +1133,7 @@ where
                     }
                 }
                 Err(_) => {
-                    reply.error(libc::ENOENT);
+                    reply.error(Errno::ENOENT);
                     return;
                 }
             }
@@ -1088,32 +1142,26 @@ where
         }
 
         if set_time {
-            reply.attr(&TTL, &self.get(ino).unwrap().attr());
+            reply.attr(&TTL, &state.get(ino).unwrap().attr());
         } else {
-            reply.error(libc::ENOSYS);
+            reply.error(Errno::ENOSYS);
         }
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn getxattr(
-        &mut self,
-        _req: &Request<'_>,
-        ino: u64,
-        name: &OsStr,
-        size: u32,
-        reply: ReplyXattr,
-    ) {
+    fn getxattr(&self, _req: &Request, ino: INodeNo, name: &OsStr, size: u32, reply: ReplyXattr) {
         info!("called");
 
-        if !self.config.allow_xattr {
+        let mut state = self.state.lock().unwrap();
+        if !state.config.allow_xattr {
             info!("disabled");
-            reply.error(libc::ENOSYS);
+            reply.error(Errno::ENOSYS);
             return;
         }
 
-        let file = match self.get(ino) {
+        let file = match state.get(ino) {
             Err(_e) => {
-                reply.error(libc::EFAULT);
+                reply.error(Errno::EFAULT);
                 return;
             }
             Ok(inode) => inode,
@@ -1127,7 +1175,7 @@ where
                 reply.size(actual_size);
                 return;
             } else if size < actual_size {
-                reply.error(libc::ERANGE);
+                reply.error(Errno::ERANGE);
                 return;
             } else {
                 reply.data(&user_type);
@@ -1140,9 +1188,9 @@ where
 
     #[instrument(level = "debug", skip(self, req, reply, value, _flags, _position))]
     fn setxattr(
-        &mut self,
-        req: &Request<'_>,
-        ino: u64,
+        &self,
+        req: &Request,
+        ino: INodeNo,
         name: &OsStr,
         value: &[u8],
         _flags: i32,
@@ -1151,19 +1199,20 @@ where
     ) {
         info!("called");
 
-        if !self.config.allow_xattr {
-            reply.error(libc::ENOSYS);
+        let mut state = self.state.lock().unwrap();
+        if !state.config.allow_xattr {
+            reply.error(Errno::ENOSYS);
             return;
         }
 
-        if !self.check_access(req) {
-            reply.error(libc::EPERM);
+        if !state.check_access(req) {
+            reply.error(Errno::EPERM);
             return;
         }
 
-        let file = match self.get_mut(ino) {
+        let file = match state.get_mut(ino) {
             Err(_e) => {
-                reply.error(libc::EFAULT);
+                reply.error(Errno::EFAULT);
                 return;
             }
             Ok(inode) => inode,
@@ -1172,32 +1221,33 @@ where
         if name == "user.type" {
             match std::str::from_utf8(value) {
                 Err(_) => {
-                    reply.error(libc::EINVAL);
+                    reply.error(Errno::EINVAL);
                 }
                 Ok(s) => {
                     if file.entry.try_set_typ(s) {
                         reply.ok()
                     } else {
-                        reply.error(libc::EINVAL)
+                        reply.error(Errno::EINVAL)
                     }
                 }
             }
         } else {
-            reply.error(libc::EINVAL);
+            reply.error(Errno::EINVAL);
         }
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn listxattr(&mut self, _req: &Request<'_>, ino: u64, size: u32, reply: ReplyXattr) {
+    fn listxattr(&self, _req: &Request, ino: INodeNo, size: u32, reply: ReplyXattr) {
         info!("called");
 
-        if !self.config.allow_xattr {
-            reply.error(libc::ENOSYS);
+        let mut state = self.state.lock().unwrap();
+        if !state.config.allow_xattr {
+            reply.error(Errno::ENOSYS);
             return;
         }
 
-        if self.get(ino).is_err() {
-            reply.error(libc::EFAULT);
+        if state.get(ino).is_err() {
+            reply.error(Errno::EFAULT);
             return;
         }
 
@@ -1211,30 +1261,31 @@ where
         if size == 0 {
             reply.size(actual_size)
         } else if size < actual_size {
-            reply.error(libc::ERANGE);
+            reply.error(Errno::ERANGE);
         } else {
             reply.data(&attrs);
         }
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn removexattr(&mut self, _req: &Request<'_>, ino: u64, name: &OsStr, reply: ReplyEmpty) {
+    fn removexattr(&self, _req: &Request, ino: INodeNo, name: &OsStr, reply: ReplyEmpty) {
         info!("called");
 
         // 50 ways to leave your lover: this call never succeeds
 
-        if !self.config.allow_xattr {
-            reply.error(libc::ENOSYS);
+        let mut state = self.state.lock().unwrap();
+        if !state.config.allow_xattr {
+            reply.error(Errno::ENOSYS);
             return;
         }
 
-        if self.get(ino).is_err() {
-            reply.error(libc::EFAULT);
+        if state.get(ino).is_err() {
+            reply.error(Errno::EFAULT);
             return;
         }
 
         if name == "user.type" {
-            reply.error(libc::EACCES);
+            reply.error(Errno::EACCES);
         } else {
             reply.error(ENOATTR);
         }
@@ -1242,20 +1293,22 @@ where
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn read(
-        &mut self,
+        &self,
         _req: &Request,
-        ino: u64,
-        _fh: u64,
-        offset: i64,
+        ino: INodeNo,
+        _fh: fuser::FileHandle,
+        offset: u64,
         _size: u32,
-        _flags: i32,
-        _lock: Option<u64>,
+        _flags: fuser::OpenFlags,
+        _lock: Option<fuser::LockOwner>,
         reply: ReplyData,
     ) {
         info!("called");
-        let file = match self.get(ino) {
+
+        let mut state = self.state.lock().unwrap();
+        let file = match state.get(ino) {
             Err(_e) => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Ok(inode) => inode,
@@ -1263,31 +1316,32 @@ where
 
         match &file.entry {
             Entry::File(_t, s) => reply.data(&s[offset as usize..]),
-            _ => reply.error(libc::ENOENT),
+            _ => reply.error(Errno::ENOENT),
         }
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn readdir(
-        &mut self,
+        &self,
         _req: &Request,
-        ino: u64,
-        _fh: u64,
-        offset: i64,
+        ino: INodeNo,
+        _fh: fuser::FileHandle,
+        offset: u64,
         mut reply: ReplyDirectory,
     ) {
         info!("called");
 
-        let inode = match self.get(ino) {
+        let mut state = self.state.lock().unwrap();
+        let inode = match state.get(ino) {
             Err(_e) => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Ok(inode) => inode,
         };
 
         match &inode.entry {
-            Entry::File(..) => reply.error(libc::ENOTDIR),
+            Entry::File(..) => reply.error(Errno::ENOTDIR),
             Entry::Directory(_kind, files) => {
                 let dot_entries = vec![
                     (ino, FileType::Directory, "."),
@@ -1304,7 +1358,7 @@ where
                     .enumerate()
                     .skip(offset as usize)
                 {
-                    if reply.add(entry.0, (i + 1) as i64, entry.1, entry.2) {
+                    if reply.add(entry.0, (i + 1) as u64, entry.1, entry.2) {
                         break;
                     }
                 }
@@ -1316,9 +1370,9 @@ where
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn create(
-        &mut self,
-        _req: &Request<'_>,
-        _parent: u64,
+        &self,
+        _req: &Request,
+        _parent: INodeNo,
         _name: &OsStr,
         _mode: u32,
         _umask: u32,
@@ -1328,14 +1382,14 @@ where
         info!("called");
 
         // force the system to use mknod and open
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
     fn mknod(
-        &mut self,
+        &self,
         req: &Request,
-        parent: u64,
+        parent: INodeNo,
         name: &OsStr,
         mode: u32,
         _umask: u32,
@@ -1344,9 +1398,11 @@ where
     ) {
         info!("called");
 
+        let mut state = self.state.lock().unwrap();
+
         // access control
-        if !self.check_access(req) {
-            reply.error(libc::EACCES);
+        if !state.check_access(req) {
+            reply.error(Errno::EACCES);
             return;
         }
 
@@ -1354,33 +1410,33 @@ where
         let file_type: u32 = mode & libc::S_IFMT;
         if ![libc::S_IFREG, libc::S_IFDIR].contains(&file_type) {
             warn!("mknod only supports regular files and directories; got {mode:o}");
-            reply.error(libc::ENOSYS);
+            reply.error(Errno::ENOSYS);
             return;
         }
 
         // get the filename
         let filename = match name.to_str() {
             None => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Some(name) => name,
         };
 
         // make sure the parent exists, is a directory, and doesn't have that file
-        match self.get(parent) {
+        match state.get(parent) {
             Err(_e) => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Ok(inode) => match &inode.entry {
                 Entry::File(..) => {
-                    reply.error(libc::ENOTDIR);
+                    reply.error(Errno::ENOTDIR);
                     return;
                 }
                 Entry::Directory(_dirtype, files) => {
                     if files.contains_key(filename) {
-                        reply.error(libc::EEXIST);
+                        reply.error(Errno::EEXIST);
                         return;
                     }
                 }
@@ -1400,11 +1456,11 @@ where
         };
 
         // allocate the inode (sets dirty bit)
-        let inum = self.fresh_inode(parent, entry, req.uid(), req.gid(), mode);
+        let inum = state.fresh_inode(parent, entry, req.uid(), req.gid(), mode);
 
         // update the parent
         // NB we can't get_mut the parent earlier due to borrowing restrictions
-        match self.get_mut(parent) {
+        match state.get_mut(parent) {
             Err(_e) => panic!("error finding parent again"),
             Ok(inode) => match &mut inode.entry {
                 Entry::File(..) => panic!("parent changed to a regular file"),
@@ -1422,15 +1478,19 @@ where
             },
         };
 
-        reply.entry(&TTL, &self.get(inum).unwrap().attr(), 0);
-        assert!(self.dirty.get());
+        reply.entry(
+            &TTL,
+            &state.get(inum).unwrap().attr(),
+            fuser::Generation(0),
+        );
+        assert!(state.dirty);
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
     fn mkdir(
-        &mut self,
+        &self,
         req: &Request,
-        parent: u64,
+        parent: INodeNo,
         name: &OsStr,
         mode: u32,
         _umask: u32,
@@ -1438,34 +1498,36 @@ where
     ) {
         info!("called");
 
-        if !self.check_access(req) {
-            reply.error(libc::EACCES);
+        let mut state = self.state.lock().unwrap();
+
+        if !state.check_access(req) {
+            reply.error(Errno::EACCES);
             return;
         }
 
         // get the new directory name
         let filename = match name.to_str() {
             None => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Some(name) => name,
         };
 
         // make sure the parent exists, is a directory, and doesn't have anything with that name
-        match self.get(parent) {
+        match state.get(parent) {
             Err(_e) => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Ok(inode) => match &inode.entry {
                 Entry::File(..) => {
-                    reply.error(libc::ENOTDIR);
+                    reply.error(Errno::ENOTDIR);
                     return;
                 }
                 Entry::Directory(_dirtype, files) => {
                     if files.contains_key(filename) {
-                        reply.error(libc::EEXIST);
+                        reply.error(Errno::EEXIST);
                         return;
                     }
                 }
@@ -1478,11 +1540,11 @@ where
         let kind = FileType::Directory;
 
         // allocate the inode (sets dirty bit)
-        let inum = self.fresh_inode(parent, entry, req.uid(), req.gid(), mode);
+        let inum = state.fresh_inode(parent, entry, req.uid(), req.gid(), mode);
 
         // update the parent
         // NB we can't get_mut the parent earlier due to borrowing restrictions
-        match self.get_mut(parent) {
+        match state.get_mut(parent) {
             Err(_e) => panic!("error finding parent again"),
             Ok(inode) => match &mut inode.entry {
                 Entry::File(..) => panic!("parent changed to a regular file"),
@@ -1500,37 +1562,41 @@ where
             },
         };
 
-        reply.entry(&TTL, &self.get(inum).unwrap().attr(), 0);
-        assert!(self.dirty.get());
+        reply.entry(
+            &TTL,
+            &state.get(inum).unwrap().attr(),
+            fuser::Generation(0),
+        );
+        assert!(state.dirty);
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
     fn write(
-        &mut self,
+        &self,
         req: &Request,
-        ino: u64,
-        _fh: u64,
-        offset: i64,
+        ino: INodeNo,
+        _fh: fuser::FileHandle,
+        offset: u64,
         data: &[u8],
-        _write_flags: u32,
-        _flags: i32,
-        _lock_owner: Option<u64>,
+        _write_flags: fuser::WriteFlags,
+        _flags: fuser::OpenFlags,
+        _lock_owner: Option<fuser::LockOwner>,
         reply: ReplyWrite,
     ) {
         info!("called");
 
-        assert!(offset >= 0);
+        let mut state = self.state.lock().unwrap();
 
         // access control
-        if !self.check_access(req) {
-            reply.error(libc::EACCES);
+        if !state.check_access(req) {
+            reply.error(Errno::EACCES);
             return;
         }
 
         // find inode
-        let file = match self.get_mut(ino) {
+        let file = match state.get_mut(ino) {
             Err(_e) => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Ok(inode) => inode,
@@ -1540,14 +1606,14 @@ where
         let contents = match &mut file.entry {
             Entry::File(_t, contents) => contents,
             Entry::Directory(_, _) => {
-                reply.error(libc::EISDIR);
+                reply.error(Errno::EISDIR);
                 return;
             }
             Entry::Lazy(..) => panic!("unresolved lazy value in write"),
         };
 
         // make space
-        let extra_bytes = (offset + data.len() as i64) - contents.len() as i64;
+        let extra_bytes = (offset + data.len() as u64) - contents.len() as u64;
         if extra_bytes > 0 {
             contents.resize(contents.len() + extra_bytes as usize, 0);
         }
@@ -1555,48 +1621,50 @@ where
         // actually write
         let offset = offset as usize;
         contents[offset..offset + data.len()].copy_from_slice(data);
-        self.dirty.set(true);
+        state.dirty = true;
 
         reply.written(data.len() as u32);
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
-    fn unlink(&mut self, req: &Request, parent: u64, name: &OsStr, reply: ReplyEmpty) {
+    fn unlink(&self, req: &Request, parent: INodeNo, name: &OsStr, reply: ReplyEmpty) {
         info!("called");
 
+        let mut state = self.state.lock().unwrap();
+
         // access control
-        if !self.check_access(req) {
-            reply.error(libc::EACCES);
+        if !state.check_access(req) {
+            reply.error(Errno::EACCES);
             return;
         }
 
         // get the filename
         let filename = match name.to_str() {
             None => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Some(name) => name,
         };
 
         // find the parent
-        let files = match self.get_mut(parent) {
+        let files = match state.get_mut(parent) {
             Err(_e) => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
-            Ok(Inode {
+            Ok(INode {
                 entry: Entry::Directory(_dirtype, files),
                 ..
             }) => files,
-            Ok(Inode {
+            Ok(INode {
                 entry: Entry::File(..),
                 ..
             }) => {
-                reply.error(libc::ENOTDIR);
+                reply.error(Errno::ENOTDIR);
                 return;
             }
-            Ok(Inode {
+            Ok(INode {
                 entry: Entry::Lazy(..),
                 ..
             }) => panic!("unresolved lazy value in unlink"),
@@ -1609,7 +1677,7 @@ where
                 ..
             }) => (),
             _ => {
-                reply.error(libc::EPERM);
+                reply.error(Errno::EPERM);
                 return;
             }
         }
@@ -1617,47 +1685,49 @@ where
         // try to remove it
         let res = files.remove(filename);
         assert!(res.is_some());
-        self.dirty.set(true);
+        state.dirty = true;
         reply.ok();
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
-    fn rmdir(&mut self, req: &Request<'_>, parent: u64, name: &OsStr, reply: ReplyEmpty) {
+    fn rmdir(&self, req: &Request, parent: INodeNo, name: &OsStr, reply: ReplyEmpty) {
         info!("called");
 
+        let mut state = self.state.lock().unwrap();
+
         // access control
-        if !self.check_access(req) {
-            reply.error(libc::EACCES);
+        if !state.check_access(req) {
+            reply.error(Errno::EACCES);
             return;
         }
 
         // get the filename
         let filename = match name.to_str() {
             None => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Some(name) => name,
         };
 
         // find the parent
-        let files = match self.get(parent) {
+        let files = match state.get(parent) {
             Err(_e) => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
-            Ok(Inode {
+            Ok(INode {
                 entry: Entry::Directory(_dirtype, files),
                 ..
             }) => files,
-            Ok(Inode {
+            Ok(INode {
                 entry: Entry::File(..),
                 ..
             }) => {
-                reply.error(libc::ENOTDIR);
+                reply.error(Errno::ENOTDIR);
                 return;
             }
-            Ok(Inode {
+            Ok(INode {
                 entry: Entry::Lazy(..),
                 ..
             }) => panic!("unresolved lazy value in rmdir"),
@@ -1671,23 +1741,23 @@ where
                 ..
             }) => *inum,
             Some(_) => {
-                reply.error(libc::ENOTDIR);
+                reply.error(Errno::ENOTDIR);
                 return;
             }
             None => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
         };
 
         // make sure it's empty
-        match self.get(inum) {
-            Ok(Inode {
+        match state.get(inum) {
+            Ok(INode {
                 entry: Entry::Directory(_, dir_files),
                 ..
             }) => {
                 if !dir_files.is_empty() {
-                    reply.error(libc::ENOTEMPTY);
+                    reply.error(Errno::ENOTEMPTY);
                     return;
                 }
             }
@@ -1696,8 +1766,8 @@ where
         };
 
         // find the parent again, mutably
-        let files = match self.get_mut(parent) {
-            Ok(Inode {
+        let files = match state.get_mut(parent) {
+            Ok(INode {
                 entry: Entry::Directory(_dirtype, files),
                 ..
             }) => files,
@@ -1708,53 +1778,55 @@ where
         // try to remove it
         let res = files.remove(filename);
         assert!(res.is_some());
-        self.dirty.set(true);
+        state.dirty = true;
         reply.ok();
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
     fn rename(
-        &mut self,
-        req: &Request<'_>,
-        parent: u64,
+        &self,
+        req: &Request,
+        parent: INodeNo,
         name: &OsStr,
-        newparent: u64,
+        newparent: INodeNo,
         newname: &OsStr,
-        _flags: u32, // TODO 2021-06-14 support RENAME_ flags
+        _flags: fuser::RenameFlags, // TODO 2021-06-14 support RENAME_ flags
         reply: ReplyEmpty,
     ) {
         info!("called");
 
+        let mut state = self.state.lock().unwrap();
+
         // access control
-        if !self.check_access(req) {
-            reply.error(libc::EACCES);
+        if !state.check_access(req) {
+            reply.error(Errno::EACCES);
             return;
         }
 
         let src = match name.to_str() {
             None => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Some(name) => name,
         };
 
         if src == "." || src == ".." {
-            reply.error(libc::EINVAL);
+            reply.error(Errno::EINVAL);
             return;
         }
 
         let tgt = match newname.to_str() {
             None => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
             Some(name) => name,
         };
 
         // make sure src exists
-        let (src_kind, src_original, src_inum) = match self.get(parent) {
-            Ok(Inode {
+        let (src_kind, src_original, src_inum) = match state.get(parent) {
+            Ok(INode {
                 entry: Entry::Directory(_kind, files),
                 ..
             }) => match files.get(src) {
@@ -1765,24 +1837,24 @@ where
                     ..
                 }) => (*kind, original_name.clone(), *inum),
                 None => {
-                    reply.error(libc::ENOENT);
+                    reply.error(Errno::ENOENT);
                     return;
                 }
             },
             _ => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
         };
         // determine whether tgt exists
-        let tgt_info = match self.get(newparent) {
-            Ok(Inode {
+        let tgt_info = match state.get(newparent) {
+            Ok(INode {
                 entry: Entry::Directory(_kind, files),
                 ..
             }) => match files.get(tgt) {
                 Some(DirEntry { kind, inum, .. }) => {
                     if src_kind != *kind {
-                        reply.error(libc::ENOTDIR);
+                        reply.error(Errno::ENOTDIR);
                         return;
                     }
                     Some((*kind, *inum))
@@ -1790,20 +1862,20 @@ where
                 None => None,
             },
             _ => {
-                reply.error(libc::ENOENT);
+                reply.error(Errno::ENOENT);
                 return;
             }
         };
 
         // if tgt exists and is a directory, make sure it's empty
         if let Some((FileType::Directory, tgt_inum)) = tgt_info {
-            match self.get(tgt_inum) {
-                Ok(Inode {
+            match state.get(tgt_inum) {
+                Ok(INode {
                     entry: Entry::Directory(_type, files),
                     ..
                 }) => {
                     if !files.is_empty() {
-                        reply.error(libc::ENOTEMPTY);
+                        reply.error(Errno::ENOTEMPTY);
                         return;
                     }
                 }
@@ -1811,8 +1883,8 @@ where
             }
         }
         // remove src from parent
-        match self.get_mut(parent) {
-            Ok(Inode {
+        match state.get_mut(parent) {
+            Ok(INode {
                 entry: Entry::Directory(_kind, files),
                 ..
             }) => files.remove(src),
@@ -1820,8 +1892,8 @@ where
         };
 
         // add src as tgt to newparent
-        match self.get_mut(newparent) {
-            Ok(Inode {
+        match state.get_mut(newparent) {
+            Ok(INode {
                 entry: Entry::Directory(_kind, files),
                 ..
             }) => files.insert(
@@ -1839,119 +1911,116 @@ where
         };
 
         // set src's parent inode
-        match self.get_mut(src_inum) {
+        match state.get_mut(src_inum) {
             Ok(inode) => inode.parent = newparent,
             Err(_) => panic!("missing inode {src_inum} moved from {parent} to {newparent}"),
         }
 
-        self.dirty.set(true);
+        state.dirty = true;
         reply.ok();
     }
 
     #[instrument(level = "debug", skip(self, req, reply))]
     fn fallocate(
-        &mut self,
-        req: &Request<'_>,
-        ino: u64,
-        _fh: u64,
-        offset: i64,
-        length: i64,
+        &self,
+        req: &Request,
+        ino: INodeNo,
+        _fh: fuser::FileHandle,
+        offset: u64,
+        length: u64,
         mode: i32,
         reply: ReplyEmpty,
     ) {
         info!("called");
 
-        if offset < 0 || length <= 0 {
-            reply.error(libc::EINVAL);
+        if mode != 0 {
+            reply.error(Errno::EOPNOTSUPP);
             return;
         }
 
-        if mode != 0 {
-            reply.error(libc::EOPNOTSUPP);
-            return;
-        }
+        let mut state = self.state.lock().unwrap();
 
         // access control
-        if !self.check_access(req) {
-            reply.error(libc::EACCES);
+        if !state.check_access(req) {
+            reply.error(Errno::EACCES);
             return;
         }
 
         // load the contents
-        let contents = match self.get_mut(ino) {
-            Ok(Inode {
+        let contents = match state.get_mut(ino) {
+            Ok(INode {
                 entry: Entry::File(_t, contents),
                 ..
             }) => contents,
-            Ok(Inode {
+            Ok(INode {
                 entry: Entry::Directory(..),
                 ..
             }) => {
-                reply.error(libc::EBADF);
+                reply.error(Errno::EBADF);
                 return;
             }
-            Ok(Inode {
+            Ok(INode {
                 entry: Entry::Lazy(..),
                 ..
             }) => panic!("unresolved lazy value in fallocate"),
 
             Err(_e) => {
-                reply.error(libc::ENODEV);
+                reply.error(Errno::ENODEV);
                 return;
             }
         };
 
         // extend the vector
-        let extra_bytes = (offset + length) - contents.len() as i64;
+        let extra_bytes = (offset + length) - (contents.len() as u64);
         if extra_bytes > 0 {
             contents.resize(contents.len() + extra_bytes as usize, 0);
         }
 
-        self.dirty.set(true);
+        state.dirty = true;
         reply.ok()
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn fsync(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
+        &self,
+        _req: &Request,
+        _ino: INodeNo,
+        _fh: fuser::FileHandle,
         _datasync: bool,
         reply: ReplyEmpty,
     ) {
         info!("called");
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     // TODO
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn copy_file_range(
-        &mut self,
-        _req: &Request<'_>,
-        _ino_in: u64,
-        _fh_in: u64,
-        _offset_in: i64,
-        _ino_out: u64,
-        _fh_out: u64,
-        _offset_out: i64,
+        &self,
+        _req: &Request,
+        _ino_in: fuser::INodeNo,
+        _fh_in: fuser::FileHandle,
+        _offset_in: u64,
+        _ino_out: fuser::INodeNo,
+        _fh_out: fuser::FileHandle,
+        _offset_out: u64,
         _len: u64,
-        _flags: u32,
+        _flags: fuser::CopyFileRangeFlags,
         reply: ReplyWrite,
     ) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     // TODO
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn ioctl(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
-        _flags: u32,
+        &self,
+        _req: &Request,
+        _ino: INodeNo,
+        _fh: fuser::FileHandle,
+        _flags: fuser::IoctlFlags,
         _cmd: u32,
         _in_data: &[u8],
         _out_size: u32,
@@ -1959,78 +2028,78 @@ where
     ) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     // Unimplemented/default-implementation calls
     #[instrument(level = "debug", skip(self, _req))]
-    fn forget(&mut self, _req: &Request<'_>, _ino: u64, _nlookup: u64) {}
+    fn forget(&self, _req: &Request, _ino: INodeNo, _nlookup: u64) {}
 
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn readlink(&mut self, _req: &Request<'_>, _ino: u64, reply: ReplyData) {
+    fn readlink(&self, _req: &Request, _ino: INodeNo, reply: ReplyData) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn symlink(
-        &mut self,
-        _req: &Request<'_>,
-        _parent: u64,
+        &self,
+        _req: &Request,
+        _parent: INodeNo,
         _name: &OsStr,
         _link: &Path,
         reply: ReplyEntry,
     ) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn link(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _newparent: u64,
+        &self,
+        _req: &Request,
+        _ino: INodeNo,
+        _newparent: INodeNo,
         _newname: &OsStr,
         reply: ReplyEntry,
     ) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn open(&mut self, _req: &Request<'_>, _ino: u64, _flags: i32, reply: ReplyOpen) {
+    fn open(&self, _req: &Request, _ino: INodeNo, _flags: fuser::OpenFlags, reply: ReplyOpen) {
         info!("called");
 
         // TODO 2021-06-16 access check?
-        reply.opened(0, 0);
+        reply.opened(fuser::FileHandle(0), fuser::FopenFlags::empty());
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn flush(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
-        _lock_owner: u64,
+        &self,
+        _req: &Request,
+        _ino: INodeNo,
+        _fh: fuser::FileHandle,
+        _lock_owner: fuser::LockOwner,
         reply: ReplyEmpty,
     ) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn release(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
-        _flags: i32,
-        _lock_owner: Option<u64>,
+        &self,
+        _req: &Request,
+        _ino: INodeNo,
+        _fh: fuser::FileHandle,
+        _flags: fuser::OpenFlags,
+        _lock_owner: std::option::Option<fuser::LockOwner>,
         _flush: bool,
         reply: ReplyEmpty,
     ) {
@@ -2039,33 +2108,33 @@ where
         reply.ok();
     }
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn opendir(&mut self, _req: &Request<'_>, _ino: u64, _flags: i32, reply: ReplyOpen) {
+    fn opendir(&self, _req: &Request, _ino: INodeNo, _flags: fuser::OpenFlags, reply: ReplyOpen) {
         info!("called");
 
-        reply.opened(0, 0);
+        reply.opened(fuser::FileHandle(0), fuser::FopenFlags::empty());
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn readdirplus(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
-        _offset: i64,
+        &self,
+        _req: &Request,
+        _ino: INodeNo,
+        _fh: fuser::FileHandle,
+        _offset: u64,
         reply: ReplyDirectoryPlus,
     ) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn releasedir(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
-        _flags: i32,
+        &self,
+        _req: &Request,
+        _ino: INodeNo,
+        _fh: fuser::FileHandle,
+        _flags: fuser::OpenFlags,
         reply: ReplyEmpty,
     ) {
         info!("called");
@@ -2075,25 +2144,25 @@ where
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn fsyncdir(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
+        &self,
+        _req: &Request,
+        _ino: INodeNo,
+        _fh: fuser::FileHandle,
         _datasync: bool,
         reply: ReplyEmpty,
     ) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn getlk(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
-        _lock_owner: u64,
+        &self,
+        _req: &Request,
+        _ino: INodeNo,
+        _fh: fuser::FileHandle,
+        _lock_owner: fuser::LockOwner,
         _start: u64,
         _end: u64,
         _typ: i32,
@@ -2102,16 +2171,16 @@ where
     ) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn setlk(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
-        _lock_owner: u64,
+        &self,
+        _req: &Request,
+        _ino: INodeNo,
+        _fh: fuser::FileHandle,
+        _lock_owner: fuser::LockOwner,
         _start: u64,
         _end: u64,
         _typ: i32,
@@ -2121,36 +2190,29 @@ where
     ) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
-    fn bmap(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _blocksize: u32,
-        _idx: u64,
-        reply: ReplyBmap,
-    ) {
+    fn bmap(&self, _req: &Request, _ino: INodeNo, _blocksize: u32, _idx: u64, reply: ReplyBmap) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 
     #[instrument(level = "debug", skip(self, _req, reply))]
     fn lseek(
-        &mut self,
-        _req: &Request<'_>,
-        _ino: u64,
-        _fh: u64,
+        &self,
+        _req: &Request,
+        _ino: INodeNo,
+        _fh: fuser::FileHandle,
         _offset: i64,
         _whence: i32,
         reply: ReplyLseek,
     ) {
         info!("called");
 
-        reply.error(libc::ENOSYS);
+        reply.error(Errno::ENOSYS);
     }
 }
 
