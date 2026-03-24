@@ -26,7 +26,7 @@ exclude = [
 
 [dependencies]
 base64 = "0.22"
-clap = "4.5"
+clap = "4.6"
 clap_complete = "4.5"
 libc = "0.2"
 nodelike = { path = "../nodelike" }
