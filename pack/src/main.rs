@@ -529,6 +529,24 @@ impl Pack {
             }
         }
     }
+
+    pub fn pack_boxed(
+        &mut self,
+        path: PathBuf,
+        config: &Config,
+    ) -> std::io::Result<Option<Box<dyn Nodelike>>> {
+        match &config.output_format {
+            Format::Json => Ok(self
+                .pack::<JsonValue>(path, config)?
+                .map(|v| Box::new(v) as Box<dyn Nodelike>)),
+            Format::Toml => Ok(self
+                .pack::<TomlValue>(path, config)?
+                .map(|v| Box::new(v) as Box<dyn Nodelike>)),
+            Format::Yaml => Ok(self
+                .pack::<YamlValue>(path, config)?
+                .map(|v| Box::new(v) as Box<dyn Nodelike>)),
+        }
+    }
 }
 
 fn main() -> std::io::Result<()> {
@@ -551,34 +569,12 @@ fn main() -> std::io::Result<()> {
 
     let mut packer: Pack = Pack::new();
 
-    match &config.output_format {
-        Format::Json => {
-            let v: JsonValue = time_ns!(
-                "saving",
-                packer.pack(folder, &config)?.unwrap(),
-                config.timing
-            );
-
-            time_ns!("writing", v.to_writer(writer, config.pretty), config.timing);
-        }
-        Format::Toml => {
-            let v: TomlValue = time_ns!(
-                "saving",
-                packer.pack(folder, &config)?.unwrap(),
-                config.timing
-            );
-
-            time_ns!("writing", v.to_writer(writer, config.pretty), config.timing);
-        }
-        Format::Yaml => {
-            let v: YamlValue = time_ns!(
-                "saving",
-                packer.pack(folder, &config)?.unwrap(),
-                config.timing
-            );
-
-            time_ns!("writing", v.to_writer(writer, config.pretty), config.timing);
-        }
+    if let Some(v) = time_ns!(
+        "saving",
+        packer.pack_boxed(folder, &config)?,
+        config.timing
+    ) {
+        time_ns!("writing", v.to_writer(writer, config.pretty), config.timing);
     }
 
     Ok(())
