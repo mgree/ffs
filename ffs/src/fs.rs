@@ -24,14 +24,14 @@ use nodelike::{Format, Node, Nodelike, Typ, json, toml, yaml};
 ///
 /// NB that inode 0 is always invalid.
 #[derive(Debug)]
-pub struct FS {
-    pub state: Mutex<FSState>,
+pub struct FS<V: Nodelike> {
+    pub state: Mutex<FSState<V>>,
 }
 
 #[derive(Debug)]
-pub struct FSState {
+pub struct FSState<V: Nodelike> {
     /// Vector of nullable inodes; the index is the inode number.
-    inodes: Vec<Option<INode>>,
+    inodes: Vec<Option<INode<V>>>,
     /// Configuration, which determines various file attributes.
     config: Config,
     /// Dirty bit: set to `true` when there are outstanding writes
@@ -45,7 +45,7 @@ const TTL: Duration = Duration::from_secs(300);
 
 /// An inode, the core structure in the filesystem.
 #[derive(Debug)]
-pub struct INode {
+pub struct INode<V: Nodelike> {
     /// Inode number of the parent of the current inode.
     ///
     /// For the root, it will be `FUSE_ROOT_ID`, i.e., itself.
@@ -68,7 +68,7 @@ pub struct INode {
     /// Time of creation (macOS only)
     pub crtime: SystemTime,
     /// The actual file contents.
-    pub entry: Entry,
+    pub entry: Entry<V>,
 }
 
 /// File contents. Either a `File` containing bytes or a `Directory`, mapping
@@ -80,12 +80,12 @@ pub struct INode {
 /// generated (see `format::fs_from_value`). When writing a `DirType::List`
 /// directory back out, only the sort order of the name matters.
 #[derive(Debug)]
-pub enum Entry {
+pub enum Entry<V: Nodelike> {
     // TODO 2021-06-14 need a 'written' flag to determine whether or not to
     // strip newlines during writeback
     File(Typ, Vec<u8>),
     Directory(DirType, BTreeMap<String, DirEntry>),
-    Lazy(Box<dyn Nodelike>),
+    Lazy(V),
 }
 
 /// Directory entries. We record the kind and inode (for faster
@@ -114,7 +114,7 @@ enum FSError {
     InvalidInode(INodeNo),
 }
 
-impl FS {
+impl<V: Nodelike> FS<V> {
     pub fn new(config: Config) -> Self {
         info!("loading");
 
@@ -127,7 +127,7 @@ impl FS {
             }
         };
 
-        let v = time_ns!("reading", config.input_format.from_reader(reader), config.timing);
+        let v = time_ns!("reading", V::from_reader(reader), config.timing);
         if !v.is_dir() {
             error!(
                 "The root of the filesystem must be a directory, but '{v}' only generates a single file."
@@ -159,9 +159,9 @@ impl FS {
     }
 }
 
-impl FSState {
-    fn from_root(root: INode, config: Config) -> Self {
-        let mut inodes: Vec<Option<INode>> = Vec::with_capacity(1024);
+impl<V: Nodelike> FSState<V> {
+    fn from_root(root: INode<V>, config: Config) -> Self {
+        let mut inodes: Vec<Option<INode<V>>> = Vec::with_capacity(1024);
 
         inodes.push(None);
         inodes.push(Some(root));
@@ -176,7 +176,7 @@ impl FSState {
         }
     }
 
-    pub fn rooted(v: Box<dyn Nodelike>, config: Config) -> Self {
+    pub fn rooted(v: V, config: Config) -> Self {
         Self::from_root(
             INode::new(
                 fuser::INodeNo::ROOT,
@@ -203,7 +203,7 @@ impl FSState {
     fn fresh_inode(
         &mut self,
         parent: INodeNo,
-        entry: Entry,
+        entry: Entry<V>,
         uid: u32,
         gid: u32,
         mode: u32,
@@ -249,7 +249,7 @@ impl FSState {
             _ => unreachable!(),
         };
 
-        let (entry, new_nodes) = match v.node_boxed(&self.config) {
+        let (entry, new_nodes) = match v.node(&self.config) {
             Node::Bytes(b) => (Entry::File(Typ::Bytes, b), Option::None),
             Node::String(t, s) => (Entry::File(t, s.into_bytes()), Option::None),
             Node::List(vs) => {
@@ -266,7 +266,7 @@ impl FSState {
                         format!("{i}")
                     };
 
-                    let kind = filetype_for(child.as_ref());
+                    let kind = filetype_for(&child);
                     let child_id = self.fresh_inode(
                         inum,
                         Entry::Lazy(child),
@@ -318,7 +318,7 @@ impl FSState {
                         field
                     };
 
-                    let kind = filetype_for(child.as_ref());
+                    let kind = filetype_for(&child);
                     let child_id = self.fresh_inode(
                         inum,
                         Entry::Lazy(child),
@@ -380,7 +380,7 @@ impl FSState {
         Ok(())
     }
 
-    fn get(&mut self, inum: INodeNo) -> Result<&INode, FSError> {
+    fn get(&mut self, inum: INodeNo) -> Result<&INode<V>, FSError> {
         let _new_nodes = self.resolve_node(inum)?;
 
         let idx = inum.0 as usize;
@@ -395,7 +395,7 @@ impl FSState {
         }
     }
 
-    fn get_mut(&mut self, inum: INodeNo) -> Result<&mut INode, FSError> {
+    fn get_mut(&mut self, inum: INodeNo) -> Result<&mut INode<V>, FSError> {
         let _new_nodes = self.resolve_node(inum)?;
 
         let idx = inum.0 as usize;
@@ -551,8 +551,8 @@ impl FSState {
     }
 }
 
-impl INode {
-    pub fn new(parent: INodeNo, inum: INodeNo, entry: Entry, config: &Config) -> Self {
+impl<V: Nodelike> INode<V> {
+    pub fn new(parent: INodeNo, inum: INodeNo, entry: Entry<V>, config: &Config) -> Self {
         let mode = mode(config, entry.kind());
         let uid = config.uid;
         let gid = config.gid;
@@ -562,7 +562,7 @@ impl INode {
     pub fn with_mode(
         parent: INodeNo,
         inum: INodeNo,
-        entry: Entry,
+        entry: Entry<V>,
         uid: u32,
         gid: u32,
         mode: u16,
@@ -620,7 +620,7 @@ impl INode {
     }
 }
 
-impl Entry {
+impl<V: Nodelike> Entry<V> {
     /// Computes the size of an entry
     ///
     /// Files are simply their length (not capacity)
@@ -647,7 +647,7 @@ impl Entry {
         match self {
             Entry::File(..) => FileType::RegularFile,
             Entry::Directory(..) => FileType::Directory,
-            Entry::Lazy(v) => filetype_for(v.as_ref()),
+            Entry::Lazy(v) => filetype_for(v),
         }
     }
 
@@ -738,7 +738,7 @@ impl FromStr for DirType {
 #[cfg(target_os = "linux")]
 const ENOATTR: fuser::Errno = Errno::ENODATA;
 
-impl Filesystem for FS {
+impl<V: Nodelike + 'static> Filesystem for FS<V> {
     /// Synchronizes the `FS`, calling `FS::sync` with `last_sync == true`.
     #[instrument(level = "debug", skip(self))]
     fn destroy(&mut self) {
