@@ -36,3 +36,4 @@ latest build:
 $ git clone https://github.com/mgree/ffs
 $ cargo install --path .
 ```
+lol
