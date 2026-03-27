@@ -411,6 +411,53 @@ impl<V: Nodelike> FSState<V> {
         }
     }
 
+    /// save as a value with the same `Nodelike` type as the input
+    ///
+    /// this is a real cost savings if we ever hit a lazy node (clone vs. recursive resolution and rebuild)
+    fn as_value(&self, inum: INodeNo) -> V
+    where
+        V: Clone,
+    {
+        match &self.inodes[inum.0 as usize].as_ref().unwrap().entry {
+            Entry::Lazy(v) => v.clone(),
+            Entry::File(typ, contents) => match String::from_utf8(contents.clone()) {
+                Ok(mut contents) if typ != &Typ::Bytes => {
+                    if self.config.add_newlines && contents.ends_with('\n') {
+                        contents.truncate(contents.len() - 1);
+                    }
+                    V::from_string(*typ, contents, &self.config)
+                }
+                Ok(_) | Err(_) => V::from_bytes(contents, &self.config),
+            },
+            Entry::Directory(DirType::List, files) => {
+                let mut entries = Vec::with_capacity(files.len());
+                let mut files = files.iter().collect::<Vec<_>>();
+                files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
+                for (name, DirEntry { inum, .. }) in files.iter() {
+                    if self.config.ignored_file(name) {
+                        warn!("skipping ignored file '{name}'");
+                        continue;
+                    }
+                    entries.push(self.as_value(*inum));
+                }
+                V::from_list_dir(entries, &self.config)
+            }
+            Entry::Directory(DirType::Named, files) => {
+                let mut entries = BTreeMap::new();
+                for (name, DirEntry { inum, original_name, .. }) in files.iter() {
+                    if self.config.ignored_file(name) {
+                        warn!("skipping ignored file '{name}'");
+                        continue;
+                    }
+                    let v = self.as_value(*inum);
+                    let name = original_name.as_ref().unwrap_or(name).into();
+                    entries.insert(name, v);
+                }
+                V::from_named_dir(entries, &self.config)
+            }
+        }
+    }
+
     #[instrument(level = "trace", skip(self))]
     fn as_other_value<U>(&mut self, inum: INodeNo) -> U
     where
@@ -563,50 +610,6 @@ impl<V: Nodelike> FSState<V> {
                     );
                     time_ns!("writing", v.to_writer(writer, pretty), self.config.timing);
                 }
-            }
-        }
-    }
-
-    fn as_value(&self, inum: INodeNo) -> V
-    where
-        V: Clone,
-    {
-        match &self.inodes[inum.0 as usize].as_ref().unwrap().entry {
-            Entry::Lazy(v) => v.clone(),
-            Entry::File(typ, contents) => match String::from_utf8(contents.clone()) {
-                Ok(mut contents) if typ != &Typ::Bytes => {
-                    if self.config.add_newlines && contents.ends_with('\n') {
-                        contents.truncate(contents.len() - 1);
-                    }
-                    V::from_string(*typ, contents, &self.config)
-                }
-                Ok(_) | Err(_) => V::from_bytes(contents, &self.config),
-            },
-            Entry::Directory(DirType::List, files) => {
-                let mut entries = Vec::with_capacity(files.len());
-                let mut files = files.iter().collect::<Vec<_>>();
-                files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
-                for (name, DirEntry { inum, .. }) in files.iter() {
-                    if self.config.ignored_file(name) {
-                        warn!("skipping ignored file '{name}'");
-                        continue;
-                    }
-                    entries.push(self.as_value(*inum));
-                }
-                V::from_list_dir(entries, &self.config)
-            }
-            Entry::Directory(DirType::Named, files) => {
-                let mut entries = BTreeMap::new();
-                for (name, DirEntry { inum, original_name, .. }) in files.iter() {
-                    if self.config.ignored_file(name) {
-                        warn!("skipping ignored file '{name}'");
-                        continue;
-                    }
-                    let v = self.as_value(*inum);
-                    let name = original_name.as_ref().unwrap_or(name).into();
-                    entries.insert(name, v);
-                }
-                V::from_named_dir(entries, &self.config)
             }
         }
     }
