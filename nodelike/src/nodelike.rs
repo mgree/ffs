@@ -179,8 +179,24 @@ where
     where
         Self: Sized;
 
-    /// Object-safe version of `node` for use with `dyn Nodelike`.
-    fn node_boxed(self: Box<Self>, config: &Config) -> Node<Box<dyn Nodelike>>;
+    /// Boxes the children returned by `node`, for use in format-agnostic contexts.
+    fn node_boxed(self: Box<Self>, config: &Config) -> Node<Box<dyn Nodelike>>
+    where
+        Self: Sized + 'static,
+    {
+        match (*self).node(config) {
+            Node::String(t, s) => Node::String(t, s),
+            Node::Bytes(b) => Node::Bytes(b),
+            Node::List(vs) => {
+                Node::List(vs.into_iter().map(|v| Box::new(v) as Box<dyn Nodelike>).collect())
+            }
+            Node::Map(kvs) => Node::Map(
+                kvs.into_iter()
+                    .map(|(k, v)| (k, Box::new(v) as Box<dyn Nodelike>))
+                    .collect(),
+            ),
+        }
+    }
 
     fn from_bytes<T>(v: T, config: &Config) -> Self
     where
@@ -265,22 +281,6 @@ pub mod json {
             }
         }
 
-        fn node_boxed(self: Box<Self>, config: &Config) -> Node<Box<dyn Nodelike>> {
-            match (*self).node(config) {
-                Node::String(t, s) => Node::String(t, s),
-                Node::Bytes(b) => Node::Bytes(b),
-                Node::List(vs) => Node::List(
-                    vs.into_iter()
-                        .map(|v| Box::new(v) as Box<dyn Nodelike>)
-                        .collect(),
-                ),
-                Node::Map(kvs) => Node::Map(
-                    kvs.into_iter()
-                        .map(|(k, v)| (k, Box::new(v) as Box<dyn Nodelike>))
-                        .collect(),
-                ),
-            }
-        }
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             match typ {
@@ -439,22 +439,6 @@ pub mod toml {
             }
         }
 
-        fn node_boxed(self: Box<Self>, config: &Config) -> Node<Box<dyn Nodelike>> {
-            match (*self).node(config) {
-                Node::String(t, s) => Node::String(t, s),
-                Node::Bytes(b) => Node::Bytes(b),
-                Node::List(vs) => Node::List(
-                    vs.into_iter()
-                        .map(|v| Box::new(v) as Box<dyn Nodelike>)
-                        .collect(),
-                ),
-                Node::Map(kvs) => Node::Map(
-                    kvs.into_iter()
-                        .map(|(k, v)| (k, Box::new(v) as Box<dyn Nodelike>))
-                        .collect(),
-                ),
-            }
-        }
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             let v = match typ {
@@ -669,22 +653,6 @@ pub mod yaml {
             }
         }
 
-        fn node_boxed(self: Box<Self>, config: &Config) -> Node<Box<dyn Nodelike>> {
-            match (*self).node(config) {
-                Node::String(t, s) => Node::String(t, s),
-                Node::Bytes(b) => Node::Bytes(b),
-                Node::List(vs) => Node::List(
-                    vs.into_iter()
-                        .map(|v| Box::new(v) as Box<dyn Nodelike>)
-                        .collect(),
-                ),
-                Node::Map(kvs) => Node::Map(
-                    kvs.into_iter()
-                        .map(|(k, v)| (k, Box::new(v) as Box<dyn Nodelike>))
-                        .collect(),
-                ),
-            }
-        }
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             match typ {
