@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use nodelike::config::{
     Config, ERROR_STATUS_CLI, ERROR_STATUS_FUSE, Input, Munge, POSSIBLE_FORMATS,
 };
-use nodelike::{Format, Node, Nodelike, ParseFormatError, Typ};
+use nodelike::{Format, Node, Nodelike, ParseFormatError, Typ, json, toml, yaml};
 
 pub fn unpack_cli() -> Command {
     nodelike::config::cli_base("unpack")
@@ -181,12 +181,12 @@ pub fn config_from_unpack_args() -> Config {
     config
 }
 
-fn unpack(root: Box<dyn Nodelike>, root_path: PathBuf, config: &Config) -> std::io::Result<()> {
-    let mut queue: VecDeque<(Box<dyn Nodelike>, PathBuf, Option<String>)> = VecDeque::new();
+fn unpack<V: Nodelike>(root: V, root_path: PathBuf, config: &Config) -> std::io::Result<()> {
+    let mut queue: VecDeque<(V, PathBuf, Option<String>)> = VecDeque::new();
     queue.push_back((root, root_path.clone(), None));
 
     while let Some((v, path, original_name)) = queue.pop_front() {
-        match v.node_boxed(config) {
+        match v.node(config) {
             Node::String(t, s) => {
                 // make a regular file at `path`
                 let mut f = fs::OpenOptions::new()
@@ -315,14 +315,20 @@ fn main() -> std::io::Result<()> {
         }
     };
 
-    let value = config.input_format.from_reader(reader);
-    if value.is_dir() {
-        unpack(value, mount.clone(), &config)
-    } else {
-        error!(
-            "The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.",
-            mount.display()
-        );
-        std::process::exit(ERROR_STATUS_FUSE);
+    fn run_unpack<V: Nodelike>(value: V, mount: PathBuf, config: &Config) -> std::io::Result<()> {
+        if value.is_dir() {
+            unpack(value, mount, config)
+        } else {
+            error!(
+                "The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.",
+                mount.display()
+            );
+            std::process::exit(ERROR_STATUS_FUSE);
+        }
+    }
+    match config.input_format {
+        Format::Json => run_unpack(json::Value::from_reader(reader), mount, &config),
+        Format::Toml => run_unpack(toml::Value::from_reader(reader), mount, &config),
+        Format::Yaml => run_unpack(yaml::Value::from_reader(reader), mount, &config),
     }
 }

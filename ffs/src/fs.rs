@@ -234,8 +234,9 @@ impl<V: Nodelike> FSState<V> {
                 Some(inode) => inode,
                 None => return Err(FSError::InvalidInode(inum)),
             };
-            if matches!(inode.entry, Entry::Directory(..) | Entry::File(..)) {
-                return Ok(Option::None);
+            match inode.entry {
+                Entry::Directory(..) | Entry::File(..) => return Ok(Option::None),
+                Entry::Lazy(..) => {}
             }
         }
 
@@ -246,7 +247,7 @@ impl<V: Nodelike> FSState<V> {
         let gid = inode.gid;
         let v = match inode.entry {
             Entry::Lazy(v) => v,
-            _ => unreachable!(),
+            _ => return Err(FSError::InvalidInode(inum)),
         };
 
         let (entry, new_nodes) = match v.node(&self.config) {

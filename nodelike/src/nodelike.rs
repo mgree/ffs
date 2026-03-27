@@ -174,7 +174,7 @@ where
     fn is_dir(&self) -> bool;
 
     /// Characterizes the outermost value. Drives the worklist algorithm.
-    /// Use `node_boxed` for dynamic dispatch contexts.
+    /// Use `node_boxed` for format-agnostic work.
     fn node(self, config: &Config) -> Node<Self>
     where
         Self: Sized;
