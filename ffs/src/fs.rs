@@ -472,29 +472,6 @@ impl<V: Nodelike> FSState<V> {
         }
     }
 
-    fn write_as_format(&mut self, format: Format, writer: Box<dyn std::io::Write>, pretty: bool) {
-        match format {
-            Format::Json => time_ns!(
-                "writing",
-                self.as_other_value::<json::Value>(fuser::INodeNo::ROOT)
-                    .to_writer(writer, pretty),
-                self.config.timing
-            ),
-            Format::Toml => time_ns!(
-                "writing",
-                self.as_other_value::<toml::Value>(fuser::INodeNo::ROOT)
-                    .to_writer(writer, pretty),
-                self.config.timing
-            ),
-            Format::Yaml => time_ns!(
-                "writing",
-                self.as_other_value::<yaml::Value>(fuser::INodeNo::ROOT)
-                    .to_writer(writer, pretty),
-                self.config.timing
-            ),
-        }
-    }
-
     fn check_access(&self, req: &Request) -> bool {
         req.uid() == 0 || req.uid() == self.config.uid
     }
@@ -510,7 +487,10 @@ impl<V: Nodelike> FSState<V> {
     ///   - if `self.config.output == Output::Stdout` and `last_sync == false`,
     ///     nothing will happen (to prevent redundant writes to STDOUT)
     #[instrument(level = "debug", skip(self), fields(synced = self.synced, dirty = self.dirty))]
-    pub fn sync(&mut self, last_sync: bool) {
+    pub fn sync(&mut self, last_sync: bool)
+    where
+        V: Clone,
+    {
         info!("called");
 
         if self.synced && !self.dirty {
@@ -536,19 +516,99 @@ impl<V: Nodelike> FSState<V> {
     /// When `self.config.input == self.config.output`, then resolved lazy nodes
     /// can be directly returned. If the input and output formats are different,
     /// we eager resolve everything and then save.
-    fn save(&mut self) {
+    fn save(&mut self)
+    where
+        V: Clone,
+    {
         let writer = match self.config.output_writer() {
             Some(writer) => writer,
             None => return,
         };
 
-        let output_format = self.config.output_format;
-        let pretty = self.config.pretty;
-        time_ns!(
-            "saving",
-            self.write_as_format(output_format, writer, pretty),
-            self.config.timing
-        );
+        if self.config.input_format == self.config.output_format {
+            let v = time_ns!(
+                "saving",
+                self.as_value(fuser::INodeNo::ROOT),
+                self.config.timing
+            );
+            time_ns!(
+                "writing",
+                v.to_writer(writer, self.config.pretty),
+                self.config.timing
+            );
+        } else {
+            let pretty = self.config.pretty;
+            match self.config.output_format {
+                Format::Json => {
+                    let v: json::Value = time_ns!(
+                        "saving",
+                        self.as_other_value(fuser::INodeNo::ROOT),
+                        self.config.timing
+                    );
+                    time_ns!("writing", v.to_writer(writer, pretty), self.config.timing);
+                }
+                Format::Toml => {
+                    let v: toml::Value = time_ns!(
+                        "saving",
+                        self.as_other_value(fuser::INodeNo::ROOT),
+                        self.config.timing
+                    );
+                    time_ns!("writing", v.to_writer(writer, pretty), self.config.timing);
+                }
+                Format::Yaml => {
+                    let v: yaml::Value = time_ns!(
+                        "saving",
+                        self.as_other_value(fuser::INodeNo::ROOT),
+                        self.config.timing
+                    );
+                    time_ns!("writing", v.to_writer(writer, pretty), self.config.timing);
+                }
+            }
+        }
+    }
+
+    fn as_value(&self, inum: INodeNo) -> V
+    where
+        V: Clone,
+    {
+        match &self.inodes[inum.0 as usize].as_ref().unwrap().entry {
+            Entry::Lazy(v) => v.clone(),
+            Entry::File(typ, contents) => match String::from_utf8(contents.clone()) {
+                Ok(mut contents) if typ != &Typ::Bytes => {
+                    if self.config.add_newlines && contents.ends_with('\n') {
+                        contents.truncate(contents.len() - 1);
+                    }
+                    V::from_string(*typ, contents, &self.config)
+                }
+                Ok(_) | Err(_) => V::from_bytes(contents, &self.config),
+            },
+            Entry::Directory(DirType::List, files) => {
+                let mut entries = Vec::with_capacity(files.len());
+                let mut files = files.iter().collect::<Vec<_>>();
+                files.sort_unstable_by(|(name1, _), (name2, _)| name1.cmp(name2));
+                for (name, DirEntry { inum, .. }) in files.iter() {
+                    if self.config.ignored_file(name) {
+                        warn!("skipping ignored file '{name}'");
+                        continue;
+                    }
+                    entries.push(self.as_value(*inum));
+                }
+                V::from_list_dir(entries, &self.config)
+            }
+            Entry::Directory(DirType::Named, files) => {
+                let mut entries = BTreeMap::new();
+                for (name, DirEntry { inum, original_name, .. }) in files.iter() {
+                    if self.config.ignored_file(name) {
+                        warn!("skipping ignored file '{name}'");
+                        continue;
+                    }
+                    let v = self.as_value(*inum);
+                    let name = original_name.as_ref().unwrap_or(name).into();
+                    entries.insert(name, v);
+                }
+                V::from_named_dir(entries, &self.config)
+            }
+        }
     }
 }
 
@@ -739,7 +799,7 @@ impl FromStr for DirType {
 #[cfg(target_os = "linux")]
 const ENOATTR: fuser::Errno = Errno::ENODATA;
 
-impl<V: Nodelike + 'static> Filesystem for FS<V> {
+impl<V: Nodelike + Clone + 'static> Filesystem for FS<V> {
     /// Synchronizes the `FS`, calling `FS::sync` with `last_sync == true`.
     #[instrument(level = "debug", skip(self))]
     fn destroy(&mut self) {
