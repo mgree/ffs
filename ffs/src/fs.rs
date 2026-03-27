@@ -425,8 +425,10 @@ impl<V: Nodelike> FSState<V> {
                     if self.config.add_newlines && contents.ends_with('\n') {
                         contents.truncate(contents.len() - 1);
                     }
+
                     V::from_string(*typ, contents, &self.config)
                 }
+                // TODO 2021-06-24 trim?
                 Ok(_) | Err(_) => V::from_bytes(contents, &self.config),
             },
             Entry::Directory(DirType::List, files) => {
