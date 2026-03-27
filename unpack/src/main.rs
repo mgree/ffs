@@ -9,10 +9,7 @@ use std::path::PathBuf;
 use nodelike::config::{
     Config, ERROR_STATUS_CLI, ERROR_STATUS_FUSE, Input, Munge, POSSIBLE_FORMATS,
 };
-use nodelike::json::Value as JsonValue;
-use nodelike::toml::Value as TomlValue;
-use nodelike::yaml::Value as YamlValue;
-use nodelike::{Format, Node, Nodelike, ParseFormatError, Typ};
+use nodelike::{Format, Node, Nodelike, ParseFormatError, Typ, json, toml, yaml};
 
 pub fn unpack_cli() -> Command {
     nodelike::config::cli_base("unpack")
@@ -184,10 +181,7 @@ pub fn config_from_unpack_args() -> Config {
     config
 }
 
-fn unpack<V>(root: V, root_path: PathBuf, config: &Config) -> std::io::Result<()>
-where
-    V: Nodelike + std::fmt::Display + Default,
-{
+fn unpack<V: Nodelike>(root: V, root_path: PathBuf, config: &Config) -> std::io::Result<()> {
     let mut queue: VecDeque<(V, PathBuf, Option<String>)> = VecDeque::new();
     queue.push_back((root, root_path.clone(), None));
 
@@ -321,42 +315,20 @@ fn main() -> std::io::Result<()> {
         }
     };
 
-    match &config.input_format {
-        Format::Json => {
-            let value = JsonValue::from_reader(reader);
-            if value.is_dir() {
-                unpack(value, mount.clone(), &config)
-            } else {
-                error!(
-                    "The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.",
-                    mount.display()
-                );
-                std::process::exit(ERROR_STATUS_FUSE);
-            }
+    fn run_unpack<V: Nodelike>(value: V, mount: PathBuf, config: &Config) -> std::io::Result<()> {
+        if value.is_dir() {
+            unpack(value, mount, config)
+        } else {
+            error!(
+                "The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.",
+                mount.display()
+            );
+            std::process::exit(ERROR_STATUS_FUSE);
         }
-        Format::Toml => {
-            let value = TomlValue::from_reader(reader);
-            if value.is_dir() {
-                unpack(value, mount.clone(), &config)
-            } else {
-                error!(
-                    "The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.",
-                    mount.display()
-                );
-                std::process::exit(ERROR_STATUS_FUSE);
-            }
-        }
-        Format::Yaml => {
-            let value = YamlValue::from_reader(reader);
-            if value.is_dir() {
-                unpack(value, mount.clone(), &config)
-            } else {
-                error!(
-                    "The root of the unpacked form must be a directory, but '{}' only unpacks into a single file.",
-                    mount.display()
-                );
-                std::process::exit(ERROR_STATUS_FUSE);
-            }
-        }
+    }
+    match config.input_format {
+        Format::Json => run_unpack(json::Value::from_reader(reader), mount, &config),
+        Format::Toml => run_unpack(toml::Value::from_reader(reader), mount, &config),
+        Format::Yaml => run_unpack(yaml::Value::from_reader(reader), mount, &config),
     }
 }

@@ -7,7 +7,7 @@ use tracing::{debug, error, info, warn};
 use nodelike::config::{
     Config, ERROR_STATUS_CLI, ERROR_STATUS_FUSE, Input, Output, POSSIBLE_FORMATS,
 };
-use nodelike::{Format, ParseFormatError};
+use nodelike::{Format, Nodelike, ParseFormatError, json, toml, yaml};
 
 use fuser::MountOption;
 
@@ -518,55 +518,35 @@ fn main() {
         }
     };
     let cleanup_mount = config.cleanup_mount;
-    let input_format = config.input_format;
 
-    info!("mounting on {} with options {mount_options:?}", mount.display());
+    info!(
+        "mounting on {} with options {mount_options:?}",
+        mount.display()
+    );
     let mut fuser_config = fuser::Config::default();
     fuser_config.mount_options = mount_options;
 
+    fn run_ffs<V: Nodelike + Clone + 'static>(
+        config: Config,
+        mount: &std::path::Path,
+        fuser_config: &fuser::Config,
+    ) -> i32 {
+        match fuser::mount2(FS::<V>::new(config), mount, fuser_config) {
+            Ok(()) => {
+                info!("unmounted");
+                0
+            }
+            Err(e) => {
+                error!("I/O error: {e}");
+                ERROR_STATUS_FUSE
+            }
+        }
+    }
+    let input_format = config.input_format;
     let status = match input_format {
-        Format::Json => {
-            let fs: FS<nodelike::json::Value> = FS::new(config);
-
-            match fuser::mount2(fs, &mount, &fuser_config) {
-                Ok(()) => {
-                    info!("unmounted");
-                    0
-                }
-                Err(e) => {
-                    error!("I/O error: {e}");
-                    ERROR_STATUS_FUSE
-                }
-            }
-        }
-        Format::Toml => {
-            let fs: FS<nodelike::toml::Value> = FS::new(config);
-
-            match fuser::mount2(fs, &mount, &fuser_config) {
-                Ok(()) => {
-                    info!("unmounted");
-                    0
-                }
-                Err(e) => {
-                    error!("I/O error: {e}");
-                    ERROR_STATUS_FUSE
-                }
-            }
-        }
-        Format::Yaml => {
-            let fs: FS<nodelike::yaml::Value> = FS::new(config);
-
-            match fuser::mount2(fs, &mount, &fuser_config) {
-                Ok(()) => {
-                    info!("unmounted");
-                    0
-                }
-                Err(e) => {
-                    error!("I/O error: {e}");
-                    ERROR_STATUS_FUSE
-                }
-            }
-        }
+        Format::Json => run_ffs::<json::Value>(config, &mount, &fuser_config),
+        Format::Toml => run_ffs::<toml::Value>(config, &mount, &fuser_config),
+        Format::Yaml => run_ffs::<yaml::Value>(config, &mount, &fuser_config),
     };
 
     if cleanup_mount {

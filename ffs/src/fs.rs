@@ -1,7 +1,5 @@
 use std::collections::BTreeMap;
 use std::ffi::OsStr;
-use std::fmt::{Debug, Display};
-use std::mem;
 use std::path::Path;
 use std::str::FromStr;
 use std::sync::Mutex;
@@ -26,18 +24,12 @@ use nodelike::{Format, Node, Nodelike, Typ, json, toml, yaml};
 ///
 /// NB that inode 0 is always invalid.
 #[derive(Debug)]
-pub struct FS<V>
-where
-    V: Nodelike + Clone + Debug + std::fmt::Display,
-{
+pub struct FS<V: Nodelike> {
     pub state: Mutex<FSState<V>>,
 }
 
 #[derive(Debug)]
-pub struct FSState<V>
-where
-    V: Nodelike + Clone + Debug + std::fmt::Display,
-{
+pub struct FSState<V: Nodelike> {
     /// Vector of nullable inodes; the index is the inode number.
     inodes: Vec<Option<INode<V>>>,
     /// Configuration, which determines various file attributes.
@@ -53,7 +45,7 @@ const TTL: Duration = Duration::from_secs(300);
 
 /// An inode, the core structure in the filesystem.
 #[derive(Debug)]
-pub struct INode<V> {
+pub struct INode<V: Nodelike> {
     /// Inode number of the parent of the current inode.
     ///
     /// For the root, it will be `FUSE_ROOT_ID`, i.e., itself.
@@ -88,7 +80,7 @@ pub struct INode<V> {
 /// generated (see `format::fs_from_value`). When writing a `DirType::List`
 /// directory back out, only the sort order of the name matters.
 #[derive(Debug)]
-pub enum Entry<V> {
+pub enum Entry<V: Nodelike> {
     // TODO 2021-06-14 need a 'written' flag to determine whether or not to
     // strip newlines during writeback
     File(Typ, Vec<u8>),
@@ -122,10 +114,7 @@ enum FSError {
     InvalidInode(INodeNo),
 }
 
-impl<V> FS<V>
-where
-    V: Nodelike + Clone + Debug + Display + Default,
-{
+impl<V: Nodelike> FS<V> {
     pub fn new(config: Config) -> Self {
         info!("loading");
 
@@ -170,10 +159,7 @@ where
     }
 }
 
-impl<V> FSState<V>
-where
-    V: Nodelike + Clone + Debug + Display + Default,
-{
+impl<V: Nodelike> FSState<V> {
     fn from_root(root: INode<V>, config: Config) -> Self {
         let mut inodes: Vec<Option<INode<V>>> = Vec::with_capacity(1024);
 
@@ -234,10 +220,7 @@ where
     }
 
     #[instrument(level = "debug", skip(self))]
-    fn resolve_node(&mut self, inum: INodeNo) -> Result<Option<Vec<INodeNo>>, FSError>
-    where
-        V: Nodelike + std::fmt::Display + Default,
-    {
+    fn resolve_node(&mut self, inum: INodeNo) -> Result<Option<Vec<INodeNo>>, FSError> {
         debug!("called");
 
         let idx = inum.0 as usize;
@@ -246,17 +229,26 @@ where
             return Err(FSError::NoSuchInode(inum));
         }
 
-        let inode = match &mut self.inodes[idx] {
-            Some(inode) => inode,
-            _ => return Err(FSError::InvalidInode(inum)),
-        };
+        {
+            let inode = match self.inodes[idx].as_ref() {
+                Some(inode) => inode,
+                None => return Err(FSError::InvalidInode(inum)),
+            };
+            match inode.entry {
+                Entry::Directory(..) | Entry::File(..) => return Ok(Option::None),
+                Entry::Lazy(..) => {}
+            }
+        }
 
-        let v = match &mut inode.entry {
-            Entry::Directory(..) | Entry::File(..) => return Ok(Option::None),
-            Entry::Lazy(v) => mem::take(v),
-        };
+        // Take ownership of the inode so we can move the lazy value out without
+        // needing Default. The slot is temporarily None while we build children.
+        let mut inode = self.inodes[idx].take().unwrap();
         let uid = inode.uid;
         let gid = inode.gid;
+        let v = match inode.entry {
+            Entry::Lazy(v) => v,
+            _ => return Err(FSError::InvalidInode(inum)),
+        };
 
         let (entry, new_nodes) = match v.node(&self.config) {
             Node::Bytes(b) => (Entry::File(Typ::Bytes, b), Option::None),
@@ -364,11 +356,8 @@ where
             }
         };
 
-        if let Some(inode) = &mut self.inodes[idx] {
-            inode.entry = entry;
-        } else {
-            return Err(FSError::InvalidInode(inum));
-        }
+        inode.entry = entry;
+        self.inodes[idx] = Some(inode);
 
         if let Some(nodes) = &new_nodes {
             debug!("new_nodes = {nodes:?}");
@@ -422,24 +411,26 @@ where
         }
     }
 
-    // save as a value of the same type as the input
-    // we need this special case to avoid type-level shenanigans
-    fn as_value(&self, inum: INodeNo) -> V {
+    /// save as a value with the same `Nodelike` type as the input
+    ///
+    /// this is a real cost savings if we ever hit a lazy node (clone vs. recursive resolution and rebuild)
+    fn as_value(&self, inum: INodeNo) -> V
+    where
+        V: Clone,
+    {
         match &self.inodes[inum.0 as usize].as_ref().unwrap().entry {
             Entry::Lazy(v) => v.clone(),
-            Entry::File(typ, contents) => {
-                // TODO 2021-07-01 use _t to try to force the type
-                match String::from_utf8(contents.clone()) {
-                    Ok(mut contents) if typ != &Typ::Bytes => {
-                        if self.config.add_newlines && contents.ends_with('\n') {
-                            contents.truncate(contents.len() - 1);
-                        }
-                        // TODO 2021-06-24 trim?
-                        V::from_string(*typ, contents, &self.config)
+            Entry::File(typ, contents) => match String::from_utf8(contents.clone()) {
+                Ok(mut contents) if typ != &Typ::Bytes => {
+                    if self.config.add_newlines && contents.ends_with('\n') {
+                        contents.truncate(contents.len() - 1);
                     }
-                    Ok(_) | Err(_) => V::from_bytes(contents, &self.config),
+
+                    V::from_string(*typ, contents, &self.config)
                 }
-            }
+                // TODO 2021-06-24 trim?
+                Ok(_) | Err(_) => V::from_bytes(contents, &self.config),
+            },
             Entry::Directory(DirType::List, files) => {
                 let mut entries = Vec::with_capacity(files.len());
                 let mut files = files.iter().collect::<Vec<_>>();
@@ -449,8 +440,7 @@ where
                         warn!("skipping ignored file '{name}'");
                         continue;
                     }
-                    let v = self.as_value(*inum);
-                    entries.push(v);
+                    entries.push(self.as_value(*inum));
                 }
                 V::from_list_dir(entries, &self.config)
             }
@@ -554,7 +544,10 @@ where
     ///   - if `self.config.output == Output::Stdout` and `last_sync == false`,
     ///     nothing will happen (to prevent redundant writes to STDOUT)
     #[instrument(level = "debug", skip(self), fields(synced = self.synced, dirty = self.dirty))]
-    pub fn sync(&mut self, last_sync: bool) {
+    pub fn sync(&mut self, last_sync: bool)
+    where
+        V: Clone,
+    {
         info!("called");
 
         if self.synced && !self.dirty {
@@ -580,7 +573,10 @@ where
     /// When `self.config.input == self.config.output`, then resolved lazy nodes
     /// can be directly returned. If the input and output formats are different,
     /// we eager resolve everything and then save.
-    fn save(&mut self) {
+    fn save(&mut self)
+    where
+        V: Clone,
+    {
         let writer = match self.config.output_writer() {
             Some(writer) => writer,
             None => return,
@@ -592,13 +588,13 @@ where
                 self.as_value(fuser::INodeNo::ROOT),
                 self.config.timing
             );
-
             time_ns!(
                 "writing",
                 v.to_writer(writer, self.config.pretty),
                 self.config.timing
             );
         } else {
+            let pretty = self.config.pretty;
             match self.config.output_format {
                 Format::Json => {
                     let v: json::Value = time_ns!(
@@ -606,12 +602,7 @@ where
                         self.as_other_value(fuser::INodeNo::ROOT),
                         self.config.timing
                     );
-
-                    time_ns!(
-                        "writing",
-                        v.to_writer(writer, self.config.pretty),
-                        self.config.timing
-                    );
+                    time_ns!("writing", v.to_writer(writer, pretty), self.config.timing);
                 }
                 Format::Toml => {
                     let v: toml::Value = time_ns!(
@@ -619,12 +610,7 @@ where
                         self.as_other_value(fuser::INodeNo::ROOT),
                         self.config.timing
                     );
-
-                    time_ns!(
-                        "writing",
-                        v.to_writer(writer, self.config.pretty),
-                        self.config.timing
-                    );
+                    time_ns!("writing", v.to_writer(writer, pretty), self.config.timing);
                 }
                 Format::Yaml => {
                     let v: yaml::Value = time_ns!(
@@ -632,22 +618,14 @@ where
                         self.as_other_value(fuser::INodeNo::ROOT),
                         self.config.timing
                     );
-
-                    time_ns!(
-                        "writing",
-                        v.to_writer(writer, self.config.pretty),
-                        self.config.timing
-                    );
+                    time_ns!("writing", v.to_writer(writer, pretty), self.config.timing);
                 }
             }
         }
     }
 }
 
-impl<V> INode<V>
-where
-    V: Nodelike,
-{
+impl<V: Nodelike> INode<V> {
     pub fn new(parent: INodeNo, inum: INodeNo, entry: Entry<V>, config: &Config) -> Self {
         let mode = mode(config, entry.kind());
         let uid = config.uid;
@@ -716,10 +694,7 @@ where
     }
 }
 
-impl<V> Entry<V>
-where
-    V: Nodelike,
-{
+impl<V: Nodelike> Entry<V> {
     /// Computes the size of an entry
     ///
     /// Files are simply their length (not capacity)
@@ -794,7 +769,7 @@ impl std::fmt::Display for DirType {
     }
 }
 
-fn filetype_for<V: Nodelike>(node: &V) -> FileType {
+fn filetype_for(node: &dyn Nodelike) -> FileType {
     if node.is_dir() {
         FileType::Directory
     } else {
@@ -837,10 +812,7 @@ impl FromStr for DirType {
 #[cfg(target_os = "linux")]
 const ENOATTR: fuser::Errno = Errno::ENODATA;
 
-impl<V> Filesystem for FS<V>
-where
-    V: Nodelike + 'static,
-{
+impl<V: Nodelike + Clone + 'static> Filesystem for FS<V> {
     /// Synchronizes the `FS`, calling `FS::sync` with `last_sync == true`.
     #[instrument(level = "debug", skip(self))]
     fn destroy(&mut self) {
@@ -1478,11 +1450,7 @@ where
             },
         };
 
-        reply.entry(
-            &TTL,
-            &state.get(inum).unwrap().attr(),
-            fuser::Generation(0),
-        );
+        reply.entry(&TTL, &state.get(inum).unwrap().attr(), fuser::Generation(0));
         assert!(state.dirty);
     }
 
@@ -1562,11 +1530,7 @@ where
             },
         };
 
-        reply.entry(
-            &TTL,
-            &state.get(inum).unwrap().attr(),
-            fuser::Generation(0),
-        );
+        reply.entry(&TTL, &state.get(inum).unwrap().attr(), fuser::Generation(0));
         assert!(state.dirty);
     }
 

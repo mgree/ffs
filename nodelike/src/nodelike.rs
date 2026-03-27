@@ -160,7 +160,7 @@ pub enum Node<V> {
 /// the worklist algorithm
 pub trait Nodelike
 where
-    Self: Clone + std::fmt::Debug + Default + std::fmt::Display + Sized + Sync + Send,
+    Self: std::fmt::Debug + std::fmt::Display + Sync + Send,
 {
     /// Number of "nodes" in the given value. This should correspond to the
     /// number of inodes needed to accommodate the value.
@@ -174,24 +174,65 @@ where
     fn is_dir(&self) -> bool;
 
     /// Characterizes the outermost value. Drives the worklist algorithm.
-    fn node(self, config: &Config) -> Node<Self>;
+    /// Use `node_boxed` for format-agnostic work.
+    fn node(self, config: &Config) -> Node<Self>
+    where
+        Self: Sized;
+
+    /// Boxes the children returned by `node`, for use in format-agnostic contexts.
+    fn node_boxed(self: Box<Self>, config: &Config) -> Node<Box<dyn Nodelike>>
+    where
+        Self: Sized + 'static,
+    {
+        match (*self).node(config) {
+            Node::String(t, s) => Node::String(t, s),
+            Node::Bytes(b) => Node::Bytes(b),
+            Node::List(vs) => {
+                Node::List(vs.into_iter().map(|v| Box::new(v) as Box<dyn Nodelike>).collect())
+            }
+            Node::Map(kvs) => Node::Map(
+                kvs.into_iter()
+                    .map(|(k, v)| (k, Box::new(v) as Box<dyn Nodelike>))
+                    .collect(),
+            ),
+        }
+    }
 
     fn from_bytes<T>(v: T, config: &Config) -> Self
     where
+        Self: Sized,
         T: AsRef<[u8]>;
 
     /// Converts from a string.
     ///
     /// Should never be called when `typ == Typ::Bytes`.
-    fn from_string(typ: Typ, v: String, config: &Config) -> Self;
-    fn from_list_dir(files: Vec<Self>, config: &Config) -> Self;
-    fn from_named_dir(files: BTreeMap<String, Self>, config: &Config) -> Self;
+    fn from_string(typ: Typ, v: String, config: &Config) -> Self
+    where
+        Self: Sized;
+    fn from_list_dir(files: Vec<Self>, config: &Config) -> Self
+    where
+        Self: Sized;
+    fn from_named_dir(files: BTreeMap<String, Self>, config: &Config) -> Self
+    where
+        Self: Sized;
 
     /// Loading
-    fn from_reader(reader: Box<dyn std::io::Read>) -> Self;
+    fn from_reader(reader: Box<dyn std::io::Read>) -> Self
+    where
+        Self: Sized;
 
     /// Saving, with optional pretty printing
     fn to_writer(&self, writer: Box<dyn std::io::Write>, pretty: bool);
+}
+
+impl Format {
+    pub fn from_reader(&self, reader: Box<dyn std::io::Read>) -> Box<dyn Nodelike> {
+        match self {
+            Format::Json => Box::new(json::Value::from_reader(reader)),
+            Format::Toml => Box::new(toml::Value::from_reader(reader)),
+            Format::Yaml => Box::new(yaml::Value::from_reader(reader)),
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -239,6 +280,7 @@ pub mod json {
                 Value::Object(fvs) => Node::Map(fvs.into_iter().collect()),
             }
         }
+
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             match typ {
@@ -396,6 +438,7 @@ pub mod toml {
                 }
             }
         }
+
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             let v = match typ {
@@ -609,6 +652,7 @@ pub mod yaml {
                 Yaml::BadValue => Node::Bytes("bad YAML value".into()),
             }
         }
+
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             match typ {
