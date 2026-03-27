@@ -519,14 +519,27 @@ fn main() {
     };
     let cleanup_mount = config.cleanup_mount;
 
-    info!("mounting on {} with options {mount_options:?}", mount.display());
+    info!(
+        "mounting on {} with options {mount_options:?}",
+        mount.display()
+    );
     let mut fuser_config = fuser::Config::default();
     fuser_config.mount_options = mount_options;
 
-    fn run_ffs<V: Nodelike + Clone + 'static>(config: Config, mount: &std::path::Path, fuser_config: &fuser::Config) -> i32 {
+    fn run_ffs<V: Nodelike + Clone + 'static>(
+        config: Config,
+        mount: &std::path::Path,
+        fuser_config: &fuser::Config,
+    ) -> i32 {
         match fuser::mount2(FS::<V>::new(config), mount, fuser_config) {
-            Ok(()) => { info!("unmounted"); 0 }
-            Err(e) => { error!("I/O error: {e}"); ERROR_STATUS_FUSE }
+            Ok(()) => {
+                info!("unmounted");
+                0
+            }
+            Err(e) => {
+                error!("I/O error: {e}");
+                ERROR_STATUS_FUSE
+            }
         }
     }
     let input_format = config.input_format;

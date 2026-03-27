@@ -569,11 +569,7 @@ fn main() -> std::io::Result<()> {
 
     let mut packer: Pack = Pack::new();
 
-    if let Some(v) = time_ns!(
-        "saving",
-        packer.pack_boxed(folder, &config)?,
-        config.timing
-    ) {
+    if let Some(v) = time_ns!("saving", packer.pack_boxed(folder, &config)?, config.timing) {
         time_ns!("writing", v.to_writer(writer, config.pretty), config.timing);
     }
 

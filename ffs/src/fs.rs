@@ -446,7 +446,15 @@ impl<V: Nodelike> FSState<V> {
             }
             Entry::Directory(DirType::Named, files) => {
                 let mut entries = BTreeMap::new();
-                for (name, DirEntry { inum, original_name, .. }) in files.iter() {
+                for (
+                    name,
+                    DirEntry {
+                        inum,
+                        original_name,
+                        ..
+                    },
+                ) in files.iter()
+                {
                     if self.config.ignored_file(name) {
                         warn!("skipping ignored file '{name}'");
                         continue;
@@ -1442,11 +1450,7 @@ impl<V: Nodelike + Clone + 'static> Filesystem for FS<V> {
             },
         };
 
-        reply.entry(
-            &TTL,
-            &state.get(inum).unwrap().attr(),
-            fuser::Generation(0),
-        );
+        reply.entry(&TTL, &state.get(inum).unwrap().attr(), fuser::Generation(0));
         assert!(state.dirty);
     }
 
@@ -1526,11 +1530,7 @@ impl<V: Nodelike + Clone + 'static> Filesystem for FS<V> {
             },
         };
 
-        reply.entry(
-            &TTL,
-            &state.get(inum).unwrap().attr(),
-            fuser::Generation(0),
-        );
+        reply.entry(&TTL, &state.get(inum).unwrap().attr(), fuser::Generation(0));
         assert!(state.dirty);
     }
 

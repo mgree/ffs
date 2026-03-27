@@ -269,9 +269,11 @@ pub mod json {
             match (*self).node(config) {
                 Node::String(t, s) => Node::String(t, s),
                 Node::Bytes(b) => Node::Bytes(b),
-                Node::List(vs) => {
-                    Node::List(vs.into_iter().map(|v| Box::new(v) as Box<dyn Nodelike>).collect())
-                }
+                Node::List(vs) => Node::List(
+                    vs.into_iter()
+                        .map(|v| Box::new(v) as Box<dyn Nodelike>)
+                        .collect(),
+                ),
                 Node::Map(kvs) => Node::Map(
                     kvs.into_iter()
                         .map(|(k, v)| (k, Box::new(v) as Box<dyn Nodelike>))
@@ -441,9 +443,11 @@ pub mod toml {
             match (*self).node(config) {
                 Node::String(t, s) => Node::String(t, s),
                 Node::Bytes(b) => Node::Bytes(b),
-                Node::List(vs) => {
-                    Node::List(vs.into_iter().map(|v| Box::new(v) as Box<dyn Nodelike>).collect())
-                }
+                Node::List(vs) => Node::List(
+                    vs.into_iter()
+                        .map(|v| Box::new(v) as Box<dyn Nodelike>)
+                        .collect(),
+                ),
                 Node::Map(kvs) => Node::Map(
                     kvs.into_iter()
                         .map(|(k, v)| (k, Box::new(v) as Box<dyn Nodelike>))
@@ -669,9 +673,11 @@ pub mod yaml {
             match (*self).node(config) {
                 Node::String(t, s) => Node::String(t, s),
                 Node::Bytes(b) => Node::Bytes(b),
-                Node::List(vs) => {
-                    Node::List(vs.into_iter().map(|v| Box::new(v) as Box<dyn Nodelike>).collect())
-                }
+                Node::List(vs) => Node::List(
+                    vs.into_iter()
+                        .map(|v| Box::new(v) as Box<dyn Nodelike>)
+                        .collect(),
+                ),
                 Node::Map(kvs) => Node::Map(
                     kvs.into_iter()
                         .map(|(k, v)| (k, Box::new(v) as Box<dyn Nodelike>))
