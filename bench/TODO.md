@@ -1,5 +1,10 @@
 # Benchmark TODO
 
+## Speed things up
+
+- Wait for mounts by spinning on `mountpoint -q`
+- Shorten `sleep` times
+
 ## Workloads not yet implemented
 
 - **read_k.sh**: Read k files out of N >> k (needs parametric workload support in bench.sh)
@@ -14,7 +19,7 @@
 ## pack/unpack benchmarks
 
 - Benchmark `pack` and `unpack` as standalone tools (separate script, e.g. `bench_pack.sh`)
-- Compare ffs mount+workload total time vs pack-then-shell-op-then-unpack roundtrip
+- Compare ffs mount+workload total time vs pack-then-shell-op-then-unpack roundtrip (needs fresh plots)
 
 ## Data / fixtures needed
 

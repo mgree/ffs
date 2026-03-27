@@ -60,11 +60,11 @@ MICRO_EAGER="${TIMESTAMP}/eager_micro.log"
 
 printf "BENCHMARKING WITH WORKLOAD: read_all\n"
 
-BENCH_WORKLOAD="${TIMESTAMP}/workload_bench.log"
+BENCH_WORKLOAD="${TIMESTAMP}/read_all_bench.log"
 ./bench.sh -w workloads/read_all.sh $ARGS >"$BENCH_WORKLOAD"
 
 ./bench.sh -d micro -w workloads/read_all.sh $ARGS >"$MICRO_RAW"
-MICRO_WORKLOAD="${TIMESTAMP}/workload_micro.log"
+MICRO_WORKLOAD="${TIMESTAMP}/read_all_micro.log"
 ./fixup_micro.sh "$MICRO_RAW" >"$MICRO_WORKLOAD"
 
 rm "$MICRO_RAW"
