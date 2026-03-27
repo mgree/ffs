@@ -53,14 +53,15 @@ trap 'echo "Interrupted!"; cleanup; exit' INT
 NUM_RUNS_DEFAULT=10
 usage() {
     exec >&2
-    printf "Usage: %s [-n NUM_RUNS] [-d DIR] [PATTERNS ...]\n\n" "$(basename $0)"
+    printf "Usage: %s [-n NUM_RUNS] [-d DIR] [-w WORKLOAD] [PATTERNS ...]\n\n" "$(basename $0)"
     printf "       -d DIR         runs tests in DIR only\n"
     printf "       -n NUM_RUNS    the number of runs for each test case (defaults to $NUM_RUNS_DEFAULT)\n"
+    printf "       -w WORKLOAD    workload script to run inside the mount (receives mount point as \$1)\n"
     printf "       PATTERNS       regular expression patterns for grep; tests matching any pattern will be run (defaults .*)\n"
     exit 2
 }
 
-while getopts ":n:d:h" opt
+while getopts ":n:d:w:h" opt
 do
     case "$opt" in
         (n) if [ $((OPTARG)) -le 0 ]
@@ -76,6 +77,15 @@ do
                 exit 1
             fi
             DIRS="$OPTARG"
+            ;;
+        (w) if ! [ -f "$OPTARG" ]
+            then
+                printf "No such workload script '%s'." "$OPTARG"
+                exit 1
+            fi
+            WORKLOAD=$OPTARG
+            WORKLOAD_NAME=$(basename "$OPTARG")
+            WORKLOAD_NAME=${WORKLOAD_NAME%.sh}
             ;;
         (h) usage
             ;;
@@ -102,6 +112,7 @@ TIMEOUT="$(cd ../utils; pwd)/timeout"
 run_digits=$(( ${#NUM_RUNS} ))
 : ${FFS=$(dirname $0)/../target/release/ffs}
 : ${PATTERN=".*"}
+: ${WORKLOAD_NAME="no-reads-no-writes"}
 
 : ${DIRS=doi fda gh gov.uk json.org ncdc penguin penn rv synthetic}
 
@@ -137,7 +148,7 @@ total_digits=${#total_runs}
 # EXECUTE PLAN
 tempdir mnt
 
-printf "source,file,run,size,activity,ns\n" "$d" "$f" "$r" "$size" "$line" # header
+printf "source,file,run,size,workload,activity,ns\n" # header
 
 errors=""
 has_error() {
@@ -180,6 +191,29 @@ do
     $FFS $FFS_ARGS --time -m $mnt -o $out -t json $path 2>$log &
     PID=$!
     PIDS="$PIDS $PID"
+
+    count=0
+    while ! mountpoint -q $mnt 2>/dev/null
+    do
+        sleep $count
+        if [ "$count" -le 5 ]
+        then
+            : $((count += 1))
+        else
+            printf "%$((2 * total_digits + 1))s  warning: mount never became ready for $path\n" ' ' >&2
+            errored $path
+            continue 2
+        fi
+    done
+
+    workload_start=$(date +%s%N)
+    if [ -n "$WORKLOAD" ]
+    then
+        $WORKLOAD $mnt >/dev/null 2>&1
+    fi
+    workload_end=$(date +%s%N)
+    elapsed=$(( workload_end - workload_start ))
+
     count=0
     while ! umount $mnt >/dev/null 2>&1
     do
@@ -193,7 +227,7 @@ do
             continue 2
         fi
     done
-    
+
     count=0
     while kill -0 $PID >/dev/null 2>&1
     do
@@ -209,8 +243,9 @@ do
     done
 
     size=$(filesize $path)
+    printf "%s,%s,%s,%s,%s,%s,%s\n" "$d" "$f" "$r" "$size" "$WORKLOAD_NAME" overall "$elapsed"
     while read line
     do
-        printf "%s,%s,%s,%s,%s\n" "$d" "$f" "$r" "$size" "$line"
+        printf "%s,%s,%s,%s,%s,%s\n" "$d" "$f" "$r" "$size" "$WORKLOAD_NAME" "$line"
     done <$log
 done
