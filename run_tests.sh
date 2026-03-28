@@ -26,7 +26,13 @@ detect_tools() {
 if  ! detect_tools
 then
     printf "Couldn't find ffs or pack/unpack; building...\n" >&2
-    (cd "$FFS_TOP"; cargo build --workspace)
+    (cd "$FFS_TOP"
+     if [ "$(uname -s)" = "Darwin" ]
+     then 
+         cargo build --bin pack --bin unpack 
+     else 
+         cargo build --workspace
+     fi)
     if ! detect_tools
     then
         printf "Still couldn't find ffs or pack/unpack after building... giving up!\n" >&2
