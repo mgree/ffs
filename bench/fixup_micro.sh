@@ -22,7 +22,7 @@ cat $1 | cut -f 2 -d ',' >$name
 echo kind,direction,magnitude >$info
 tail -n +2 $name | sed s/_/,/g | sed s/.json// >>$info
 
-cat $1 | cut -f 3,4,5,6 -d ',' >$rest
+cat $1 | cut -f 3,4,5,6,7 -d ',' >$rest
 
 paste -d ',' $group $name $info $rest
 
