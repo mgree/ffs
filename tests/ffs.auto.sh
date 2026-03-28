@@ -1,17 +1,7 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        "$WAITFOR" umount "$MNT"
-        rm "$FILE" "$EXP"
-        rmdir "$MNT"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 FILE=$(mktemp).json
@@ -19,6 +9,8 @@ FILE=$(mktemp).json
 echo '{}' >"$FILE"
 
 EXP=$(mktemp)
+
+testcase_cleanup() { rm -f "$FILE" "$EXP"; }
 
 printf '{"favorite_number":47,"likes":{"cats":false,"dogs":true},"mistakes":null,"name":"Michael Greenberg","website":"https://mgree.github.io"}' >"$EXP"
 

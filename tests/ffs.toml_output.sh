@@ -1,21 +1,12 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$TOML"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 TOML=$(mktemp).toml
+
+testcase_cleanup() { rm -f "$TOML"; }
 
 cp ../toml/eg.toml "$TOML"
 

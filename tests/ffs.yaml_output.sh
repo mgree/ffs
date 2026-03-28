@@ -1,21 +1,12 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$YAML"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 YAML=$(mktemp).yaml
+
+testcase_cleanup() { rm -f "$YAML"; }
 
 cp ../yaml/invoice.yaml "$YAML"
 

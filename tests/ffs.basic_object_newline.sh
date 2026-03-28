@@ -1,21 +1,12 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm -r "$EXP"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 EXP=$(mktemp -d)
+
+testcase_cleanup() { rm -rf "$EXP"; }
 
 # generate files w/newlines
 printf "Michael Greenberg\n" >"${EXP}/name"

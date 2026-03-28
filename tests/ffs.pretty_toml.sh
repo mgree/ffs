@@ -1,20 +1,12 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$OUT"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 OUT=$(mktemp)
+
+testcase_cleanup() { rm -f "$OUT"; }
 
 ffs -m "$MNT" --target toml -o "$OUT" --pretty ../toml/single.toml &
 PID=$!

@@ -1,21 +1,12 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$ERR"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 ERR=$(mktemp)
+
+testcase_cleanup() { rm -f "$ERR"; }
 
 ffs --no-output -m "$MNT" ../json/object.json &
 PID=$!
@@ -27,4 +18,3 @@ touch "$MNT"/name 2>$ERR >&2 || { cat "$ERR"; fail touch; }
 
 rmdir "$MNT" || fail mount
 rm "$ERR"
-

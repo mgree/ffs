@@ -1,20 +1,7 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$TGT"
-        rm "$TGT2"
-        rm "$ICO"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
     decode() {
@@ -31,6 +18,8 @@ fi
 MNT=$(mktemp -d)
 TGT=$(mktemp)
 TGT2=$(mktemp)
+
+testcase_cleanup() { rm -f "$TGT" "$TGT2" "$ICO"; }
 
 ffs -m "$MNT" ../json/object.json >"$TGT" &
 PID=$!

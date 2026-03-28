@@ -1,21 +1,13 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$MSG" "$OUT"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 OUT=$(mktemp)
 MSG=$(mktemp)
+
+testcase_cleanup() { rm -f "$OUT" "$MSG"; }
 
 echo \"just a string\" | ffs -m "$MNT" >"$OUT" 2>"$MSG" &
 PID=$!

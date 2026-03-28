@@ -1,23 +1,13 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$TGT"
-        rm "$TGT2"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 TGT=$(mktemp)
 TGT2=$(mktemp)
+
+testcase_cleanup() { rm -f "$TGT" "$TGT2"; }
 
 ffs -m "$MNT" ../json/object.json >"$TGT" &
 PID=$!

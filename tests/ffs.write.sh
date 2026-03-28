@@ -1,21 +1,12 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm -rf "$EXP"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 EXP=$(mktemp -d)
+
+testcase_cleanup() { rm -rf "$EXP"; }
 
 cat >"${EXP}/4" <<EOF
 hi
@@ -42,4 +33,3 @@ kill -0 $PID >/dev/null 2>&1 && fail process
 
 rmdir "$MNT" || fail mount
 rm -rf "$EXP"
-

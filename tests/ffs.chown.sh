@@ -1,21 +1,12 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$ERR"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 ERR=$(mktemp)
+
+testcase_cleanup() { rm -f "$ERR"; }
 
 ffs -d --no-output -m "$MNT" ../json/object.json &
 PID=$!
@@ -31,4 +22,3 @@ chown $(whoami) "$MNT"/name 2>$ERR >&2 || fail chown
 
 rmdir "$MNT" || fail mount
 rm "$ERR"
-

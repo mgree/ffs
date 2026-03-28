@@ -1,22 +1,13 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$OUT" "$EXP"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 OUT=$(mktemp)
 EXP=$(mktemp)
+
+testcase_cleanup() { rm -f "$OUT" "$EXP"; }
 
 printf '{"he":{"dot":"shlishi"},"imnewhere":"derp","it":{".":"primo","..":"secondo"}}' >"$EXP"
 

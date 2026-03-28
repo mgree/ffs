@@ -1,17 +1,7 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$OUT" "$EXP"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 
@@ -26,4 +16,3 @@ esac
 "$WAITFOR" exit $PID || fail process
 
 rmdir "$MNT" || fail mount
-

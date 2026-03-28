@@ -2,33 +2,22 @@
 #
 # from https://github.com/mgree/ffs/issues/42
 
-fail() {
-    echo FAILED: $1
-    if [ mountpoint -q "$MNT" ]
-    then
-        "$WAITFOR" umount "$MNT"
-        rm -r "$D"
-    fi
-    if [ "$PID" ]
-    then
-       kill -KILL "$PID"
-    fi
-    exit 1
-}
-
 TESTS="$(pwd)"
 TIMEOUT="$(cd ../utils; pwd)/timeout"
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 D=$(mktemp -d)
+
+testcase_cleanup() { rm -rf "$D"; }
 
 cp ../json/single.json "$D"/single.json
 
 cd "$D"
+MNT="$D/single"
 ffs -i single.json &
 PID=$!
 "$WAITFOR" mount single
-MNT="$D"/single
 case $(ls) in
     (single*single.json) ;;
     (*) fail ls1;;

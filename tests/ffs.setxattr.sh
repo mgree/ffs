@@ -1,17 +1,7 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
     which setfattr || fail setfattr
@@ -35,6 +25,8 @@ fi
 MNT=$(mktemp -d)
 OUT=$(mktemp)
 EXP=$(mktemp)
+
+testcase_cleanup() { rm -f "$OUT" "$EXP"; }
 
 # NB no newline. this is a little hardcoded for my taste, but yolo
 printf '[2,10,"true","Michael Greenberg"]' >"$EXP"

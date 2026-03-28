@@ -1,22 +1,13 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$SRC" "$TGT"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 SRC=$(mktemp)
 TGT=$(mktemp)
+
+testcase_cleanup() { rm -f "$SRC" "$TGT"; }
 
 cp ../toml/single.toml "$SRC"
 
@@ -30,4 +21,3 @@ diff "$TGT" ../json/single.json || fail diff
 
 rmdir "$MNT" || fail mount
 rm "$SRC" "$TGT"
-

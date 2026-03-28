@@ -1,19 +1,12 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$TMP"/object
-        rm -r "$TMP"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 TMP=$(mktemp -d)
+MNT="$TMP/object"
+
+testcase_cleanup() { rm -rf "$TMP"; }
 
 cp ../json/object.json "$TMP"
 cd "$TMP"

@@ -1,22 +1,13 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm "$JSON" "$LOG"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 JSON=$(mktemp)
 LOG=$(mktemp)
+
+testcase_cleanup() { rm -f "$JSON" "$LOG"; }
 
 cp ../json/object.json "$JSON"
 
@@ -43,3 +34,4 @@ kill -0 $PID >/dev/null 2>&1 && fail process2
 
 rmdir "$MNT" || fail mount
 rm "$JSON" || fail copy
+rm "$LOG"

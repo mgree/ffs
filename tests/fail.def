@@ -1,0 +1,17 @@
+testcase_cleanup() { :; }
+
+fail() {
+    echo FAILED: $1
+    if [ "$MNT" ] && mountpoint -q "$MNT" 2>/dev/null
+    then
+        cd
+        "$WAITFOR" umount "$MNT"
+        rm -r "$MNT"
+    fi
+    if [ "$PID" ]
+    then
+        kill -KILL "$PID"
+    fi
+    testcase_cleanup
+    exit 1
+}

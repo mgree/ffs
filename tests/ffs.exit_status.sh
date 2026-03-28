@@ -2,20 +2,14 @@
 #
 # from https://github.com/mgree/ffs/issues/42
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        "$WAITFOR" umount "$D"/single
-        rm -r "$D"
-    fi
-    exit 1
-}
-
 TESTS="$(pwd)"
 TIMEOUT="$(cd ../utils; pwd)/timeout"
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 D=$(mktemp -d)
+
+testcase_cleanup() { rm -rf "$D"; }
 
 cp ../json/single.json "$D"/single.json
 cp ../json/false.json "$D"/false.json

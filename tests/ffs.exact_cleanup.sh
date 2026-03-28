@@ -1,23 +1,13 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        "$WAITFOR" umount "$MNT"
-        rmdir "$MNT"
-        rm -r "$EXP"
-        rm "$JSON"
-    fi
-    exit 1
-}
-
 WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 EXP=$(mktemp -d)
 JSON=$(mktemp)
+
+testcase_cleanup() { rm -rf "$EXP"; rm -f "$JSON"; }
 
 # generate files w/newlines
 printf "Michael Greenberg" >"${EXP}/name"
@@ -51,3 +41,4 @@ done
 
 rmdir "$MNT" || fail mount
 rm -r "$EXP"
+rm -f "$JSON"
