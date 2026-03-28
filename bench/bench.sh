@@ -107,6 +107,7 @@ then
 fi
 
 TIMEOUT="$(cd ../utils; pwd)/timeout"
+WAITFOR="$(cd ../utils; pwd)/waitfor"
 
 : ${NUM_RUNS=$NUM_RUNS_DEFAULT}
 run_digits=$(( ${#NUM_RUNS} ))
@@ -192,19 +193,11 @@ do
     PID=$!
     PIDS="$PIDS $PID"
 
-    count=0
-    while ! mountpoint -q $mnt 2>/dev/null
-    do
-        sleep $count
-        if [ "$count" -le 5 ]
-        then
-            : $((count += 1))
-        else
-            printf "%$((2 * total_digits + 1))s  warning: mount never became ready for $path\n" ' ' >&2
-            errored $path
-            continue 2
-        fi
-    done
+    if ! "$WAITFOR" -t 10 mount "$mnt"; then
+        printf "%$((2 * total_digits + 1))s  warning: mount never became ready for $path\n" ' ' >&2
+        errored "$path"
+        continue
+    fi
 
     workload_start=$(date +%s%N)
     if [ -n "$WORKLOAD" ]
@@ -214,33 +207,17 @@ do
     workload_end=$(date +%s%N)
     elapsed=$(( workload_end - workload_start ))
 
-    count=0
-    while ! umount $mnt >/dev/null 2>&1
-    do
-        sleep $count
-        if [ "$count" -le 5 ]
-        then
-            : $((count += 1))
-        else
-            printf "%$((2 * total_digits + 1))s  warning: couldn't unmount for $path\n" ' ' >&2
-            errored $path
-            continue 2
-        fi
-    done
+    if ! "$WAITFOR" -t 10 umount "$mnt"; then
+        printf "%$((2 * total_digits + 1))s  warning: couldn't unmount for $path\n" ' ' >&2
+        errored "$path"
+        continue
+    fi
 
-    count=0
-    while kill -0 $PID >/dev/null 2>&1
-    do
-        sleep $count
-        if [ "$count" -le 2 ]
-        then
-            : $((count += 1))
-        else
-            printf "%$((2 * total_digits + 1))s  warning: $PID still running for $path" ' ' >&2
-            errored $path
-            continue 2
-        fi
-    done
+    if ! "$WAITFOR" -t 5 exit "$PID"; then
+        printf "%$((2 * total_digits + 1))s  warning: $PID still running for $path\n" ' ' >&2
+        errored "$path"
+        continue
+    fi
 
     size=$(filesize $path)
     printf "%s,%s,%s,%s,%s,%s,%s\n" "$d" "$f" "$r" "$size" "$WORKLOAD_NAME" overall "$elapsed"
