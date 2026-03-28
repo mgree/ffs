@@ -1,15 +1,7 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        umount "$MNT"
-        rm "$FILE" "$EXP"
-        rmdir "$MNT"
-    fi
-    exit 1
-}
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 FILE=$(mktemp).json
@@ -18,11 +10,13 @@ echo '{}' >"$FILE"
 
 EXP=$(mktemp)
 
+testcase_cleanup() { rm -f "$FILE" "$EXP"; }
+
 printf '{"favorite_number":47,"likes":{"cats":false,"dogs":true},"mistakes":null,"name":"Michael Greenberg","website":"https://mgree.github.io"}' >"$EXP"
 
 ffs -m "$MNT" -i "$FILE" &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 
 ls "$MNT"
 [ $(ls $MNT) ] && fail nonempty1
@@ -36,9 +30,8 @@ touch "$MNT"/mistakes
 echo Michael Greenberg >"$MNT"/name
 echo https://mgree.github.io >"$MNT"/website
 
-umount "$MNT" || fail unmount
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID || fail process
 
 cat "$FILE"
 diff "$FILE" "$EXP" || fail diff

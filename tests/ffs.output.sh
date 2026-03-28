@@ -1,32 +1,23 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        umount "$MNT"
-        rmdir "$MNT"
-        rm "$TGT"
-        rm "$TGT2"
-    fi
-    exit 1
-}
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 TGT=$(mktemp)
 TGT2=$(mktemp)
 
+testcase_cleanup() { rm -f "$TGT" "$TGT2"; }
+
 ffs -m "$MNT" ../json/object.json >"$TGT" &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 mkdir "$MNT"/pockets
 echo keys >"$MNT"/pockets/pants
 echo pen >"$MNT"/pockets/shirt
 cd - >/dev/null 2>&1
-umount "$MNT" || fail unmount1    
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process1
+"$WAITFOR" umount "$MNT" || fail unmount1
+"$WAITFOR" exit $PID || fail process1
 
 # easiest to just test using ffs, but would be cool to get outside validation
 [ -f "$TGT" ] || fail output1
@@ -40,7 +31,7 @@ cat "$TGT"
 stat "$TGT"
 ffs --no-output -m "$MNT" "$TGT" >"$TGT2" &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 
 case $(ls "$MNT") in
     (eyes*fingernails*human*name*pockets) ;;
@@ -58,9 +49,8 @@ esac
 [ "$(cat $MNT/pockets/pants)" = "keys" ] || fail pants
 [ "$(cat $MNT/pockets/shirt)" = "pen" ] || fail shirt
 
-umount "$MNT" || fail unmount2
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process2
+"$WAITFOR" umount "$MNT" || fail unmount2
+"$WAITFOR" exit $PID || fail process2
 
 stat "$TGT2"
 [ -f "$TGT2" ] || fail tgt2

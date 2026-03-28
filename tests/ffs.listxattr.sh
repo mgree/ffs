@@ -1,15 +1,7 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        umount "$MNT"
-        rmdir "$MNT"
-    fi
-    exit 1
-}
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
     which getfattr || fail getfattr
@@ -32,7 +24,7 @@ MNT=$(mktemp -d)
 
 ffs -m "$MNT" ../json/object.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 
 listattr_ok "$MNT" || fail root
 listattr_ok "$MNT"/name || fail name
@@ -40,8 +32,8 @@ listattr_ok "$MNT"/eyes || fail eyes
 listattr_ok "$MNT"/fingernails || fail fingernails
 listattr_ok "$MNT"/human || fail human
 
-umount "$MNT" || fail unmount
-sleep 1
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID
 
 kill -0 $PID >/dev/null 2>&1 && fail process
 

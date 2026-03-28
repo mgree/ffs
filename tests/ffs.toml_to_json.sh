@@ -1,29 +1,20 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        umount "$MNT"
-        rmdir "$MNT"
-        rm "$TGT"
-    fi
-    exit 1
-}
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 TGT=$(mktemp)
 
+testcase_cleanup() { rm -f "$TGT"; }
+
 ffs --source toml --target json -o "$TGT" -m "$MNT" ../toml/single.toml &
 PID=$!
-sleep 2
-umount "$MNT" || fail unmount1    
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process1
+"$WAITFOR" mount "$MNT"
+"$WAITFOR" umount "$MNT" || fail unmount1
+"$WAITFOR" exit $PID || fail process1
 
 diff "$TGT" ../json/single.json || fail diff
 
 rmdir "$MNT" || fail mount
 rm "$TGT"
-

@@ -1,26 +1,19 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        umount "$MNT"
-        rmdir "$MNT"
-        rm "$OUT" "$EXP"
-    fi
-    exit 1
-}
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 OUT=$(mktemp)
 EXP=$(mktemp)
 
+testcase_cleanup() { rm -f "$OUT" "$EXP"; }
+
 printf '{".":"primo","..":"secondo","dot":"terzo","dotdot":"quarto"}' >"$EXP"
 
 ffs -m "$MNT" -o "$OUT" --target json ../json/obj_rename.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 case $(ls "$MNT") in
     (_.*_..*dot*dotdot) ;;
     (*) fail ls;;
@@ -35,9 +28,8 @@ echo secondo >"$MNT"/_..
 echo terzo >"$MNT"/dot
 echo quarto >"$MNT"/dotdot
 
-umount "$MNT" || fail unmount
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID || fail process
 
 diff "$OUT" "$EXP" || fail diff
 

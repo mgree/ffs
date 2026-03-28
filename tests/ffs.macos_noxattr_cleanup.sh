@@ -6,16 +6,8 @@ then
     exit 0
 fi
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        umount "$MNT"
-        rmdir "$MNT"
-        rm "$OUT"
-    fi
-    exit 1
-}
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 listattr() {
     xattr -l "$@"
@@ -44,9 +36,11 @@ typeof() {
 MNT=$(mktemp -d)
 OUT=$(mktemp)
 
+testcase_cleanup() { rm -f "$OUT"; }
+
 ffs -m "$MNT" --no-xattr -o $OUT --target json ../json/object.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 
 [ "$(typeof $MNT)"             = "named"   ] && fail root
 [ "$(typeof $MNT/name)"        = "string"  ] && fail name
@@ -58,35 +52,32 @@ setattr user.type list "$MNT" || fail set1
 
 [ "$(typeof $MNT)" = "list"   ] || fail "macos override"
 
-umount "$MNT" || fail unmount
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process1
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID || fail process1
 
 grep -e '"\._."' "$OUT" >/dev/null 2>&1 && fail metadata1
 
 # now try to keep the metadata
 ffs -m "$MNT" --no-xattr --keep-macos-xattr -o $OUT --target json ../json/object.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 
 setattr user.type list "$MNT"
 
-umount "$MNT" || fail unmount2
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process2
+"$WAITFOR" umount "$MNT" || fail unmount2
+"$WAITFOR" exit $PID || fail process2
 
 grep -e '"\._."' "$OUT" >/dev/null 2>&1 || fail metadata2
 
 # now try to keep the metadata but also have the FS store it
 ffs -m "$MNT" --keep-macos-xattr -o $OUT --target json ../json/object.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 
 setattr user.type list "$MNT"
 
-umount "$MNT" || fail unmount3
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process3
+"$WAITFOR" umount "$MNT" || fail unmount3
+"$WAITFOR" exit $PID || fail process3
 
 grep -e '"\._."' "$OUT" >/dev/null 2>&1 && fail metadata3
 

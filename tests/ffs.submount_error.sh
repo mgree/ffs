@@ -2,27 +2,22 @@
 #
 # from https://github.com/mgree/ffs/issues/42
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        umount "$D"/single
-        rm -r "$D"
-    fi
-    exit 1
-}
-
 TESTS="$(pwd)"
 TIMEOUT="$(cd ../utils; pwd)/timeout"
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 D=$(mktemp -d)
+
+testcase_cleanup() { rm -rf "$D"; }
 
 cp ../json/single.json "$D"/single.json
 
 cd "$D"
+MNT="$D/single"
 ffs -i single.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount single
 case $(ls) in
     (single*single.json) ;;
     (*) fail ls1;;
@@ -53,10 +48,8 @@ case $(ls) in
     (single*single.json) ;;
     (*) fail ls4;;
 esac
-sleep 1
-umount single || fail umount
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process
+"$WAITFOR" umount single || fail umount
+"$WAITFOR" exit $PID || fail process
 
 cd "$TESTS"
 rm -r "$D" || fail mount

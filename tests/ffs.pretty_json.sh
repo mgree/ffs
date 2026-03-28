@@ -1,28 +1,21 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        umount "$MNT"
-        rmdir "$MNT"
-        rm "$OUT"
-    fi
-    exit 1
-}
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 OUT=$(mktemp)
 
+testcase_cleanup() { rm -f "$OUT"; }
+
 ffs -m "$MNT" --target json -o "$OUT" --pretty ../json/object.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 
 echo mgree >"$MNT"/handle
 
-umount "$MNT" || fail unmount
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID || fail process
 
 [ "$(cat $OUT | wc -l)" -eq 6 ] || fail lines
 grep '^\s*"handle": "mgree",$' "$OUT" >/dev/null 2>&1 || fail handle

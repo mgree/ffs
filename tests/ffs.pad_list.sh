@@ -1,21 +1,13 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        umount "$MNT"
-        rmdir "$MNT"
-    fi
-    exit 1
-}
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 
 ffs -m "$MNT" ../json/list2.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 cd "$MNT"
 case $(ls) in
     (00*01*02*03*04*05*06*07*08*09*10) ;;
@@ -33,8 +25,8 @@ esac
 [ "$(cat 09)" -eq  9 ] || fail  9
 [ "$(cat 10)" -eq 10 ] || fail 10
 cd - >/dev/null 2>&1
-umount "$MNT" || fail unmount
-sleep 1
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID
 
 kill -0 $PID >/dev/null 2>&1 && fail process
 

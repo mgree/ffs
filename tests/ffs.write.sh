@@ -1,19 +1,12 @@
 #!/bin/sh
 
-fail() {
-    echo FAILED: $1
-    if [ "$MNT" ]
-    then
-        cd
-        umount "$MNT"
-        rmdir "$MNT"
-        rm -rf "$EXP"
-    fi
-    exit 1
-}
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+. ./fail.def
 
 MNT=$(mktemp -d)
 EXP=$(mktemp -d)
+
+testcase_cleanup() { rm -rf "$EXP"; }
 
 cat >"${EXP}/4" <<EOF
 hi
@@ -22,7 +15,7 @@ EOF
 
 ffs -m "$MNT" ../json/list.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 cd "$MNT"
 case $(ls) in
     (0*1*2*3) ;;
@@ -33,11 +26,10 @@ echo hi >4
 echo hello >>4
 diff 4 "${EXP}/4" || fail write2
 cd - >/dev/null 2>&1
-umount "$MNT" || fail unmount
-sleep 1
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID
 
 kill -0 $PID >/dev/null 2>&1 && fail process
 
 rmdir "$MNT" || fail mount
 rm -rf "$EXP"
-
