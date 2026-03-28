@@ -1,23 +1,38 @@
 #!/bin/sh
 
-if ! which ffs >/dev/null 2>&1
-then
-    DEBUG="$(pwd)/target/debug"
-    [ -x "$DEBUG/ffs" ] && PATH="$DEBUG:$PATH"
-fi
-which ffs >/dev/null 2>&1 && HAVE_FFS=1
+FFS_TOP=$(realpath "${0%/*}")
+DEBUG="$FFS_TOP/target/debug"
 
-if ! which unpack >/dev/null 2>&1
+detect_tools() {
+    if ! which ffs >/dev/null 2>&1
+    then
+        [ -x "$DEBUG/ffs" ] && PATH="$DEBUG:$PATH"
+    fi
+    which ffs >/dev/null 2>&1 && HAVE_FFS=1
+
+    if ! which unpack >/dev/null 2>&1
+    then
+        [ -x "$DEBUG/unpack" ] && PATH="$DEBUG:$PATH"
+    fi
+    if ! which pack >/dev/null 2>&1
+    then
+        [ -x "$DEBUG/pack" ] && PATH="$DEBUG:$PATH"
+    fi
+    which pack unpack >/dev/null 2>&1 && HAVE_PACKUNPACK=1
+
+    [ "$HAVE_FFS" ] || [ "$HAVE_PACK_UNPACK" ]
+}
+
+if  ! detect_tools
 then
-    DEBUG="$(pwd)/target/debug"
-    [ -x "$DEBUG/unpack" ] && PATH="$DEBUG:$PATH"
+    printf "Couldn't find ffs or pack/unpack; building...\n" >&2
+    (cd "$FFS_TOP"; cargo build --workspace)
+    if ! detect_tools
+    then
+        printf "Still couldn't find ffs or pack/unpack after building... giving up!\n" >&2
+        exit 2
+    fi
 fi
-if ! which pack >/dev/null 2>&1
-then
-    DEBUG="$(pwd)/target/debug"
-    [ -x "$DEBUG/pack" ] && PATH="$DEBUG:$PATH"
-fi
-which pack unpack >/dev/null 2>&1 && HAVE_PACKUNPACK=1
 
 [ "$HAVE_FFS" ] || [ "$HAVE_PACKUNPACK" ] || { echo "error: no binaries found; run \`cargo build\` first" >&2; exit 1; }
 
@@ -71,6 +86,7 @@ do
     else
         printf "========== FAILED: $tname (ec=$(cat $LOG/$tname.ec))\n"
         : $((FAILED += 1))
+        ERRORS="${ERRORS}${ERRORS+ }$tname"
     fi
 
     # just always capture output in the CI logs
@@ -85,6 +101,7 @@ do
 done
 
 printf "$((TOTAL - FAILED))/$((TOTAL)) tests passed\n"
+printf "FAILING CASES: $ERRORS\n"
 
 rm -r $LOG
 [ $FAILED -eq 0 ] || exit 1
