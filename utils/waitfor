@@ -1,0 +1,47 @@
+#!/bin/sh
+# waitfor [-t TIMEOUT] mount|umount|exit PATH|PID
+# Polls until condition is met or timeout expires.
+#   mount PATH  - waits for PATH to become a mountpoint (mountpoint -q)
+#   umount PATH - retries umount PATH until it succeeds
+#   exit PID    - waits for process PID to terminate (kill -0)
+# Exits 0 on success, 1 on timeout.
+
+DEFAULT_TIMEOUT=2
+INTERVAL=0.1
+
+timeout=$DEFAULT_TIMEOUT
+
+while getopts "t:" opt; do
+    case "$opt" in
+        t) timeout=$OPTARG ;;
+        *) echo "usage: waitfor [-t timeout] mount|umount|exit path|pid" >&2; exit 1 ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+[ "$#" -eq 2 ] || { echo "usage: waitfor [-t timeout] mount|umount|exit path|pid" >&2; exit 1; }
+
+cmd="$1"
+arg="$2"
+
+elapsed=0
+while [ "$(echo "$elapsed < $timeout" | bc)" -eq 1 ]; do
+    case "$cmd" in
+        mount)  mountpoint -q "$arg" && exit 0 ;;
+        umount) umount "$arg" 2>/dev/null && exit 0 ;;
+        exit)   kill -0 "$arg" 2>/dev/null || exit 0 ;;
+        *) echo "waitfor: unknown command '$cmd'" >&2; exit 1 ;;
+    esac
+    sleep "$INTERVAL"
+    elapsed=$(echo "$elapsed + $INTERVAL" | bc)
+done
+
+if [ "$cmd" = "exit" ]; then
+    kill -TERM "$arg" 2>/dev/null
+    if kill -0 "$arg" 2>/dev/null; then
+        sleep "$INTERVAL"
+        kill -KILL "$arg" 2>/dev/null
+    fi
+fi
+
+exit 1

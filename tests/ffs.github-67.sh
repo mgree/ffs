@@ -4,21 +4,23 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
-        umount "$MNT"
+        "$WAITFOR" umount "$MNT"
         rm "$OUT" "$SORTED_OUT" "$SORTED_ORIG"
         rmdir "$MNT"
     fi
     exit 1
 }
 
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+
 MNT=$(mktemp -d)
 OUT=$(mktemp)
 
 ffs -m "$MNT" -o "$OUT" ../toml/github-67.toml &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 
-umount "$MNT" || fail unmount
+"$WAITFOR" umount "$MNT" || fail unmount
 
 SORTED_OUT=$(mktemp)
 SORTED_ORIG=$(mktemp)

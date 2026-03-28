@@ -4,11 +4,13 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
-        umount "$MNT"
+        "$WAITFOR" umount "$MNT"
         rm -r "$D"
     fi
     exit 1
 }
+
+WAITFOR="$(cd ../utils; pwd)/waitfor"
 
 D=$(mktemp -d)
 
@@ -22,7 +24,7 @@ printf '{"handles":{"github":"mgree","stevens":"mgreenbe","twitter":"mgrnbrg"},"
 cd "$D"
 ffs --new "$OUT" &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 [ "$(ls $MNT)" ] && fail nonempty
 
 mkdir "$MNT"/handles
@@ -32,9 +34,8 @@ echo mgreenbe >"$MNT"/handles/stevens
 echo mgrnbrg  >"$MNT"/handles/twitter
 echo 99       >"$MNT"/problems
 
-umount "$MNT" || fail unmount
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID || fail process
 
 diff "$OUT" "$EXP" || fail diff
 

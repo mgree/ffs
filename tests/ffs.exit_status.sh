@@ -6,7 +6,7 @@ fail() {
     echo FAILED: $1
     if [ "$MNT" ]
     then
-        umount "$D"/single
+        "$WAITFOR" umount "$D"/single
         rm -r "$D"
     fi
     exit 1

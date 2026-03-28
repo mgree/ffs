@@ -5,17 +5,19 @@ fail() {
     if [ "$MNT" ]
     then
         cd
-        umount "$MNT"
+        "$WAITFOR" umount "$MNT"
         rmdir "$MNT"
     fi
     exit 1
 }
 
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+
 MNT=$(mktemp -d)
 
 ffs -m "$MNT" ../json/object.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 cd "$MNT"
 case $(ls) in
     (eyes*fingernails*human*name) ;;
@@ -49,8 +51,8 @@ case $(ls) in
     (*) fail ls5;;
 esac
 cd - >/dev/null 2>&1
-umount "$MNT" || fail unmount
-sleep 1
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID
 
 kill -0 $PID >/dev/null 2>&1 && fail process
 

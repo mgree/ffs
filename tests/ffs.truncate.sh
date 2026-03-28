@@ -5,7 +5,7 @@ fail() {
     if [ "$MNT" ]
     then
         cd
-        umount "$MNT"
+        "$WAITFOR" umount "$MNT"
         rmdir "$MNT"
         rm "$TGT"
         rm "$TGT2"
@@ -14,6 +14,8 @@ fail() {
     exit 1
 }
 
+WAITFOR="$(cd ../utils; pwd)/waitfor"
+
 MNT=$(mktemp -d)
 TGT=$(mktemp)
 TGT2=$(mktemp)
@@ -21,11 +23,11 @@ ERR=$(mktemp)
 
 ffs -m "$MNT" ../json/object.json >"$TGT" &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 echo 'Mikey Indiana' >"$MNT"/name 2>"$ERR"
 [ -s "$ERR" ] && fail non-empty error
-umount "$MNT" || fail unmount1    
-sleep 1
+"$WAITFOR" umount "$MNT" || fail unmount1
+"$WAITFOR" exit "$PID"
 kill -0 $PID >/dev/null 2>&1 && fail process1
 
 # easiest to just test using ffs, but would be cool to get outside validation
@@ -34,7 +36,7 @@ kill -0 $PID >/dev/null 2>&1 && fail process1
 grep -e Indiana "$TGT" >/dev/null 2>&1 || fail grep
 ffs --no-output --source json -m "$MNT" "$TGT" >"$TGT2" &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 
 case $(ls "$MNT") in
     (eyes*fingernails*human*name) ;;
@@ -43,8 +45,8 @@ esac
 
 [ "$(cat $MNT/name)" = "Mikey Indiana" ] || fail contents
 
-umount "$MNT" || fail unmount2
-sleep 1
+"$WAITFOR" umount "$MNT" || fail unmount2
+"$WAITFOR" exit "$PID"
 kill -0 $PID >/dev/null 2>&1 && fail process2
 
 [ -f "$TGT2" ] || fail tgt2

@@ -5,12 +5,14 @@ fail() {
     if [ "$MNT" ]
     then
         cd
-        umount "$MNT"
+        "$WAITFOR" umount "$MNT"
         rmdir "$MNT"
         rm "$OUT" "$EXP"
     fi
     exit 1
 }
+
+WAITFOR="$(cd ../utils; pwd)/waitfor"
 
 MNT=$(mktemp -d)
 OUT=$(mktemp)
@@ -20,7 +22,7 @@ printf '{"he":{"dot":"shlishi"},"imnewhere":"derp","it":{".":"primo","..":"secon
 
 ffs -m "$MNT" -o "$OUT" --target json ../json/obj_rename.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 case $(ls "$MNT") in
     (_.*_..*dot*dotdot) ;;
     (*) fail ls;;
@@ -45,9 +47,8 @@ mv "$MNT"/dot    "$MNT"/he
 
 mv "$MNT"/dotdot "$MNT"/imnewhere
 
-umount "$MNT" || fail unmount
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID || fail process
 
 diff "$OUT" "$EXP" || fail diff
 

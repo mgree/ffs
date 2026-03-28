@@ -4,16 +4,21 @@
 
 fail() {
     echo FAILED: $1
-    if [ "$MNT" ]
+    if [ mountpoint -q "$MNT" ]
     then
-        umount "$D"/single
+        "$WAITFOR" umount "$MNT"
         rm -r "$D"
+    fi
+    if [ "$PID" ]
+    then
+       kill -KILL "$PID"
     fi
     exit 1
 }
 
 TESTS="$(pwd)"
 TIMEOUT="$(cd ../utils; pwd)/timeout"
+WAITFOR="$(cd ../utils; pwd)/waitfor"
 
 D=$(mktemp -d)
 
@@ -22,7 +27,8 @@ cp ../json/single.json "$D"/single.json
 cd "$D"
 ffs -i single.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount single
+MNT="$D"/single
 case $(ls) in
     (single*single.json) ;;
     (*) fail ls1;;
@@ -53,10 +59,8 @@ case $(ls) in
     (single*single.json) ;;
     (*) fail ls4;;
 esac
-sleep 1
-umount single || fail umount
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process
+"$WAITFOR" umount single || fail umount
+"$WAITFOR" exit $PID || fail process
 
 cd "$TESTS"
 rm -r "$D" || fail mount

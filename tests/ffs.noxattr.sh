@@ -5,11 +5,13 @@ fail() {
     if [ "$MNT" ]
     then
         cd
-        umount "$MNT"
+        "$WAITFOR" umount "$MNT"
         rmdir "$MNT"
     fi
     exit 1
 }
+
+WAITFOR="$(cd ../utils; pwd)/waitfor"
 
 if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
     which getfattr || fail getfattr
@@ -66,7 +68,7 @@ MNT=$(mktemp -d)
 
 ffs -m "$MNT" --no-xattr ../json/object.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 
 [ "$(typeof $MNT)"             = "named"   ] && fail root
 [ "$(typeof $MNT/name)"        = "string"  ] && fail name
@@ -99,8 +101,8 @@ rmattr user.type $MNT && fail "root user.type"
 rmattr user.fake $MNT && fail "root user.fake"
 rmattr user.type "$MNT/name" && fail "root user.type"
 
-umount "$MNT" || fail unmount
-sleep 1
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID
 
 kill -0 $PID >/dev/null 2>&1 && fail process
 

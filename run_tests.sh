@@ -19,6 +19,8 @@ then
 fi
 which pack unpack >/dev/null 2>&1 && HAVE_PACKUNPACK=1
 
+[ "$HAVE_FFS" ] || [ "$HAVE_PACKUNPACK" ] || { echo "error: no binaries found; run \`cargo build\` first" >&2; exit 1; }
+
 TOTAL=0
 FAILED=0
 ERRORS=""

@@ -5,11 +5,13 @@ fail() {
     if [ "$MNT" ]
     then
         cd
-        umount "$MNT"
+        "$WAITFOR" umount "$MNT"
         rmdir "$MNT"
     fi
     exit 1
 }
+
+WAITFOR="$(cd ../utils; pwd)/waitfor"
 
 if [ "$RUNNER_OS" = "Linux" ] || [ "$(uname)" = "Linux" ]; then
     num_links() {
@@ -27,7 +29,7 @@ MNT=$(mktemp -d)
 
 ffs -m "$MNT" ../json/nlink.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 cd "$MNT"
 case $(ls) in
     (child1*child2*child3) ;;
@@ -39,8 +41,8 @@ esac
 [ $(num_links child2) -eq 1 ] || fail child2 # parent
 [ $(num_links child3) -eq 2 ] || fail child3 # parent + self
 cd - >/dev/null 2>&1
-umount "$MNT" || fail unmount
-sleep 1
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID
 
 kill -0 $PID >/dev/null 2>&1 && fail process
 

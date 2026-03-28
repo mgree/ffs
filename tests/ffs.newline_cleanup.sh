@@ -5,13 +5,15 @@ fail() {
     if [ "$MNT" ]
     then
         cd
-        umount "$MNT"
+        "$WAITFOR" umount "$MNT"
         rmdir "$MNT"
         rm -r "$EXP"
         rm "$JSON"
     fi
     exit 1
 }
+
+WAITFOR="$(cd ../utils; pwd)/waitfor"
 
 MNT=$(mktemp -d)
 EXP=$(mktemp -d)
@@ -27,16 +29,15 @@ printf "bye"               >"${EXP}/farewell"
 
 ffs -o "$JSON" -m "$MNT" ../json/object.json &
 PID=$!
-sleep 2
+"$WAITFOR" mount "$MNT"
 echo hi >"$MNT"/greeting
 printf "bye" >"$MNT"/farewell
-umount "$MNT" || fail unmount
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID || fail process
 
 # remount w/ --exact, confirm that they're not there
 ffs --exact -m "$MNT" "$JSON" &
-sleep 2
+"$WAITFOR" mount "$MNT"
 case $(ls "$MNT") in
     (eyes*farewell*fingernails*greeting*human*name) ;;
     (*) fail ls;;
@@ -45,9 +46,8 @@ for x in "$EXP"/*
 do
     diff "$x" "$MNT/$(basename $x)" || fail "$(basename $x)"
 done
-umount "$MNT" || fail unmount
-sleep 1
-kill -0 $PID >/dev/null 2>&1 && fail process
+"$WAITFOR" umount "$MNT" || fail unmount
+"$WAITFOR" exit $PID || fail process
 
 rmdir "$MNT" || fail mount
 rm -r "$EXP"
