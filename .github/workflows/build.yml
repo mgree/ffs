@@ -88,7 +88,6 @@ jobs:
               target/release/pack
               target/release/unpack
 
-
   benchmarks:
     needs: build-ffs
     runs-on: ubuntu-latest
