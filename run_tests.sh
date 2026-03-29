@@ -9,22 +9,24 @@ echo DEBUG
 ls "$DEBUG"
 echo RELEASE
 ls "$RELEASE"
-
+command ffs
+command pack
+command unpack
 echo ======
 detect_tools() {
-    if ! which ffs >/dev/null 2>&1
+    if ! command ffs >/dev/null 2>&1
     then
         [ -x "$DEBUG/ffs" ] && PATH="$DEBUG:$PATH"
         [ -x "$RELEASE/ffs" ] && PATH="$RELEASE:$PATH"
     fi
     which ffs >/dev/null 2>&1 && HAVE_FFS=1
 
-    if ! which unpack >/dev/null 2>&1
+    if ! command unpack >/dev/null 2>&1
     then
         [ -x "$DEBUG/unpack" ] && PATH="$DEBUG:$PATH"
         [ -x "$RELEASE/unpack" ] && PATH="$RELEASE:$PATH"
     fi
-    if ! which pack >/dev/null 2>&1
+    if ! command pack >/dev/null 2>&1
     then
         [ -x "$DEBUG/pack" ] && PATH="$DEBUG:$PATH"
         [ -x "$RELEASE/pack" ] && PATH="$RELEASE:$PATH"
