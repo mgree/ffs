@@ -3,35 +3,37 @@
 FFS_TOP=$(realpath "${0%/*}")
 DEBUG="$FFS_TOP/target/debug"
 RELEASE="$FFS_TOP/target/release"
-echo ======
-echo "FFS_TOP=$FFS_TOP"
-echo DEBUG
-ls "$DEBUG"
-echo RELEASE
-ls "$RELEASE"
-command ffs
-command pack
-command unpack
-echo ======
+
 detect_tools() {
-    if ! command ffs >/dev/null 2>&1
+    echo ======
+    echo "FFS_TOP=$FFS_TOP"
+    echo DEBUG
+    ls "$DEBUG"
+    echo RELEASE
+    ls "$RELEASE"
+    command -v ffs
+    command -v pack
+    command -v unpack
+    echo "PATH=$PATH"
+    echo ======
+    if ! command -v ffs >/dev/null 2>&1
     then
         [ -x "$DEBUG/ffs" ] && PATH="$DEBUG:$PATH"
         [ -x "$RELEASE/ffs" ] && PATH="$RELEASE:$PATH"
     fi
-    command ffs >/dev/null 2>&1 && HAVE_FFS=1
+    command -v ffs >/dev/null 2>&1 && HAVE_FFS=1
 
-    if ! command unpack >/dev/null 2>&1
+    if ! command -v unpack >/dev/null 2>&1
     then
         [ -x "$DEBUG/unpack" ] && PATH="$DEBUG:$PATH"
         [ -x "$RELEASE/unpack" ] && PATH="$RELEASE:$PATH"
     fi
-    if ! command pack >/dev/null 2>&1
+    if ! command -v pack >/dev/null 2>&1
     then
         [ -x "$DEBUG/pack" ] && PATH="$DEBUG:$PATH"
         [ -x "$RELEASE/pack" ] && PATH="$RELEASE:$PATH"
     fi
-    command pack unpack >/dev/null 2>&1 && HAVE_PACKUNPACK=1
+    command -v pack unpack >/dev/null 2>&1 && HAVE_PACKUNPACK=1
 
     [ "$HAVE_FFS" ] || [ "$HAVE_PACK_UNPACK" ]
 }
