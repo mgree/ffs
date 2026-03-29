@@ -66,6 +66,7 @@ jobs:
           cargo build --verbose --release --bin pack
           cargo build --verbose --release --bin unpack
           cargo test -p pack -p unpack -p nodelike
+          tree target/release
 
       - name: Integration tests for pack/unpack
         run: PATH="$(pwd)/target/release:$PATH" ./run_tests.sh
