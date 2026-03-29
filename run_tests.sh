@@ -3,8 +3,14 @@
 FFS_TOP=$(realpath "${0%/*}")
 DEBUG="$FFS_TOP/target/debug"
 RELEASE="$FFS_TOP/target/release"
+echo ======
 echo "FFS_TOP=$FFS_TOP"
+echo DEBUG
+ls "$DEBUG"
+echo RELEASE
+ls "$RELEASE"
 
+echo ======
 detect_tools() {
     if ! which ffs >/dev/null 2>&1
     then
