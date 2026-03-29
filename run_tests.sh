@@ -19,7 +19,7 @@ detect_tools() {
         [ -x "$DEBUG/ffs" ] && PATH="$DEBUG:$PATH"
         [ -x "$RELEASE/ffs" ] && PATH="$RELEASE:$PATH"
     fi
-    which ffs >/dev/null 2>&1 && HAVE_FFS=1
+    command ffs >/dev/null 2>&1 && HAVE_FFS=1
 
     if ! command unpack >/dev/null 2>&1
     then
@@ -31,7 +31,7 @@ detect_tools() {
         [ -x "$DEBUG/pack" ] && PATH="$DEBUG:$PATH"
         [ -x "$RELEASE/pack" ] && PATH="$RELEASE:$PATH"
     fi
-    which pack unpack >/dev/null 2>&1 && HAVE_PACKUNPACK=1
+    command pack unpack >/dev/null 2>&1 && HAVE_PACKUNPACK=1
 
     [ "$HAVE_FFS" ] || [ "$HAVE_PACK_UNPACK" ]
 }
