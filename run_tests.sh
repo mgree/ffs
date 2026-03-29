@@ -35,6 +35,7 @@ detect_tools() {
     fi
     command -v pack unpack >/dev/null 2>&1 && HAVE_PACKUNPACK=1
 
+    echo "HAVE_FFS=$HAVE_FFS HAVE_PACK_UNPACK=$HAVE_PACK_UNPACK"
     [ "$HAVE_FFS" ] || [ "$HAVE_PACK_UNPACK" ]
 }
 
