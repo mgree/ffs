@@ -5,17 +5,6 @@ DEBUG="$FFS_TOP/target/debug"
 RELEASE="$FFS_TOP/target/release"
 
 detect_tools() {
-    echo ======
-    echo "FFS_TOP=$FFS_TOP"
-    echo DEBUG
-    ls "$DEBUG"
-    echo RELEASE
-    ls "$RELEASE"
-    command -v ffs
-    command -v pack
-    command -v unpack
-    echo "PATH=$PATH"
-    echo ======
     if ! command -v ffs >/dev/null 2>&1
     then
         [ -x "$DEBUG/ffs" ] && PATH="$DEBUG:$PATH"
@@ -35,7 +24,6 @@ detect_tools() {
     fi
     command -v pack >/dev/null 2>&1 && command -v unpack >/dev/null 2>&1 && HAVE_PACKUNPACK=1
 
-    echo "HAVE_FFS=$HAVE_FFS HAVE_PACKUNPACK=$HAVE_PACKUNPACK"
     [ "$HAVE_FFS" ] || [ "$HAVE_PACKUNPACK" ]
 }
 
