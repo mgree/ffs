@@ -77,6 +77,9 @@ MICRO_WORKLOAD="${TIMESTAMP}/read_all_micro.log"
 
 rm "$MICRO_RAW"
 
+if [ "$EAGER" ]
+then
+    ./generate_charts.R "$BENCH_EAGER"    "$MICRO_EAGER"
+fi
 ./generate_charts.R "$BENCH_LAZY"     "$MICRO_LAZY"
-./generate_charts.R "$BENCH_EAGER"    "$MICRO_EAGER"
 ./generate_charts.R "$BENCH_WORKLOAD" "$MICRO_WORKLOAD"
