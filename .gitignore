@@ -4,3 +4,4 @@
 *.png
 .Rhistory
 .DS_Store
+.claude
