@@ -380,8 +380,11 @@ pub mod json {
                             return Value::Object(serde_json::Map::new());
                         }
                         // Not all whitespace - reconstruct and parse
-                        let full_input = format!("{}{}", first_byte[0] as char, rest);
-                        serde_json::from_str(&full_input).expect("JSON")
+                        // Use byte concatenation instead of char conversion to handle any byte value
+                        let mut full_input = Vec::with_capacity(1 + rest.len());
+                        full_input.push(first_byte[0]);
+                        full_input.extend_from_slice(rest.as_bytes());
+                        serde_json::from_slice(&full_input).expect("JSON")
                     } else {
                         // Non-empty file - prepend the first byte back using Chain
                         let chained = std::io::Cursor::new(&first_byte[..n]).chain(reader);
