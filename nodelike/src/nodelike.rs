@@ -369,13 +369,24 @@ pub mod json {
                     debug!("Empty input detected, returning empty object");
                     Value::Object(serde_json::Map::new())
                 }
-                Ok(_) => {
-                    // Non-empty file - reconstruct the input with the first byte prepended
-                    let mut full_input = Vec::new();
-                    full_input.push(first_byte[0]);
-                    reader.read_to_end(&mut full_input).expect("Reading input");
-
-                    serde_json::from_reader(std::io::Cursor::new(full_input)).expect("JSON")
+                Ok(n) => {
+                    // Check if it's whitespace-only
+                    if first_byte[0].is_ascii_whitespace() {
+                        // Read the rest to check if it's all whitespace
+                        let mut rest = String::new();
+                        reader.read_to_string(&mut rest).expect("Reading input");
+                        if rest.trim().is_empty() {
+                            debug!("Whitespace-only input detected, returning empty object");
+                            return Value::Object(serde_json::Map::new());
+                        }
+                        // Not all whitespace - reconstruct and parse
+                        let full_input = format!("{}{}", first_byte[0] as char, rest);
+                        serde_json::from_str(&full_input).expect("JSON")
+                    } else {
+                        // Non-empty file - prepend the first byte back using Chain
+                        let chained = std::io::Cursor::new(&first_byte[..n]).chain(reader);
+                        serde_json::from_reader(chained).expect("JSON")
+                    }
                 }
                 Err(e) => panic!("Error reading input: {}", e),
             }
@@ -758,8 +769,8 @@ pub mod yaml {
             let mut text = String::new();
             let _len = reader.read_to_string(&mut text).unwrap();
             if text.trim().is_empty() {
-                debug!("Empty YAML input detected, returning empty hash");
-                return Value(Yaml::Hash(linked_hash_map::LinkedHashMap::new()));
+                debug!("Empty YAML input detected, returning Null");
+                return Value(Yaml::Null);
             }
             yaml_rust::YamlLoader::load_from_str(&text)
                 .map(|vs| {
