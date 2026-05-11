@@ -240,6 +240,7 @@ impl Format {
 pub mod json {
     use super::*;
     use base64::Engine as _;
+    use std::io::Read;
     pub use serde_json::Value;
 
     impl Nodelike for Value {
@@ -359,8 +360,25 @@ pub mod json {
                 serde_json::to_writer(writer, self).unwrap();
             }
         }
-        fn from_reader(reader: std::boxed::Box<dyn std::io::Read>) -> Self {
-            serde_json::from_reader(reader).expect("JSON")
+        fn from_reader(mut reader: std::boxed::Box<dyn std::io::Read>) -> Self {
+            // Check if the input is empty by peeking at the first byte
+            let mut first_byte = [0u8; 1];
+            match reader.read(&mut first_byte) {
+                Ok(0) => {
+                    // Empty file - return empty object
+                    debug!("Empty input detected, returning empty object");
+                    Value::Object(serde_json::Map::new())
+                }
+                Ok(_) => {
+                    // Non-empty file - reconstruct the input with the first byte prepended
+                    let mut full_input = Vec::new();
+                    full_input.push(first_byte[0]);
+                    reader.read_to_end(&mut full_input).expect("Reading input");
+
+                    serde_json::from_reader(std::io::Cursor::new(full_input)).expect("JSON")
+                }
+                Err(e) => panic!("Error reading input: {}", e),
+            }
         }
     }
 }
@@ -527,6 +545,10 @@ pub mod toml {
         fn from_reader(mut reader: Box<dyn std::io::Read>) -> Self {
             let mut text = String::new();
             let _len = reader.read_to_string(&mut text).unwrap();
+            if text.trim().is_empty() {
+                debug!("Empty TOML input detected, returning empty table");
+                return Value(Toml::Table(serde_toml::map::Map::new()));
+            }
             Value(serde_toml::from_str(&text).expect("TOML"))
         }
 
@@ -735,6 +757,10 @@ pub mod yaml {
         fn from_reader(mut reader: Box<dyn std::io::Read>) -> Self {
             let mut text = String::new();
             let _len = reader.read_to_string(&mut text).unwrap();
+            if text.trim().is_empty() {
+                debug!("Empty YAML input detected, returning empty hash");
+                return Value(Yaml::Hash(linked_hash_map::LinkedHashMap::new()));
+            }
             yaml_rust::YamlLoader::load_from_str(&text)
                 .map(|vs| {
                     Value(if vs.len() == 1 {
