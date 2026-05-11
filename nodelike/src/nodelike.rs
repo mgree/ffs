@@ -373,11 +373,20 @@ pub mod json {
                     // Non-empty file - reconstruct the input with the first byte prepended
                     let mut full_input = Vec::new();
                     full_input.push(first_byte[0]);
-                    reader.read_to_end(&mut full_input).expect("Reading input");
+                    reader.read_to_end(&mut full_input).unwrap_or_else(|e| {
+                        tracing::error!("Failed to read JSON input: {}", e);
+                        std::process::exit(crate::config::ERROR_STATUS_CLI);
+                    });
 
-                    serde_json::from_reader(std::io::Cursor::new(full_input)).expect("JSON")
+                    serde_json::from_reader(std::io::Cursor::new(full_input)).unwrap_or_else(|e| {
+                        tracing::error!("Failed to parse JSON: {}", e);
+                        std::process::exit(crate::config::ERROR_STATUS_CLI);
+                    })
                 }
-                Err(e) => panic!("Error reading input: {}", e),
+                Err(e) => {
+                    tracing::error!("Failed to read JSON input: {}", e);
+                    std::process::exit(crate::config::ERROR_STATUS_CLI);
+                }
             }
         }
     }
@@ -544,12 +553,18 @@ pub mod toml {
 
         fn from_reader(mut reader: Box<dyn std::io::Read>) -> Self {
             let mut text = String::new();
-            let _len = reader.read_to_string(&mut text).unwrap();
+            reader.read_to_string(&mut text).unwrap_or_else(|e| {
+                tracing::error!("Failed to read TOML input: {}", e);
+                std::process::exit(crate::config::ERROR_STATUS_CLI);
+            });
             if text.trim().is_empty() {
                 debug!("Empty TOML input detected, returning empty table");
                 return Value(Toml::Table(serde_toml::map::Map::new()));
             }
-            Value(serde_toml::from_str(&text).expect("TOML"))
+            Value(serde_toml::from_str(&text).unwrap_or_else(|e| {
+                tracing::error!("Failed to parse TOML: {}", e);
+                std::process::exit(crate::config::ERROR_STATUS_CLI);
+            }))
         }
 
         fn to_writer(&self, mut writer: Box<dyn std::io::Write>, pretty: bool) {
@@ -756,7 +771,10 @@ pub mod yaml {
 
         fn from_reader(mut reader: Box<dyn std::io::Read>) -> Self {
             let mut text = String::new();
-            let _len = reader.read_to_string(&mut text).unwrap();
+            reader.read_to_string(&mut text).unwrap_or_else(|e| {
+                tracing::error!("Failed to read YAML input: {}", e);
+                std::process::exit(crate::config::ERROR_STATUS_CLI);
+            });
             if text.trim().is_empty() {
                 debug!("Empty YAML input detected, returning empty hash");
                 return Value(Yaml::Hash(linked_hash_map::LinkedHashMap::new()));
@@ -769,7 +787,10 @@ pub mod yaml {
                         Yaml::Array(vs)
                     })
                 })
-                .expect("YAML")
+                .unwrap_or_else(|e| {
+                    tracing::error!("Failed to parse YAML: {}", e);
+                    std::process::exit(crate::config::ERROR_STATUS_CLI);
+                })
         }
 
         fn to_writer(&self, mut writer: Box<dyn std::io::Write>, _pretty: bool) {
