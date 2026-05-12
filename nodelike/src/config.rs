@@ -72,7 +72,7 @@ pub fn cli_base(name: impl Into<clap::builder::Str>) -> clap::Command {
         )
         .arg(
             Arg::new("STRICT")
-                .help("Disable empty-file detection; empty files will produce parse errors instead of empty directories")
+                .help("Strictly conform to format specifications (disables empty-file detection; empty JSON files will produce parse errors)")
                 .long("strict")
                 .action(ArgAction::SetTrue)
         )
