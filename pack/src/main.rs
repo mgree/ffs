@@ -390,16 +390,19 @@ impl Pack {
                     Resolving type automatically."
                 );
             }
+            let mut count = 0;
             let all_files_begin_with_num = fs::read_dir(path.clone())?
                 .map(|res| res.map(|e| e.path()))
                 .map(|e| e.unwrap().file_name().unwrap().to_str().unwrap().to_owned())
                 .all(|filename| {
+                    count += 1;
+
                     filename.chars().nth(0).unwrap().is_ascii_digit()
                         || filename.len() > 1
                             && filename.chars().nth(0).unwrap() == '-'
                             && filename.chars().nth(1).unwrap().is_ascii_digit()
                 });
-            if all_files_begin_with_num {
+            if all_files_begin_with_num && count > 0 {
                 path_type = "list"
             } else {
                 path_type = "named"
