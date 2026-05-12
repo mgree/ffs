@@ -266,13 +266,12 @@ impl Config {
         match &self.input {
             Input::Stdin => Some(Box::new(std::io::stdin())),
             Input::File(file) => {
-                if !self.strict {
-                    if let Ok(meta) = std::fs::metadata(file) {
-                        if meta.len() == 0 {
-                            debug!("Empty file detected, treating as empty input");
-                            return None;
-                        }
-                    }
+                if !self.strict
+                    && let Ok(meta) = std::fs::metadata(file)
+                    && meta.len() == 0
+                {
+                    debug!("Empty file detected, treating as empty input");
+                    return None;
                 }
                 let fmt = self.input_format;
                 let file = std::fs::File::open(file).unwrap_or_else(|e| {

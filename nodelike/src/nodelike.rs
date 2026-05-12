@@ -187,9 +187,11 @@ where
         match (*self).node(config) {
             Node::String(t, s) => Node::String(t, s),
             Node::Bytes(b) => Node::Bytes(b),
-            Node::List(vs) => {
-                Node::List(vs.into_iter().map(|v| Box::new(v) as Box<dyn Nodelike>).collect())
-            }
+            Node::List(vs) => Node::List(
+                vs.into_iter()
+                    .map(|v| Box::new(v) as Box<dyn Nodelike>)
+                    .collect(),
+            ),
             Node::Map(kvs) => Node::Map(
                 kvs.into_iter()
                     .map(|(k, v)| (k, Box::new(v) as Box<dyn Nodelike>))
@@ -280,7 +282,6 @@ pub mod json {
                 Value::Object(fvs) => Node::Map(fvs.into_iter().collect()),
             }
         }
-
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             match typ {
@@ -438,7 +439,6 @@ pub mod toml {
                 }
             }
         }
-
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             let v = match typ {
@@ -652,7 +652,6 @@ pub mod yaml {
                 Yaml::BadValue => Node::Bytes("bad YAML value".into()),
             }
         }
-
 
         fn from_string(typ: Typ, contents: String, _config: &Config) -> Self {
             match typ {
