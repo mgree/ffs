@@ -240,7 +240,6 @@ impl Format {
 pub mod json {
     use super::*;
     use base64::Engine as _;
-    use std::io::Read;
     pub use serde_json::Value;
 
     impl Nodelike for Value {
@@ -360,39 +359,8 @@ pub mod json {
                 serde_json::to_writer(writer, self).unwrap();
             }
         }
-        fn from_reader(mut reader: std::boxed::Box<dyn std::io::Read>) -> Self {
-            // Check if the input is empty by peeking at the first byte
-            let mut first_byte = [0u8; 1];
-            match reader.read(&mut first_byte) {
-                Ok(0) => {
-                    // Empty file - return empty object
-                    debug!("Empty input detected, returning empty object");
-                    Value::Object(serde_json::Map::new())
-                }
-                Ok(n) => {
-                    // Check if it's whitespace-only
-                    if first_byte[0].is_ascii_whitespace() {
-                        // Read the rest to check if it's all whitespace
-                        let mut rest = String::new();
-                        reader.read_to_string(&mut rest).expect("Reading input");
-                        if rest.trim().is_empty() {
-                            debug!("Whitespace-only input detected, returning empty object");
-                            return Value::Object(serde_json::Map::new());
-                        }
-                        // Not all whitespace - reconstruct and parse
-                        // Use byte concatenation instead of char conversion to handle any byte value
-                        let mut full_input = Vec::with_capacity(1 + rest.len());
-                        full_input.push(first_byte[0]);
-                        full_input.extend_from_slice(rest.as_bytes());
-                        serde_json::from_slice(&full_input).expect("JSON")
-                    } else {
-                        // Non-empty file - prepend the first byte back using Chain
-                        let chained = std::io::Cursor::new(&first_byte[..n]).chain(reader);
-                        serde_json::from_reader(chained).expect("JSON")
-                    }
-                }
-                Err(e) => panic!("Error reading input: {}", e),
-            }
+        fn from_reader(reader: std::boxed::Box<dyn std::io::Read>) -> Self {
+            serde_json::from_reader(reader).expect("JSON")
         }
     }
 }
@@ -559,10 +527,6 @@ pub mod toml {
         fn from_reader(mut reader: Box<dyn std::io::Read>) -> Self {
             let mut text = String::new();
             let _len = reader.read_to_string(&mut text).unwrap();
-            if text.trim().is_empty() {
-                debug!("Empty TOML input detected, returning empty table");
-                return Value(Toml::Table(serde_toml::map::Map::new()));
-            }
             Value(serde_toml::from_str(&text).expect("TOML"))
         }
 
@@ -771,10 +735,6 @@ pub mod yaml {
         fn from_reader(mut reader: Box<dyn std::io::Read>) -> Self {
             let mut text = String::new();
             let _len = reader.read_to_string(&mut text).unwrap();
-            if text.trim().is_empty() {
-                debug!("Empty YAML input detected, returning Null");
-                return Value(Yaml::Null);
-            }
             yaml_rust::YamlLoader::load_from_str(&text)
                 .map(|vs| {
                     Value(if vs.len() == 1 {

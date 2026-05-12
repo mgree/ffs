@@ -70,6 +70,12 @@ pub fn cli_base(name: impl Into<clap::builder::Str>) -> clap::Command {
                 .action(ArgAction::SetTrue)
 
         )
+        .arg(
+            Arg::new("STRICT")
+                .help("Disable empty-file detection; empty files will produce parse errors instead of empty directories")
+                .long("strict")
+                .action(ArgAction::SetTrue)
+        )
 }
 
 /// Configuration information
@@ -104,6 +110,7 @@ pub struct Config {
     pub timing: bool,
     pub mount: Option<PathBuf>,
     pub cleanup_mount: bool,
+    pub strict: bool,
 }
 
 #[derive(Debug)]
@@ -200,6 +207,7 @@ impl Config {
         config.timing = args.get_flag("TIMING");
         config.add_newlines = !args.get_flag("EXACT");
         config.allow_xattr = !args.get_flag("NOXATTR");
+        config.strict = args.get_flag("STRICT");
 
         // munging policy
         config.munge = match args.get_one::<String>("MUNGE") {
@@ -252,11 +260,20 @@ impl Config {
 
     /// Generate a reader for input
     ///
-    /// A return of `None` means to start from an empty named directory
+    /// A return of `None` means to start from an empty named directory.
+    /// When `--strict` is not set, a zero-byte file is treated as empty.
     pub fn input_reader(&self) -> Option<Box<dyn std::io::Read>> {
         match &self.input {
             Input::Stdin => Some(Box::new(std::io::stdin())),
             Input::File(file) => {
+                if !self.strict {
+                    if let Ok(meta) = std::fs::metadata(file) {
+                        if meta.len() == 0 {
+                            debug!("Empty file detected, treating as empty input");
+                            return None;
+                        }
+                    }
+                }
                 let fmt = self.input_format;
                 let file = std::fs::File::open(file).unwrap_or_else(|e| {
                     error!("Unable to open {} for {fmt} input: {e}", file.display());
@@ -315,6 +332,7 @@ impl Default for Config {
             timing: false,
             mount: None,
             cleanup_mount: false,
+            strict: false,
         }
     }
 }
