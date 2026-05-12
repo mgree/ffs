@@ -361,33 +361,23 @@ pub mod json {
             }
         }
         fn from_reader(mut reader: std::boxed::Box<dyn std::io::Read>) -> Self {
-            // Check if the input is empty by peeking at the first byte
-            let mut first_byte = [0u8; 1];
-            match reader.read(&mut first_byte) {
-                Ok(0) => {
-                    // Empty file - return empty object
-                    debug!("Empty input detected, returning empty object");
-                    Value::Object(serde_json::Map::new())
-                }
-                Ok(_) => {
-                    // Non-empty file - reconstruct the input with the first byte prepended
-                    let mut full_input = Vec::new();
-                    full_input.push(first_byte[0]);
-                    reader.read_to_end(&mut full_input).unwrap_or_else(|e| {
-                        tracing::error!("Failed to read JSON input: {}", e);
-                        std::process::exit(crate::config::ERROR_STATUS_CLI);
-                    });
+            // Read the entire input to handle whitespace-only files correctly
+            let mut text = String::new();
+            reader.read_to_string(&mut text).unwrap_or_else(|e| {
+                tracing::error!("Failed to read JSON input: {}", e);
+                std::process::exit(crate::config::ERROR_STATUS_CLI);
+            });
 
-                    serde_json::from_reader(std::io::Cursor::new(full_input)).unwrap_or_else(|e| {
-                        tracing::error!("Failed to parse JSON: {}", e);
-                        std::process::exit(crate::config::ERROR_STATUS_CLI);
-                    })
-                }
-                Err(e) => {
-                    tracing::error!("Failed to read JSON input: {}", e);
-                    std::process::exit(crate::config::ERROR_STATUS_CLI);
-                }
+            // Empty or whitespace-only file - return empty object (consistent with TOML/YAML)
+            if text.trim().is_empty() {
+                debug!("Empty JSON input detected, returning empty object");
+                return Value::Object(serde_json::Map::new());
             }
+
+            serde_json::from_str(&text).unwrap_or_else(|e| {
+                tracing::error!("Failed to parse JSON: {}", e);
+                std::process::exit(crate::config::ERROR_STATUS_CLI);
+            })
         }
     }
 }
