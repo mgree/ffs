@@ -32,9 +32,9 @@ then
     printf "Couldn't find ffs or pack/unpack; building...\n" >&2
     (cd "$FFS_TOP"
      if [ "$(uname -s)" = "Darwin" ]
-     then 
-         cargo build --bin pack --bin unpack 
-     else 
+     then
+         cargo build --bin pack --bin unpack
+     else
          cargo build --workspace
      fi)
     if ! detect_tools
@@ -67,7 +67,7 @@ do
     esac
 
     printf "========== STARTING TEST: $tname\n"
-    (RUST_LOG="ffs=debug,unpack=debug,pack=debug,fuser=debug"; export RUST_LOG; ./${test} >$LOG/$tname.out 2>$LOG/$tname.err; echo $?>$LOG/$tname.ec) &
+    (RUST_LOG="debug"; export RUST_LOG; ./${test} >$LOG/$tname.out 2>$LOG/$tname.err; echo $?>$LOG/$tname.ec) &
     : $((TOTAL += 1))
 
     # don't slam 'em

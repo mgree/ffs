@@ -310,8 +310,10 @@ fn main() -> std::io::Result<()> {
     let reader = match config.input_reader() {
         Some(reader) => reader,
         None => {
-            error!("Input not specified");
-            std::process::exit(ERROR_STATUS_CLI);
+            // Empty input: the mount directory already exists, so just
+            // leave it as an empty directory.
+            info!("Empty input; unpacked into empty directory {mount:?}");
+            return Ok(());
         }
     };
 
