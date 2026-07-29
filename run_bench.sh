@@ -36,6 +36,26 @@ done
 shift $((OPTIND - 1))
 [ $# -eq 0 ] || usage
 
+
+if [ "$FFS" ]
+then
+    if ! [ -x "$FFS" ]
+    then
+        printf "Could not find '%s'\n" "$FFS" >&2
+        exit 2
+    fi
+else
+    : ${FFS_TOP=$(git rev-parse --show-toplevel --show-superproject-working-tree 2>/dev/null || echo "${0%/*}")}
+    FFS="$FFS_TOP/target/release/ffs"
+    cargo build --release --bin ffs
+    if ! [ -x "$FFS" ]
+    then
+        printf "Could not build '%s'\n" "$FFS" >&2
+        exit 2
+    fi
+fi
+export FFS
+
 cd bench
 
 mkdir ${TIMESTAMP}
