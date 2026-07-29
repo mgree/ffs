@@ -25,7 +25,7 @@ exclude = [
 ]
 
 [dependencies]
-base64 = "0.22"
+base64 = "0.23"
 clap = "4.6"
 clap_complete = "4.6"
 regex = "1.12"
