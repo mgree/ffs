@@ -111,7 +111,8 @@ WAITFOR="$(cd ../utils; pwd)/waitfor"
 
 : ${NUM_RUNS=$NUM_RUNS_DEFAULT}
 run_digits=$(( ${#NUM_RUNS} ))
-: ${FFS=$(dirname $0)/../target/release/ffs}
+: ${FFS_TOP=$(git rev-parse --show-toplevel --show-superproject-working-tree 2>/dev/null || echo "${0%/*}")}
+: ${FFS="$FFS_TOP"/target/release/ffs}
 : ${PATTERN=".*"}
 : ${WORKLOAD_NAME="no-reads-no-writes"}
 
@@ -189,7 +190,7 @@ do
 
     tempfile log
     tempfile out
-    $FFS $FFS_ARGS --time -m $mnt -o $out -t json $path 2>$log &
+    "$FFS" $FFS_ARGS --time -m $mnt -o $out -t json $path 2>$log &
     PID=$!
     PIDS="$PIDS $PID"
 

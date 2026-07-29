@@ -531,7 +531,7 @@ fn main() {
         mount: &std::path::Path,
         fuser_config: &fuser::Config,
     ) -> i32 {
-        match fuser::mount2(FS::<V>::new(config), mount, fuser_config) {
+        match fuser::mount(FS::<V>::new(config), mount, fuser_config) {
             Ok(()) => {
                 info!("unmounted");
                 0
